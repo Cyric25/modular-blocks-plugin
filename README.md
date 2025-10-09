@@ -210,16 +210,11 @@ define('WP_DEBUG_LOG', true);
 - Prüfen Sie die Error-Logs in `/wp-content/debug.log`
 - Stellen Sie sicher, dass alle Variablen definiert sind
 
-## 🤝 Mitwirken
-
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature-Branch
-3. Commiten Sie Ihre Änderungen
-4. Erstellen Sie einen Pull-Request
-
 ## 📄 Lizenz
 
 GPL-2.0+ - Siehe WordPress Plugin-Richtlinien
+
+Dieses Plugin kann von jedem für eigene Zwecke weiterentwickelt werden.
 
 ## 🔗 Nützliche Links
 
