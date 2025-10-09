@@ -1,0 +1,32 @@
+{
+	"name": "modular-blocks-plugin",
+	"version": "1.0.0",
+	"description": "Modular WordPress Gutenberg Block Plugin",
+	"main": "index.js",
+	"scripts": {
+		"build": "wp-scripts build blocks/*/src/index.jsx --output-path=build/blocks",
+		"start": "wp-scripts start blocks/*/src/index.jsx --output-path=build/blocks",
+		"format": "wp-scripts format",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"keywords": [
+		"wordpress",
+		"gutenberg",
+		"blocks"
+	],
+	"author": "",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^27.0.0"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^13.0.0",
+		"@wordpress/blocks": "^13.0.0",
+		"@wordpress/components": "^28.0.0",
+		"@wordpress/element": "^6.0.0",
+		"@wordpress/i18n": "^5.0.0",
+		"@wordpress/icons": "^10.0.0",
+		"@wordpress/primitives": "^4.0.0"
+	}
+}

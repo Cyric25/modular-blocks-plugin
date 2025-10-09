@@ -1,0 +1,174 @@
+/**
+ * Image Comparison Block - Frontend Styles
+ */
+
+.wp-block-modular-blocks-image-comparison {
+	margin: 2rem 0;
+}
+
+.image-comparison-container {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
+}
+
+.comparison-wrapper {
+	position: relative;
+	overflow: hidden;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	cursor: ew-resize;
+}
+
+/* Container for before image - fills entire wrapper */
+.before-image-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.before-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+}
+
+/* Container for after image - acts as clip region, always full width */
+.after-image-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	clip-path: inset(0 0 0 0);
+}
+
+.after-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+	/* Position will be set by JavaScript - slides from left */
+	position: relative;
+}
+
+/* Vertical orientation */
+.orientation-vertical .comparison-wrapper {
+	flex-direction: column;
+}
+
+.orientation-vertical .before-image-container {
+	/* Height will be set by JavaScript and inline styles */
+	clip-path: none;
+}
+
+/* Slider */
+.comparison-slider {
+	position: absolute;
+	background: white;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 10;
+	transition: all 0.1s ease;
+}
+
+.orientation-horizontal .comparison-slider {
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	cursor: ew-resize;
+}
+
+.orientation-vertical .comparison-slider {
+	left: 0;
+	right: 0;
+	height: 4px;
+	cursor: ns-resize;
+}
+
+.comparison-slider.dragging {
+	transition: none;
+}
+
+/* Slider Handle */
+.slider-handle {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	background: white;
+	border: 3px solid #0073aa;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	color: #0073aa;
+	transition: transform 0.2s ease;
+	pointer-events: none;
+}
+
+.orientation-horizontal .slider-handle {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.orientation-vertical .slider-handle {
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.slider-handle.hover-animation:hover {
+	transform: translate(-50%, -50%) scale(1.1);
+}
+
+.comparison-slider:focus {
+	outline: 2px solid #0073aa;
+	outline-offset: 2px;
+}
+
+/* Labels */
+.image-label {
+	position: absolute;
+	padding: 5px 10px;
+	background: rgba(0, 0, 0, 0.7);
+	color: white;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	z-index: 5;
+	pointer-events: none;
+}
+
+.before-label {
+	top: 10px;
+	left: 10px;
+}
+
+.after-label {
+	top: 10px;
+	right: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.slider-handle {
+		width: 35px;
+		height: 35px;
+		font-size: 16px;
+	}
+
+	.image-label {
+		font-size: 12px;
+		padding: 4px 8px;
+	}
+}

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/mtnhu/**)",
+      "Bash(curl:*)",
+      "Bash(/dev/null)",
+      "Bash(cat:*)",
+      "Bash(php:*)",
+      "Bash(cd:*)",
+      "Bash(/c/Users/mtnhu/Local Sites/test/app/public/wp-content/plugins/modular-blocks-plugin/build/blocks/point-of-interest/block.json)",
+      "Bash(/c/Users/mtnhu/Local Sites/test/app/public/wp-content/plugins/modular-blocks-plugin/build/blocks/statement-connector/block.json)",
+      "Bash(/c/Users/mtnhu/Local Sites/test/app/public/wp-content/plugins/modular-blocks-plugin/build/blocks/summary-block/block.json)",
+      "Bash(npm run build:*)",
+      "Bash(npm run build:view:*)",
+      "Bash(npm run:*)",
+      "WebSearch",
+      "WebFetch(domain:www.w3schools.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

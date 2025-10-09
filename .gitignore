@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (optional - uncomment if you don't want to commit build files)
+# build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# WordPress specific
+wp-config.php
+.htaccess
