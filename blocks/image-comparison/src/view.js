@@ -14,9 +14,10 @@
 		const config = JSON.parse(configData);
 		const transitionMode = config.transitionMode || 'slide';
 
-		// Juxtaposition mode uses img-comparison-slider Web Component, no JS initialization needed
+		// Juxtaposition mode: replace HTML with img-comparison-slider Web Component
 		if (transitionMode === 'juxtaposition') {
-			console.log('Juxtaposition mode: Using img-comparison-slider Web Component');
+			console.log('Juxtaposition mode: Converting to img-comparison-slider Web Component');
+			initJuxtaposition(blockElement, config);
 			return;
 		}
 
@@ -175,6 +176,93 @@
 			}
 		}
 	};
+
+	function initJuxtaposition(blockElement, config) {
+		// Load img-comparison-slider library if not already loaded
+		if (!window.customElements || !window.customElements.get('img-comparison-slider')) {
+			// Load CSS
+			if (!document.querySelector('link[href*="img-comparison-slider"]')) {
+				const link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.href = 'https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css';
+				document.head.appendChild(link);
+			}
+
+			// Load JS
+			if (!document.querySelector('script[src*="img-comparison-slider"]')) {
+				const script = document.createElement('script');
+				script.defer = true;
+				script.src = 'https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js';
+				document.head.appendChild(script);
+
+				// Wait for script to load
+				script.onload = function() {
+					replaceWithWebComponent(blockElement, config);
+				};
+				return;
+			}
+		}
+
+		// Library already loaded
+		replaceWithWebComponent(blockElement, config);
+	}
+
+	function replaceWithWebComponent(blockElement, config) {
+		const container = blockElement.querySelector('.image-comparison-container');
+		if (!container) return;
+
+		const beforeImage = blockElement.querySelector('.before-image');
+		const afterImage = blockElement.querySelector('.after-image');
+
+		if (!beforeImage || !afterImage) return;
+
+		// Create img-comparison-slider element
+		const slider = document.createElement('img-comparison-slider');
+		slider.setAttribute('value', config.startingPosition);
+		if (config.orientation === 'vertical') {
+			slider.setAttribute('direction', 'vertical');
+		}
+
+		// Create images with slots
+		const firstImg = document.createElement('img');
+		firstImg.slot = 'first';
+		firstImg.src = afterImage.src;
+		firstImg.alt = afterImage.alt;
+		firstImg.style.width = '100%';
+		firstImg.style.display = 'block';
+
+		const secondImg = document.createElement('img');
+		secondImg.slot = 'second';
+		secondImg.src = beforeImage.src;
+		secondImg.alt = beforeImage.alt;
+		secondImg.style.width = '100%';
+		secondImg.style.display = 'block';
+
+		slider.appendChild(firstImg);
+		slider.appendChild(secondImg);
+
+		// Add labels if enabled
+		if (config.showLabels) {
+			const firstLabel = document.createElement('div');
+			firstLabel.slot = 'first-overlay-end';
+			firstLabel.className = 'jux-label';
+			firstLabel.textContent = config.afterLabel;
+
+			const secondLabel = document.createElement('div');
+			secondLabel.slot = 'second-overlay-end';
+			secondLabel.className = 'jux-label';
+			secondLabel.textContent = config.beforeLabel;
+
+			slider.appendChild(firstLabel);
+			slider.appendChild(secondLabel);
+		}
+
+		// Replace container content
+		container.innerHTML = '';
+		container.appendChild(slider);
+
+		console.log('Juxtaposition mode: Web Component initialized');
+	}
 
 	// Initialize all image-comparison blocks on page load
 	document.addEventListener('DOMContentLoaded', function() {

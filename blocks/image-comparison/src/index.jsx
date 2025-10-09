@@ -266,8 +266,56 @@ registerBlockType('modular-blocks/image-comparison', {
 		);
 	},
 
-	save: () => {
-		// Dynamic block - rendering handled by render.php
-		return null;
+	save: ({ attributes }) => {
+		const {
+			beforeImage,
+			afterImage,
+			beforeLabel,
+			afterLabel,
+			orientation,
+			startingPosition,
+			showLabels,
+			hoverAnimation,
+			height,
+			transitionMode,
+		} = attributes;
+
+		const blockProps = useBlockProps.save();
+
+		const comparisonData = {
+			orientation,
+			startingPosition,
+			showLabels,
+			hoverAnimation,
+			beforeLabel,
+			afterLabel,
+			transitionMode,
+		};
+
+		return (
+			<div {...blockProps} data-comparison-config={JSON.stringify(comparisonData)}>
+				<div className={`image-comparison-container orientation-${orientation}`}>
+					<div className="comparison-wrapper" data-transition-mode={transitionMode} style={{ height: `${height}px` }}>
+						<div className="before-image-container">
+							{beforeImage.url && <img src={beforeImage.url} alt={beforeImage.alt} className="before-image" />}
+						</div>
+						<div className="after-image-container">
+							{afterImage.url && <img src={afterImage.url} alt={afterImage.alt} className="after-image" />}
+						</div>
+						{showLabels && (
+							<>
+								<div className="image-label before-label">{beforeLabel}</div>
+								<div className="image-label after-label">{afterLabel}</div>
+							</>
+						)}
+						<div className="comparison-slider" style={{ [orientation === 'horizontal' ? 'left' : 'top']: `${startingPosition}%` }}>
+							<div className={`slider-handle ${hoverAnimation ? 'hover-animation' : ''}`}>
+								<span className="slider-icon">{orientation === 'horizontal' ? '⇄' : '⇅'}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
 	},
 });
