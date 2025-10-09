@@ -23,6 +23,7 @@ class ModularBlocks_Block_Manager {
         // Register blocks immediately since we're already in the init hook
         $this->register_blocks();
         add_action('enqueue_block_assets', [$this, 'enqueue_block_assets']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
     }
 
     /**
@@ -153,6 +154,76 @@ class ModularBlocks_Block_Manager {
                 [],
                 MODULAR_BLOCKS_PLUGIN_VERSION
             );
+        }
+
+        // Enqueue img-comparison-slider for editor
+        if (is_admin()) {
+            $lib_js_path = MODULAR_BLOCKS_PLUGIN_PATH . 'node_modules/img-comparison-slider/dist/index.js';
+            $lib_js_url = MODULAR_BLOCKS_PLUGIN_URL . 'node_modules/img-comparison-slider/dist/index.js';
+
+            $lib_css_path = MODULAR_BLOCKS_PLUGIN_PATH . 'node_modules/img-comparison-slider/dist/styles.css';
+            $lib_css_url = MODULAR_BLOCKS_PLUGIN_URL . 'node_modules/img-comparison-slider/dist/styles.css';
+
+            if (file_exists($lib_js_path)) {
+                wp_enqueue_script(
+                    'img-comparison-slider-editor',
+                    $lib_js_url,
+                    [],
+                    '8.0.6',
+                    true
+                );
+                add_filter('script_loader_tag', function($tag, $handle) {
+                    if ('img-comparison-slider-editor' === $handle) {
+                        $tag = str_replace('<script ', '<script type="module" ', $tag);
+                    }
+                    return $tag;
+                }, 10, 2);
+            }
+
+            if (file_exists($lib_css_path)) {
+                wp_enqueue_style(
+                    'img-comparison-slider-editor',
+                    $lib_css_url,
+                    [],
+                    '8.0.6'
+                );
+            }
+        }
+    }
+
+    /**
+     * Enqueue frontend assets conditionally
+     */
+    public function enqueue_frontend_assets() {
+        // Check if we're on a page/post with content
+        if (is_singular() || is_archive() || is_home()) {
+            global $post;
+
+            // Check for image-comparison block in juxtaposition mode
+            if ($post && has_block('modular-blocks/image-comparison', $post)) {
+                // Use CDN for img-comparison-slider library for better compatibility
+                wp_enqueue_script(
+                    'img-comparison-slider',
+                    'https://unpkg.com/img-comparison-slider@8/dist/index.js',
+                    [],
+                    '8.0.6',
+                    true
+                );
+                // Add module type attribute
+                add_filter('script_loader_tag', function($tag, $handle) {
+                    if ('img-comparison-slider' === $handle) {
+                        $tag = str_replace('<script ', '<script type="module" ', $tag);
+                    }
+                    return $tag;
+                }, 10, 2);
+
+                wp_enqueue_style(
+                    'img-comparison-slider',
+                    'https://unpkg.com/img-comparison-slider@8/dist/styles.css',
+                    [],
+                    '8.0.6'
+                );
+            }
         }
     }
 

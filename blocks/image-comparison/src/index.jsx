@@ -15,6 +15,7 @@ registerBlockType('modular-blocks/image-comparison', {
 			showLabels,
 			hoverAnimation,
 			height,
+			transitionMode,
 		} = attributes;
 
 		const blockProps = useBlockProps();
@@ -125,6 +126,16 @@ registerBlockType('modular-blocks/image-comparison', {
 								{ label: __('Vertikal', 'modular-blocks-plugin'), value: 'vertical' },
 							]}
 							onChange={(value) => setAttributes({ orientation: value })}
+						/>
+						<SelectControl
+							label={__('Überblendungsmodus', 'modular-blocks-plugin')}
+							value={transitionMode}
+							options={[
+								{ label: __('Einblenden (Slide)', 'modular-blocks-plugin'), value: 'slide' },
+								{ label: __('Überblenden (Fade)', 'modular-blocks-plugin'), value: 'fade' },
+								{ label: __('Juxtaposition (Classic)', 'modular-blocks-plugin'), value: 'juxtaposition' },
+							]}
+							onChange={(value) => setAttributes({ transitionMode: value })}
 						/>
 						<RangeControl
 							label={__('Start-Position (%)', 'modular-blocks-plugin')}
@@ -255,50 +266,8 @@ registerBlockType('modular-blocks/image-comparison', {
 		);
 	},
 
-	save: ({ attributes }) => {
-		const {
-			beforeImage,
-			afterImage,
-			beforeLabel,
-			afterLabel,
-			orientation,
-			startingPosition,
-			showLabels,
-			hoverAnimation,
-			height,
-		} = attributes;
-
-		const blockProps = useBlockProps.save();
-
-		const comparisonData = {
-			orientation,
-			startingPosition,
-			showLabels,
-			hoverAnimation,
-			beforeLabel,
-			afterLabel,
-		};
-
-		return (
-			<div {...blockProps} data-comparison-config={JSON.stringify(comparisonData)}>
-				<div className={`image-comparison-container orientation-${orientation}`}>
-					<div className="comparison-wrapper" style={{ height: `${height}px` }}>
-						<div className="before-image-container">
-							{beforeImage.url && <img src={beforeImage.url} alt={beforeImage.alt} className="before-image" />}
-							{showLabels && <div className="image-label before-label">{beforeLabel}</div>}
-						</div>
-						<div className="after-image-container">
-							{afterImage.url && <img src={afterImage.url} alt={afterImage.alt} className="after-image" />}
-							{showLabels && <div className="image-label after-label">{afterLabel}</div>}
-						</div>
-						<div className="comparison-slider" style={{ [orientation === 'horizontal' ? 'left' : 'top']: `${startingPosition}%` }}>
-							<div className="slider-handle">
-								<span className="slider-icon">{orientation === 'horizontal' ? '⇄' : '⇅'}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+	save: () => {
+		// Dynamic block - rendering handled by render.php
+		return null;
 	},
 });

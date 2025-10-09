@@ -12,21 +12,20 @@
 		if (!configData) return;
 
 		const config = JSON.parse(configData);
+		const transitionMode = config.transitionMode || 'slide';
+
+		// Juxtaposition mode uses img-comparison-slider Web Component, no JS initialization needed
+		if (transitionMode === 'juxtaposition') {
+			console.log('Juxtaposition mode: Using img-comparison-slider Web Component');
+			return;
+		}
+
 		const wrapper = blockElement.querySelector('.comparison-wrapper');
 		const slider = blockElement.querySelector('.comparison-slider');
 		const beforeImage = blockElement.querySelector('.before-image');
 		const afterImage = blockElement.querySelector('.after-image');
 		const afterContainer = blockElement.querySelector('.after-image-container');
 		const sliderHandle = blockElement.querySelector('.slider-handle');
-
-		console.log('Image Comparison Init:', {
-			wrapper: !!wrapper,
-			slider: !!slider,
-			beforeImage: !!beforeImage,
-			afterImage: !!afterImage,
-			afterContainer: !!afterContainer,
-			config: config
-		});
 
 		if (!wrapper || !slider || !beforeImage || !afterImage || !afterContainer) {
 			console.error('Missing required elements');
@@ -149,22 +148,30 @@
 		function updatePosition(position) {
 			if (!afterImage || !afterContainer) return;
 
-			console.log('Update position:', position);
-
-			if (isHorizontal) {
-				slider.style.left = position + '%';
-				// Move after-image from left: -100% (fully hidden) to 0% (fully visible)
-				// When position is 0%, image is at left: -100% (hidden)
-				// When position is 100%, image is at left: 0% (fully visible)
-				const imagePosition = position - 100;
-				afterImage.style.left = imagePosition + '%';
-				console.log('Set after-image left to:', imagePosition + '%');
+			if (transitionMode === 'fade') {
+				// Fade mode: image is always at position 0, only opacity changes
+				// Update progress bar using CSS variable
+				slider.style.setProperty('--progress', position + '%');
+				afterImage.style.left = '0%';
+				afterImage.style.top = '0%';
+				afterImage.style.opacity = position / 100;
 			} else {
-				slider.style.top = position + '%';
-				// Move after-image from top: -100% (fully hidden) to 0% (fully visible)
-				const imagePosition = position - 100;
-				afterImage.style.top = imagePosition + '%';
-				console.log('Set after-image top to:', imagePosition + '%');
+				// Slide mode: image slides in from left/top
+				if (isHorizontal) {
+					slider.style.left = position + '%';
+					// Move after-image from left: -100% (fully hidden) to 0% (fully visible)
+					// When position is 0%, image is at left: -100% (hidden)
+					// When position is 100%, image is at left: 0% (fully visible)
+					const imagePosition = position - 100;
+					afterImage.style.left = imagePosition + '%';
+					afterImage.style.opacity = 1;
+				} else {
+					slider.style.top = position + '%';
+					// Move after-image from top: -100% (fully hidden) to 0% (fully visible)
+					const imagePosition = position - 100;
+					afterImage.style.top = imagePosition + '%';
+					afterImage.style.opacity = 1;
+				}
 			}
 		}
 	};
