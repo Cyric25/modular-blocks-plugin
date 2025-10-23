@@ -11,7 +11,7 @@
 $title = isset($block_attributes['title']) ? esc_html($block_attributes['title']) : '';
 $description = isset($block_attributes['description']) ? esc_html($block_attributes['description']) : '';
 $text_with_blanks = isset($block_attributes['textWithBlanks']) ? $block_attributes['textWithBlanks'] : '';
-$word_bank = isset($block_attributes['wordBank']) ? $block_attributes['wordBank'] : array();
+$additional_words = isset($block_attributes['additionalWords']) ? $block_attributes['additionalWords'] : '';
 
 // Optionen
 $show_feedback = isset($block_attributes['showFeedback']) ? $block_attributes['showFeedback'] : true;
@@ -30,16 +30,36 @@ $success_text = isset($block_attributes['successText']) ? esc_html($block_attrib
 $partial_success_text = isset($block_attributes['partialSuccessText']) ? esc_html($block_attributes['partialSuccessText']) : 'Gut gemacht! Einige Antworten sind richtig.';
 $fail_text = isset($block_attributes['failText']) ? esc_html($block_attributes['failText']) : 'Versuchen Sie es noch einmal. Überprüfen Sie Ihre Antworten.';
 
+// Extrahiere Lückenwörter aus dem Text
+$blank_pattern = '/\*([^*]+)\*/';
+preg_match_all($blank_pattern, $text_with_blanks, $matches);
+$blanks = isset($matches[1]) ? $matches[1] : array();
+
+// Parse Zusatzwörter (ein Wort pro Zeile)
+$additional_words_list = array();
+if (!empty($additional_words)) {
+	$lines = explode("\n", $additional_words);
+	foreach ($lines as $line) {
+		$word = trim($line);
+		if (!empty($word)) {
+			$additional_words_list[] = $word;
+		}
+	}
+}
+
+// Kombiniere korrekte Wörter und Zusatzwörter
+$all_words = array_merge($blanks, $additional_words_list);
+
 // Randomize word bank wenn aktiviert
-if ($randomize_words && !empty($word_bank)) {
-	shuffle($word_bank);
+if ($randomize_words && !empty($all_words)) {
+	shuffle($all_words);
 }
 
 // Text verarbeiten und Lücken erstellen
-$blank_pattern = '/\*([^*]+)\*/';
 $blank_index = 0;
-$processed_text = preg_replace_callback($blank_pattern, function($matches) use (&$blank_index) {
-	$html = '<span class="word-blank" data-blank="' . esc_attr($blank_index) . '"></span>';
+$processed_text = preg_replace_callback($blank_pattern, function($matches) use (&$blank_index, $blanks) {
+	$correct_word = isset($blanks[$blank_index]) ? esc_attr($blanks[$blank_index]) : '';
+	$html = '<span class="word-blank" data-blank="' . esc_attr($blank_index) . '" data-correct-word="' . $correct_word . '" style="display: inline-block; min-width: 120px; min-height: 36px; padding: 6px 12px; margin: 0 4px; background: #d4e9f7; border: 2px dashed #7ab8e8; border-radius: 4px; vertical-align: middle;"></span>';
 	$blank_index++;
 	return $html;
 }, $text_with_blanks);
@@ -47,7 +67,8 @@ $processed_text = preg_replace_callback($blank_pattern, function($matches) use (
 // Konfiguration für JavaScript
 $config = array(
 	'textWithBlanks' => $text_with_blanks,
-	'wordBank' => $word_bank,
+	'blanks' => $blanks,
+	'additionalWords' => $additional_words_list,
 	'showFeedback' => $show_feedback,
 	'showRetry' => $show_retry,
 	'showSolution' => $show_solution,
@@ -77,21 +98,22 @@ $block_id = wp_unique_id('drag-the-words-');
 		<?php endif; ?>
 
 		<div class="text-area">
-			<div class="text-content"><?php echo wp_kses_post($processed_text); ?></div>
+			<div class="text-content" style="color: #1e1e1e !important; background: #fafafa; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 1.1em; line-height: 2.5;">
+				<?php echo wp_kses_post($processed_text); ?>
+			</div>
 		</div>
 
-		<div class="word-bank">
-			<h4><?php esc_html_e('Wortbank', 'modular-blocks-plugin'); ?></h4>
-			<div class="word-bank-items">
-				<?php foreach ($word_bank as $index => $word_item): ?>
+		<div class="word-bank" style="margin-bottom: 20px;">
+			<h4 style="color: #1e1e1e; font-size: 1em; font-weight: 600; margin: 0 0 12px 0;"><?php esc_html_e('Wortbank', 'modular-blocks-plugin'); ?></h4>
+			<div class="word-bank-items" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 15px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 4px; min-height: 60px;">
+				<?php foreach ($all_words as $index => $word): ?>
 					<div
 						class="draggable-word"
-						data-word="<?php echo esc_attr($word_item['word']); ?>"
-						data-is-correct="<?php echo esc_attr($word_item['isCorrect'] ? 'true' : 'false'); ?>"
-						data-correct-blanks="<?php echo esc_attr(wp_json_encode($word_item['blanks'])); ?>"
+						data-word="<?php echo esc_attr($word); ?>"
 						draggable="true"
+						style="display: inline-block; padding: 8px 16px; background: #e8e8e8; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: move;"
 					>
-						<?php echo esc_html($word_item['word']); ?>
+						<?php echo esc_html($word); ?>
 					</div>
 				<?php endforeach; ?>
 			</div>

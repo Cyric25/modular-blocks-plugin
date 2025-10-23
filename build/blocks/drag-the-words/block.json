@@ -9,8 +9,8 @@
     "keywords": ["lückentext", "drag", "drop", "wörter", "text", "h5p", "cloze"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
-    "editorStyle": "file:./editor.css",
-    "style": "file:./style.css",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
     "viewScript": "file:./view.js",
     "attributes": {
         "title": {
@@ -25,45 +25,9 @@
             "type": "string",
             "default": "Die *Sonne* scheint hell am *blauen* Himmel. Die *Vögel* singen in den *Bäumen* und die *Blumen* blühen im Garten."
         },
-        "wordBank": {
-            "type": "array",
-            "default": [
-                {
-                    "word": "Sonne",
-                    "isCorrect": true,
-                    "blanks": [0]
-                },
-                {
-                    "word": "blauen",
-                    "isCorrect": true,
-                    "blanks": [1]
-                },
-                {
-                    "word": "Vögel",
-                    "isCorrect": true,
-                    "blanks": [2]
-                },
-                {
-                    "word": "Bäumen",
-                    "isCorrect": true,
-                    "blanks": [3]
-                },
-                {
-                    "word": "Blumen",
-                    "isCorrect": true,
-                    "blanks": [4]
-                },
-                {
-                    "word": "Wolken",
-                    "isCorrect": false,
-                    "blanks": []
-                },
-                {
-                    "word": "Regen",
-                    "isCorrect": false,
-                    "blanks": []
-                }
-            ]
+        "additionalWords": {
+            "type": "string",
+            "default": "Wolken\nRegen\nSchnee"
         },
         "showFeedback": {
             "type": "boolean",
@@ -130,38 +94,7 @@
         "attributes": {
             "title": "Vervollständigen Sie den Satz über das Wetter",
             "textWithBlanks": "Heute ist das *Wetter* sehr *schön*. Die *Sonne* scheint und es ist *warm*.",
-            "wordBank": [
-                {
-                    "word": "Wetter",
-                    "isCorrect": true,
-                    "blanks": [0]
-                },
-                {
-                    "word": "schön",
-                    "isCorrect": true,
-                    "blanks": [1]
-                },
-                {
-                    "word": "Sonne",
-                    "isCorrect": true,
-                    "blanks": [2]
-                },
-                {
-                    "word": "warm",
-                    "isCorrect": true,
-                    "blanks": [3]
-                },
-                {
-                    "word": "kalt",
-                    "isCorrect": false,
-                    "blanks": []
-                },
-                {
-                    "word": "regnerisch",
-                    "isCorrect": false,
-                    "blanks": []
-                }
-            ]
+            "additionalWords": "kalt\nregnerisch\nwindig"
         }
     }
 }

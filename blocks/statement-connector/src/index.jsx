@@ -1,6 +1,6 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ToggleControl, SelectControl, RangeControl, Button, Card, CardHeader, CardBody, ColorPicker } from '@wordpress/components';
+import { PanelBody, TextControl, ToggleControl, SelectControl, RangeControl, Button, Card, CardHeader, CardBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, plus } from '@wordpress/icons';
 

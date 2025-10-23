@@ -1,0 +1,280 @@
+/**
+ * Statement Connector Block - Frontend Styles
+ */
+
+.wp-block-modular-blocks-statement-connector {
+	padding: 20px;
+	background: #ffffff;
+	border-radius: 4px;
+}
+
+.connector-container {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.connector-title {
+	margin: 0 0 10px 0;
+	font-size: 1.3em;
+	font-weight: 600;
+	color: #000000 !important;
+}
+
+.connector-description {
+	margin: 0 0 20px 0;
+	color: #000000 !important;
+	font-size: 0.95em;
+	padding: 10px;
+	background: #f5f5f5;
+	border-radius: 3px;
+}
+
+/* Activity area */
+.connector-activity {
+	margin-bottom: 20px;
+}
+
+.connector-columns {
+	display: flex;
+	align-items: stretch;
+	gap: 20px;
+	position: relative;
+}
+
+.connector-column {
+	flex: 1;
+	min-width: 0;
+}
+
+.column-title {
+	margin: 0 0 15px 0;
+	font-size: 1.1em;
+	font-weight: 600;
+	color: #000000 !important;
+	text-align: center;
+}
+
+.column-items {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+}
+
+/* Connector items */
+.connector-item {
+	display: flex;
+	align-items: center;
+	padding: 12px 15px;
+	background: #f9f9f9;
+	border: 2px solid #e0e0e0;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+	min-height: 50px;
+}
+
+.connector-item:hover {
+	background: #f0f0f0;
+	border-color: #cccccc;
+}
+
+.left-item {
+	justify-content: space-between;
+}
+
+.right-item {
+	justify-content: space-between;
+}
+
+.item-content {
+	flex: 1;
+	color: #000000 !important;
+	font-size: 1em;
+	line-height: 1.4;
+}
+
+/* Connection points */
+.connection-point {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background-color: #0073aa;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	flex-shrink: 0;
+}
+
+.left-item .connection-point {
+	margin-left: 10px;
+}
+
+.right-item .connection-point {
+	margin-right: 10px;
+	order: -1;
+}
+
+.connection-point:hover {
+	transform: scale(1.2);
+	box-shadow: 0 0 8px rgba(0, 115, 170, 0.5);
+}
+
+/* SVG Canvas */
+.connector-canvas-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.connector-canvas {
+	width: 100%;
+	height: 100%;
+}
+
+.connector-canvas line {
+	transition: stroke 0.3s ease;
+}
+
+.connector-canvas line.animated {
+	animation: drawLine 0.3s ease;
+}
+
+.connector-canvas line.correct {
+	stroke: #00a32a !important;
+}
+
+.connector-canvas line.incorrect {
+	stroke: #d63638 !important;
+}
+
+.connector-canvas line.solution {
+	stroke-dasharray: 5, 5;
+	animation: dashAnimation 0.5s linear infinite;
+}
+
+@keyframes drawLine {
+	from {
+		stroke-dasharray: 1000;
+		stroke-dashoffset: 1000;
+	}
+	to {
+		stroke-dasharray: 1000;
+		stroke-dashoffset: 0;
+	}
+}
+
+@keyframes dashAnimation {
+	to {
+		stroke-dashoffset: -10;
+	}
+}
+
+/* Controls */
+.connector-controls {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.connector-button {
+	padding: 10px 24px;
+	background: #0073aa;
+	color: #ffffff;
+	border: none;
+	border-radius: 4px;
+	font-size: 1em;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.connector-button:hover {
+	background: #005a87;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.connector-button:active {
+	transform: translateY(0);
+}
+
+.connector-button.connector-retry {
+	background: #f0ad4e;
+}
+
+.connector-button.connector-retry:hover {
+	background: #ec971f;
+}
+
+.connector-button.connector-solution {
+	background: #5bc0de;
+}
+
+.connector-button.connector-solution:hover {
+	background: #46b8da;
+}
+
+/* Results */
+.connector-results {
+	padding: 15px;
+	background: #f8f9fa;
+	border-left: 4px solid #0073aa;
+	border-radius: 4px;
+}
+
+.result-message {
+	font-size: 1.1em;
+	font-weight: 600;
+	margin-bottom: 8px;
+	color: #000000 !important;
+}
+
+.score-display {
+	font-size: 0.95em;
+	color: #000000 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.connector-columns {
+		flex-direction: column;
+	}
+
+	.connector-canvas-wrapper {
+		position: relative;
+		min-height: 100px;
+		margin: 15px 0;
+	}
+
+	.connector-item {
+		padding: 10px 12px;
+		font-size: 0.9em;
+	}
+
+	.connection-point {
+		width: 16px;
+		height: 16px;
+	}
+
+	.connector-button {
+		padding: 8px 16px;
+		font-size: 0.9em;
+	}
+}
+
+/* Force text colors - override any theme styles */
+.wp-block-modular-blocks-statement-connector * {
+	color: inherit;
+}
+
+.wp-block-modular-blocks-statement-connector h3,
+.wp-block-modular-blocks-statement-connector h4,
+.wp-block-modular-blocks-statement-connector p,
+.wp-block-modular-blocks-statement-connector div {
+	color: #000000 !important;
+}
+
+.wp-block-modular-blocks-statement-connector .connector-button {
+	color: #ffffff !important;
+}

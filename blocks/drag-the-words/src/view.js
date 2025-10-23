@@ -24,11 +24,18 @@
 		let draggedElement = null;
 		let isChecked = false;
 		let blankStates = {};
+		let touchElement = null;
+		let touchClone = null;
 
 		// Initialize blank states
 		const blanks = blockElement.querySelectorAll('.word-blank');
 		blanks.forEach((blank, index) => {
-			blankStates[index] = { word: null, element: null };
+			const correctWord = blank.getAttribute('data-correct-word');
+			blankStates[index] = {
+				word: null,
+				element: null,
+				correctWord: correctWord
+			};
 		});
 
 		// Setup draggable words
@@ -36,7 +43,10 @@
 		draggableWords.forEach(word => {
 			word.addEventListener('dragstart', handleDragStart);
 			word.addEventListener('dragend', handleDragEnd);
-			// Touch support könnte hier hinzugefügt werden
+			// Touch support
+			word.addEventListener('touchstart', handleTouchStart, { passive: false });
+			word.addEventListener('touchmove', handleTouchMove, { passive: false });
+			word.addEventListener('touchend', handleTouchEnd, { passive: false });
 		});
 
 		// Setup drop zones (blanks)
@@ -97,6 +107,7 @@
 
 			const blankIndex = parseInt(blank.getAttribute('data-blank'));
 			const word = draggedElement.getAttribute('data-word');
+			const sourceElement = draggedElement;
 
 			// Check if blank already has a word
 			if (blankStates[blankIndex].element) {
@@ -106,27 +117,94 @@
 			}
 
 			// Create new word element in blank
-			const wordElement = createWordInBlank(word, draggedElement);
+			const wordElement = createWordInBlank(word);
 			blank.appendChild(wordElement);
 
 			// Update state
 			blankStates[blankIndex] = {
 				word: word,
-				element: wordElement
+				element: wordElement,
+				correctWord: blankStates[blankIndex].correctWord
 			};
 
-			// Remove from word bank if not reusable
-			if (!config.enableWordReuse) {
-				draggedElement.remove();
-			}
-
-			// Instant feedback if enabled
-			if (config.highlightCorrectOnDrop) {
-				checkSingleBlank(blankIndex, wordElement);
+			// Remove original word from bank immediately (not reusable)
+			if (!config.enableWordReuse && sourceElement.parentNode === wordBankItems) {
+				sourceElement.remove();
 			}
 
 			draggedElement = null;
 			return false;
+		}
+
+		// Touch event handlers for mobile devices
+		function handleTouchStart(e) {
+			if (isChecked) return;
+
+			touchElement = e.target;
+			draggedElement = e.target;
+
+			const touch = e.touches[0];
+			const clone = touchElement.cloneNode(true);
+			clone.style.position = 'fixed';
+			clone.style.left = touch.pageX - 25 + 'px';
+			clone.style.top = touch.pageY - 15 + 'px';
+			clone.style.opacity = '0.7';
+			clone.style.pointerEvents = 'none';
+			clone.style.zIndex = '10000';
+			document.body.appendChild(clone);
+			touchClone = clone;
+
+			touchElement.style.opacity = '0.3';
+		}
+
+		function handleTouchMove(e) {
+			if (!touchElement || !touchClone) return;
+			e.preventDefault();
+
+			const touch = e.touches[0];
+			touchClone.style.left = touch.pageX - 25 + 'px';
+			touchClone.style.top = touch.pageY - 15 + 'px';
+		}
+
+		function handleTouchEnd(e) {
+			if (!touchElement) return;
+
+			const touch = e.changedTouches[0];
+			const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+			const blank = targetElement ? targetElement.closest('.word-blank') : null;
+
+			if (blank) {
+				// Simulate drop
+				const blankIndex = parseInt(blank.getAttribute('data-blank'));
+				const word = touchElement.getAttribute('data-word');
+
+				if (blankStates[blankIndex].element) {
+					returnWordToBank(blankStates[blankIndex].element);
+				}
+
+				if (!config.enableWordReuse && touchElement.parentNode === wordBankItems) {
+					touchElement.remove();
+				}
+
+				const wordElement = createWordInBlank(word);
+				blank.appendChild(wordElement);
+
+				blankStates[blankIndex] = {
+					word: word,
+					element: wordElement,
+					correctWord: blankStates[blankIndex].correctWord
+				};
+			} else {
+				touchElement.style.opacity = '1';
+			}
+
+			if (touchClone && touchClone.parentNode) {
+				touchClone.remove();
+			}
+
+			touchElement = null;
+			touchClone = null;
+			draggedElement = null;
 		}
 
 		function handleBlankClick(e) {
@@ -141,50 +219,56 @@
 			if (wordData.element) {
 				// Return word to bank
 				returnWordToBank(wordData.element);
-				blankStates[blankIndex] = { word: null, element: null };
+				blankStates[blankIndex] = {
+					word: null,
+					element: null,
+					correctWord: wordData.correctWord
+				};
 			}
 		}
 
-		function createWordInBlank(word, sourceElement) {
+		function createWordInBlank(word) {
 			const wordElement = document.createElement('span');
 			wordElement.className = 'word-in-blank';
 			wordElement.textContent = word;
 			wordElement.setAttribute('data-word', word);
-			wordElement.setAttribute('data-is-correct', sourceElement.getAttribute('data-is-correct'));
-			wordElement.setAttribute('data-correct-blanks', sourceElement.getAttribute('data-correct-blanks'));
+			wordElement.style.cssText = 'display: inline-block; padding: 6px 12px; background: #ffffff; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: pointer;';
 			return wordElement;
 		}
 
 		function returnWordToBank(wordElement) {
 			if (!config.enableWordReuse) {
 				const word = wordElement.getAttribute('data-word');
-				const isCorrect = wordElement.getAttribute('data-is-correct');
-				const correctBlanks = wordElement.getAttribute('data-correct-blanks');
 
 				const newWordElement = document.createElement('div');
 				newWordElement.className = 'draggable-word';
 				newWordElement.textContent = word;
 				newWordElement.setAttribute('data-word', word);
-				newWordElement.setAttribute('data-is-correct', isCorrect);
-				newWordElement.setAttribute('data-correct-blanks', correctBlanks);
 				newWordElement.setAttribute('draggable', 'true');
+				newWordElement.style.cssText = 'display: inline-block; padding: 8px 16px; background: #e8e8e8; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: move;';
 				newWordElement.addEventListener('dragstart', handleDragStart);
 				newWordElement.addEventListener('dragend', handleDragEnd);
+				newWordElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+				newWordElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+				newWordElement.addEventListener('touchend', handleTouchEnd, { passive: false });
 
 				wordBankItems.appendChild(newWordElement);
 			}
 
-			wordElement.remove();
+			if (wordElement && wordElement.parentNode) {
+				wordElement.remove();
+			}
 		}
 
 		function checkSingleBlank(blankIndex, wordElement) {
 			const word = wordElement.getAttribute('data-word');
-			const correctBlanksStr = wordElement.getAttribute('data-correct-blanks');
+			const correctWord = blankStates[blankIndex].correctWord;
 
-			if (!correctBlanksStr) return;
+			if (!correctWord) return;
 
-			const correctBlanks = JSON.parse(correctBlanksStr);
-			const isCorrect = correctBlanks.includes(blankIndex);
+			const isCorrect = config.caseSensitive
+				? word === correctWord
+				: word.toLowerCase() === correctWord.toLowerCase();
 
 			wordElement.classList.remove('correct', 'incorrect');
 			wordElement.classList.add(isCorrect ? 'correct' : 'incorrect');
@@ -198,26 +282,20 @@
 			// Check each blank
 			blanks.forEach((blank, index) => {
 				const wordData = blankStates[index];
+				const correctWord = wordData.correctWord;
 
-				if (wordData.element) {
+				if (wordData.element && correctWord) {
 					const word = wordData.word;
-					const correctBlanksStr = wordData.element.getAttribute('data-correct-blanks');
 
-					if (correctBlanksStr) {
-						const correctBlanks = JSON.parse(correctBlanksStr);
-						let isCorrect = correctBlanks.includes(index);
+					const isCorrect = config.caseSensitive
+						? word === correctWord
+						: word.toLowerCase() === correctWord.toLowerCase();
 
-						// Case sensitivity check
-						if (!config.caseSensitive && isCorrect) {
-							// Already checked by blank index
-						}
+					wordData.element.classList.remove('correct', 'incorrect');
+					wordData.element.classList.add(isCorrect ? 'correct' : 'incorrect');
 
-						wordData.element.classList.remove('correct', 'incorrect');
-						wordData.element.classList.add(isCorrect ? 'correct' : 'incorrect');
-
-						if (isCorrect) {
-							score++;
-						}
+					if (isCorrect) {
+						score++;
 					}
 				}
 			});
@@ -305,33 +383,26 @@
 		}
 
 		function showSolution() {
-			// Clear all blanks
+			// Clear all blanks and place correct words
 			blanks.forEach((blank, index) => {
 				const wordData = blankStates[index];
 				if (wordData.element) {
 					wordData.element.remove();
 				}
-				blankStates[index] = { word: null, element: null };
-			});
 
-			// Place correct words in blanks
-			config.wordBank.forEach(wordItem => {
-				if (wordItem.isCorrect && wordItem.blanks.length > 0) {
-					wordItem.blanks.forEach(blankIndex => {
-						const blank = blockElement.querySelector(`[data-blank="${blankIndex}"]`);
-						if (blank && !blankStates[blankIndex].element) {
-							const wordElement = document.createElement('span');
-							wordElement.className = 'word-in-blank solution';
-							wordElement.textContent = wordItem.word;
-							wordElement.setAttribute('data-word', wordItem.word);
-							blank.appendChild(wordElement);
+				const correctWord = blank.getAttribute('data-correct-word');
+				if (correctWord) {
+					const wordElement = document.createElement('span');
+					wordElement.className = 'word-in-blank solution correct';
+					wordElement.textContent = correctWord;
+					wordElement.setAttribute('data-word', correctWord);
+					blank.appendChild(wordElement);
 
-							blankStates[blankIndex] = {
-								word: wordItem.word,
-								element: wordElement
-							};
-						}
-					});
+					blankStates[index] = {
+						word: correctWord,
+						element: wordElement,
+						correctWord: correctWord
+					};
 				}
 			});
 

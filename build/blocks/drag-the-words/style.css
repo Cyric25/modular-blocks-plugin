@@ -1,0 +1,244 @@
+/**
+ * Drag the Words Block - Frontend Styles
+ */
+
+.wp-block-modular-blocks-drag-the-words {
+	padding: 20px;
+	background: #ffffff;
+	border-radius: 4px;
+}
+
+.drag-the-words-container {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.drag-words-title {
+	margin: 0 0 10px 0;
+	font-size: 1.2em;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.drag-words-description {
+	margin: 0 0 20px 0;
+	color: #4a4a4a;
+	font-size: 0.95em;
+	padding: 10px;
+	background: #f5f5f5;
+	border-radius: 3px;
+}
+
+/* Text area with blanks */
+.text-area {
+	margin-bottom: 20px;
+}
+
+.text-content {
+	font-size: 1.1em;
+	line-height: 2.5;
+	color: #1e1e1e;
+	padding: 15px;
+	background: #fafafa;
+	border-radius: 4px;
+	border: 1px solid #e0e0e0;
+}
+
+/* Blanks (drop zones) */
+.word-blank {
+	display: inline-block;
+	min-width: 120px;
+	min-height: 36px;
+	padding: 6px 12px;
+	margin: 0 4px;
+	background: #d4e9f7;
+	border: 2px dashed #7ab8e8;
+	border-radius: 4px;
+	vertical-align: middle;
+	transition: all 0.2s ease;
+	position: relative;
+	cursor: pointer;
+}
+
+.word-blank:hover {
+	background: #c0dff5;
+	border-color: #5a9fd4;
+}
+
+.word-blank.drag-over {
+	background: #a8d4f0;
+	border-color: #3b8ac4;
+	transform: scale(1.02);
+}
+
+/* Words in blanks */
+.word-in-blank {
+	display: inline-block;
+	padding: 6px 12px;
+	background: #ffffff;
+	border: 2px solid #cccccc;
+	border-radius: 4px;
+	color: #1e1e1e;
+	font-weight: 500;
+	cursor: move;
+	transition: all 0.2s ease;
+}
+
+.word-in-blank:hover {
+	background: #f8f8f8;
+	border-color: #999999;
+}
+
+.word-in-blank.correct {
+	background: #d4edda;
+	border-color: #28a745;
+	color: #155724;
+}
+
+.word-in-blank.incorrect {
+	background: #f8d7da;
+	border-color: #dc3545;
+	color: #721c24;
+}
+
+.word-in-blank.solution {
+	background: #d1ecf1;
+	border-color: #0c5460;
+	color: #0c5460;
+	cursor: default;
+}
+
+/* Word bank */
+.word-bank {
+	margin-bottom: 20px;
+}
+
+.word-bank h4 {
+	margin: 0 0 12px 0;
+	font-size: 1em;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.word-bank-items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 15px;
+	background: #f9f9f9;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	min-height: 60px;
+}
+
+/* Draggable words */
+.draggable-word {
+	display: inline-block;
+	padding: 8px 16px;
+	background: #e8e8e8;
+	border: 2px solid #cccccc;
+	border-radius: 4px;
+	color: #1e1e1e;
+	font-weight: 500;
+	cursor: move;
+	transition: all 0.2s ease;
+	user-select: none;
+}
+
+.draggable-word:hover {
+	background: #d8d8d8;
+	border-color: #999999;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draggable-word.dragging {
+	opacity: 0.5;
+	cursor: grabbing;
+}
+
+.draggable-word[draggable="false"] {
+	cursor: default;
+	opacity: 0.6;
+}
+
+/* Controls */
+.drag-words-controls {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.drag-words-button {
+	padding: 10px 24px;
+	background: #0073aa;
+	color: #ffffff;
+	border: none;
+	border-radius: 4px;
+	font-size: 1em;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.drag-words-button:hover {
+	background: #005a87;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.drag-words-button:active {
+	transform: translateY(0);
+}
+
+.drag-words-button.drag-words-retry {
+	background: #f0ad4e;
+}
+
+.drag-words-button.drag-words-retry:hover {
+	background: #ec971f;
+}
+
+.drag-words-button.drag-words-solution {
+	background: #5bc0de;
+}
+
+.drag-words-button.drag-words-solution:hover {
+	background: #46b8da;
+}
+
+/* Results */
+.drag-words-results {
+	padding: 15px;
+	background: #f8f9fa;
+	border-left: 4px solid #0073aa;
+	border-radius: 4px;
+}
+
+.result-message {
+	font-size: 1.1em;
+	font-weight: 600;
+	margin-bottom: 8px;
+	color: #1e1e1e;
+}
+
+.score-display {
+	font-size: 0.95em;
+	color: #4a4a4a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.word-blank {
+		min-width: 100px;
+	}
+
+	.draggable-word {
+		padding: 6px 12px;
+		font-size: 0.9em;
+	}
+
+	.drag-words-button {
+		padding: 8px 16px;
+		font-size: 0.9em;
+	}
+}

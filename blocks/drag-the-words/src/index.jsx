@@ -1,8 +1,9 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, TextControl, TextareaControl, ToggleControl, Button, Card, CardHeader, CardBody } from '@wordpress/components';
+import { PanelBody, TextControl, TextareaControl, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { trash, plus } from '@wordpress/icons';
+import './editor.css';
+import './style.css';
 
 registerBlockType('modular-blocks/drag-the-words', {
 	edit: ({ attributes, setAttributes }) => {
@@ -10,7 +11,7 @@ registerBlockType('modular-blocks/drag-the-words', {
 			title,
 			description,
 			textWithBlanks,
-			wordBank,
+			additionalWords,
 			showFeedback,
 			showRetry,
 			showSolution,
@@ -28,76 +29,11 @@ registerBlockType('modular-blocks/drag-the-words', {
 
 		const blockProps = useBlockProps();
 
-		const updateWord = (index, field, value) => {
-			const newWordBank = [...wordBank];
-			newWordBank[index] = { ...newWordBank[index], [field]: value };
-			setAttributes({ wordBank: newWordBank });
-		};
-
-		const addWord = () => {
-			const newWordBank = [
-				...wordBank,
-				{
-					word: `Wort${wordBank.length + 1}`,
-					isCorrect: false,
-					blanks: [],
-				},
-			];
-			setAttributes({ wordBank: newWordBank });
-		};
-
-		const removeWord = (index) => {
-			if (wordBank.length <= 1) return;
-			const newWordBank = wordBank.filter((_, i) => i !== index);
-			setAttributes({ wordBank: newWordBank });
-		};
-
 		// Extract blanks from text
 		const extractBlanks = () => {
 			const blankPattern = /\*([^*]+)\*/g;
 			const matches = textWithBlanks.match(blankPattern);
 			return matches ? matches.map(m => m.replace(/\*/g, '')) : [];
-		};
-
-		// Generate word bank from blanks
-		const generateWordBankFromBlanks = () => {
-			const extractedBlanks = extractBlanks();
-			const newWordBank = [];
-
-			extractedBlanks.forEach((word, index) => {
-				// Check if word already exists in wordBank
-				const existingWord = wordBank.find(w => w.word === word && w.isCorrect);
-				if (!existingWord) {
-					newWordBank.push({
-						word: word,
-						isCorrect: true,
-						blanks: [index],
-					});
-				} else {
-					// Update blanks array if word exists
-					if (!existingWord.blanks.includes(index)) {
-						existingWord.blanks.push(index);
-					}
-					newWordBank.push(existingWord);
-				}
-			});
-
-			// Keep distractors (words marked as incorrect)
-			const distractors = wordBank.filter(w => !w.isCorrect);
-			setAttributes({ wordBank: [...newWordBank, ...distractors] });
-		};
-
-		// Add distractor (incorrect word)
-		const addDistractor = () => {
-			const newWordBank = [
-				...wordBank,
-				{
-					word: `Distraktor${wordBank.filter(w => !w.isCorrect).length + 1}`,
-					isCorrect: false,
-					blanks: [],
-				},
-			];
-			setAttributes({ wordBank: newWordBank });
 		};
 
 		const blanks = extractBlanks();
@@ -212,74 +148,21 @@ registerBlockType('modular-blocks/drag-the-words', {
 												fontSize: '12px',
 											}}
 										>
-											{index}: {blank}
+											{blank}
 										</span>
 									))}
 								</div>
 							</div>
 						)}
 
-						<div style={{ marginTop: '20px' }}>
-							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-								<h4 style={{ margin: 0 }}>{__('Wortbank', 'modular-blocks-plugin')}</h4>
-								<div style={{ display: 'flex', gap: '8px' }}>
-									<Button
-										onClick={generateWordBankFromBlanks}
-										variant="secondary"
-										size="small"
-									>
-										{__('Aus Lücken generieren', 'modular-blocks-plugin')}
-									</Button>
-									<Button
-										onClick={addDistractor}
-										icon={plus}
-										variant="secondary"
-										size="small"
-									>
-										{__('Distraktor hinzufügen', 'modular-blocks-plugin')}
-									</Button>
-								</div>
-							</div>
-							{wordBank.map((wordItem, index) => (
-								<Card key={index} style={{ marginBottom: '10px' }}>
-									<CardHeader>
-										<div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-											<input
-												type="checkbox"
-												checked={wordItem.isCorrect}
-												onChange={() => updateWord(index, 'isCorrect', !wordItem.isCorrect)}
-											/>
-											<span style={{ fontWeight: wordItem.isCorrect ? 'bold' : 'normal', flex: 1 }}>
-												{wordItem.isCorrect
-													? __('Korrekt', 'modular-blocks-plugin')
-													: __('Distraktor', 'modular-blocks-plugin')}
-											</span>
-											<Button
-												onClick={() => removeWord(index)}
-												icon={trash}
-												variant="tertiary"
-												size="small"
-												isDestructive
-											/>
-										</div>
-									</CardHeader>
-									<CardBody>
-										<TextControl
-											label={__('Wort', 'modular-blocks-plugin')}
-											value={wordItem.word}
-											onChange={(value) => updateWord(index, 'word', value)}
-										/>
-										{wordItem.isCorrect && (
-											<TextControl
-												label={__('Passende Lücken (Komma-getrennt)', 'modular-blocks-plugin')}
-												value={wordItem.blanks.join(', ')}
-												onChange={(value) => updateWord(index, 'blanks', value.split(',').map(v => parseInt(v.trim())).filter(n => !isNaN(n)))}
-												help={__('Nummern der Lücken (0, 1, 2, ...)', 'modular-blocks-plugin')}
-											/>
-										)}
-									</CardBody>
-								</Card>
-							))}
+						<div style={{ marginTop: '15px' }}>
+							<TextareaControl
+								label={__('Zusatzwörter (optional)', 'modular-blocks-plugin')}
+								value={additionalWords}
+								onChange={(value) => setAttributes({ additionalWords: value })}
+								help={__('Geben Sie zusätzliche falsche Wörter ein (ein Wort pro Zeile), die als Distraktoren dienen.', 'modular-blocks-plugin')}
+								rows={4}
+							/>
 						</div>
 
 						<div
@@ -304,7 +187,7 @@ registerBlockType('modular-blocks/drag-the-words', {
 			title,
 			description,
 			textWithBlanks,
-			wordBank,
+			additionalWords,
 			showFeedback,
 			showRetry,
 			showSolution,
@@ -322,18 +205,34 @@ registerBlockType('modular-blocks/drag-the-words', {
 
 		const blockProps = useBlockProps.save();
 
-		// Process text and create blanks
+		// Extract blanks (correct words)
 		const blankPattern = /\*([^*]+)\*/g;
+		const blanks = [];
+		let match;
+		while ((match = blankPattern.exec(textWithBlanks)) !== null) {
+			blanks.push(match[1]);
+		}
+
+		// Process text and create blanks
 		let blankIndex = 0;
-		const processedText = textWithBlanks.replace(blankPattern, () => {
-			const html = `<span class="word-blank" data-blank="${blankIndex}"></span>`;
+		const processedText = textWithBlanks.replace(/\*([^*]+)\*/g, () => {
+			const html = `<span class="word-blank" data-blank="${blankIndex}" data-correct-word="${blanks[blankIndex]}"></span>`;
 			blankIndex++;
 			return html;
 		});
 
+		// Parse additional words (one per line)
+		const additionalWordsList = additionalWords
+			? additionalWords.split('\n').map(w => w.trim()).filter(w => w.length > 0)
+			: [];
+
+		// Combine correct words and additional words
+		const allWords = [...blanks, ...additionalWordsList];
+
 		const dragWordsData = {
 			textWithBlanks,
-			wordBank,
+			blanks,
+			additionalWords: additionalWordsList,
 			showFeedback,
 			showRetry,
 			showSolution,
@@ -362,15 +261,14 @@ registerBlockType('modular-blocks/drag-the-words', {
 					<div className="word-bank">
 						<h4>{__('Wortbank', 'modular-blocks-plugin')}</h4>
 						<div className="word-bank-items">
-							{wordBank.map((wordItem, index) => (
+							{allWords.map((word, index) => (
 								<div
 									key={index}
 									className="draggable-word"
-									data-word={wordItem.word}
-									data-is-correct={wordItem.isCorrect}
+									data-word={word}
 									draggable="true"
 								>
-									{wordItem.word}
+									{word}
 								</div>
 							))}
 						</div>
