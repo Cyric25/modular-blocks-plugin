@@ -8,140 +8,64 @@
 	window.initPointOfInterest = function(blockElement) {
 		if (!blockElement) return;
 
-		const configData = blockElement.getAttribute('data-poi-config');
-		if (!configData) return;
-
-		const config = JSON.parse(configData);
 		const hotspots = blockElement.querySelectorAll('.hotspot');
-		const imageContainer = blockElement.querySelector('.poi-image-container');
+		const infoBox = blockElement.querySelector('.poi-info-box');
+		const infoTitle = blockElement.querySelector('.poi-info-title');
+		const infoContent = blockElement.querySelector('.poi-info-content');
+		const closeButton = blockElement.querySelector('.poi-info-close');
 
-		let activePopup = null;
+		let activeHotspot = null;
 
 		// Setup each hotspot
-		hotspots.forEach((hotspot, index) => {
-			const popup = hotspot.querySelector('.hotspot-popup');
-			const closeButton = popup.querySelector('.popup-close');
-			const trigger = config.hotspots[index]?.trigger || 'click';
-
-			// Setup trigger event
-			if (trigger === 'click') {
-				hotspot.addEventListener('click', (e) => {
-					e.stopPropagation();
-					togglePopup(hotspot, popup);
-				});
-			} else if (trigger === 'hover') {
-				hotspot.addEventListener('mouseenter', () => {
-					showPopup(hotspot, popup);
-				});
-				hotspot.addEventListener('mouseleave', () => {
-					if (config.autoClose) {
-						hidePopup(popup);
-					}
-				});
-			}
-
-			// Close button
-			if (closeButton) {
-				closeButton.addEventListener('click', (e) => {
-					e.stopPropagation();
-					hidePopup(popup);
-				});
-			}
+		hotspots.forEach((hotspot) => {
+			hotspot.addEventListener('click', (e) => {
+				e.stopPropagation();
+				showInfo(hotspot);
+			});
 		});
 
-		// Close on outside click
-		if (config.closeOnOutsideClick) {
-			document.addEventListener('click', (e) => {
-				if (!e.target.closest('.hotspot') && activePopup) {
-					hidePopup(activePopup);
-				}
+		// Close button
+		if (closeButton) {
+			closeButton.addEventListener('click', () => {
+				hideInfo();
 			});
 		}
 
-		// Zoom functionality
-		if (config.enableZoom) {
-			const image = imageContainer.querySelector('.poi-background');
-			if (image) {
-				let isZoomed = false;
+		// Close on outside click
+		document.addEventListener('click', (e) => {
+			if (!e.target.closest('.hotspot') && !e.target.closest('.poi-info-box')) {
+				hideInfo();
+			}
+		});
 
-				image.addEventListener('click', () => {
-					isZoomed = !isZoomed;
-					if (isZoomed) {
-						image.style.transform = `scale(${config.zoomLevel / 100})`;
-						image.style.cursor = 'zoom-out';
-					} else {
-						image.style.transform = 'scale(1)';
-						image.style.cursor = 'zoom-in';
-					}
-				});
+		function showInfo(hotspot) {
+			const title = hotspot.getAttribute('data-hotspot-title');
+			const content = hotspot.getAttribute('data-hotspot-content');
 
-				image.style.cursor = 'zoom-in';
-				image.style.transition = 'transform 0.3s ease';
+			// Mark active hotspot
+			if (activeHotspot) {
+				activeHotspot.classList.remove('active');
+			}
+			hotspot.classList.add('active');
+			activeHotspot = hotspot;
+
+			// Update info box
+			if (infoTitle) infoTitle.textContent = title;
+			if (infoContent) infoContent.innerHTML = content;
+
+			// Show info box
+			if (infoBox) {
+				infoBox.style.display = 'block';
 			}
 		}
 
-		function togglePopup(hotspot, popup) {
-			const isVisible = popup.style.display !== 'none';
-
-			if (isVisible) {
-				hidePopup(popup);
-			} else {
-				// Close other popups if autoClose is enabled
-				if (config.autoClose && activePopup && activePopup !== popup) {
-					hidePopup(activePopup);
-				}
-				showPopup(hotspot, popup);
+		function hideInfo() {
+			if (infoBox) {
+				infoBox.style.display = 'none';
 			}
-		}
-
-		function showPopup(hotspot, popup) {
-			popup.style.display = 'block';
-			activePopup = popup;
-
-			// Position popup
-			positionPopup(hotspot, popup);
-		}
-
-		function hidePopup(popup) {
-			popup.style.display = 'none';
-			if (activePopup === popup) {
-				activePopup = null;
-			}
-		}
-
-		function positionPopup(hotspot, popup) {
-			const hotspotRect = hotspot.getBoundingClientRect();
-			const containerRect = imageContainer.getBoundingClientRect();
-			const popupRect = popup.getBoundingClientRect();
-
-			const position = config.popupPosition;
-
-			// Auto positioning - find best position
-			if (position === 'auto') {
-				const spaceRight = containerRect.right - hotspotRect.right;
-				const spaceLeft = hotspotRect.left - containerRect.left;
-				const spaceBottom = containerRect.bottom - hotspotRect.bottom;
-				const spaceTop = hotspotRect.top - containerRect.top;
-
-				if (spaceRight >= popupRect.width) {
-					popup.style.left = '100%';
-					popup.style.right = 'auto';
-					popup.style.top = '50%';
-					popup.style.transform = 'translateY(-50%)';
-				} else if (spaceLeft >= popupRect.width) {
-					popup.style.right = '100%';
-					popup.style.left = 'auto';
-					popup.style.top = '50%';
-					popup.style.transform = 'translateY(-50%)';
-				} else if (spaceBottom >= popupRect.height) {
-					popup.style.top = '100%';
-					popup.style.left = '50%';
-					popup.style.transform = 'translateX(-50%)';
-				} else {
-					popup.style.bottom = '100%';
-					popup.style.left = '50%';
-					popup.style.transform = 'translateX(-50%)';
-				}
+			if (activeHotspot) {
+				activeHotspot.classList.remove('active');
+				activeHotspot = null;
 			}
 		}
 	};

@@ -3,6 +3,8 @@ import { InspectorControls, MediaUpload, MediaUploadCheck, useBlockProps } from 
 import { PanelBody, TextControl, ToggleControl, RangeControl, Button, SelectControl, Card, CardHeader, CardBody, ColorPicker } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, plus } from '@wordpress/icons';
+import './editor.css';
+import './style.css';
 
 registerBlockType('modular-blocks/point-of-interest', {
 	edit: ({ attributes, setAttributes }) => {

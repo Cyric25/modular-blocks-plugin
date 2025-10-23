@@ -58,6 +58,8 @@ $block_id = wp_unique_id('point-of-interest-');
 					<div
 						class="hotspot hotspot-style-<?php echo $hotspot_style; ?> animation-<?php echo esc_attr($hotspot['animation']); ?>"
 						data-hotspot-index="<?php echo esc_attr($index); ?>"
+						data-hotspot-title="<?php echo esc_attr($hotspot['title']); ?>"
+						data-hotspot-content="<?php echo esc_attr($hotspot['content']); ?>"
 						style="
 							left: <?php echo esc_attr($hotspot['x']); ?>%;
 							top: <?php echo esc_attr($hotspot['y']); ?>%;
@@ -65,16 +67,18 @@ $block_id = wp_unique_id('point-of-interest-');
 						"
 					>
 						<span class="hotspot-icon"><?php echo $show_numbers ? ($index + 1) : ''; ?></span>
-						<div class="hotspot-popup popup-style-<?php echo $popup_style; ?>" style="display: none;">
-							<div class="popup-header">
-								<h4 class="popup-title"><?php echo esc_html($hotspot['title']); ?></h4>
-								<button type="button" class="popup-close">&times;</button>
-							</div>
-							<div class="popup-content"><?php echo wp_kses_post($hotspot['content']); ?></div>
-						</div>
 					</div>
 				<?php endforeach; ?>
 			</div>
+		</div>
+
+		<!-- Info Box unter dem Bild -->
+		<div class="poi-info-box" style="display: none;">
+			<div class="poi-info-header">
+				<h4 class="poi-info-title"></h4>
+				<button type="button" class="poi-info-close">&times;</button>
+			</div>
+			<div class="poi-info-content"></div>
 		</div>
 	</div>
 </div>

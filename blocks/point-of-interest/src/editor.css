@@ -1,0 +1,24 @@
+/**
+ * Point of Interest Block - Editor Styles
+ */
+
+.wp-block-modular-blocks-point-of-interest {
+	padding: 20px;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+}
+
+/* Editor-specific styles that match the frontend */
+.editor-styles-wrapper .poi-image-container {
+	position: relative;
+	border: 2px dashed #ccc;
+}
+
+.editor-styles-wrapper .hotspot {
+	cursor: move;
+}
+
+.editor-styles-wrapper .hotspot-popup {
+	position: absolute;
+	z-index: 1000;
+}
