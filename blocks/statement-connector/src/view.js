@@ -218,7 +218,7 @@
 			line.setAttribute('y1', from.y);
 			line.setAttribute('x2', to.x);
 			line.setAttribute('y2', to.y);
-			line.setAttribute('stroke', fromItem.querySelector('.connection-point').style.backgroundColor || '#0073aa');
+			line.setAttribute('stroke', '#0073aa');
 			line.setAttribute('stroke-width', config.lineWidth);
 			line.setAttribute('data-from', connection.from);
 			line.setAttribute('data-to', connection.to);

@@ -11,6 +11,14 @@ blocks.forEach((blockPath) => {
 	entries[`${blockName}/index`] = path.resolve(__dirname, blockPath);
 });
 
+// Find all src/view.js files for frontend interactivity
+const viewScripts = glob.sync('./blocks/*/src/view.js');
+
+viewScripts.forEach((viewPath) => {
+	const blockName = viewPath.match(/blocks\/([^/]+)\//)[1];
+	entries[`${blockName}/view`] = path.resolve(__dirname, viewPath);
+});
+
 module.exports = {
 	...defaultConfig,
 	entry: entries,

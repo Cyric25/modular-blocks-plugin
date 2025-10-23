@@ -1,28 +1,53 @@
 /**
- * Image Comparison Block Styles
+ * Image Comparison Block - Frontend Styles
  */
 
-/* ===== Slide/Fade Modes ===== */
-.image-comparison-container {
-	width: 100%;
-	max-width: 100%;
-	position: relative;
-	border: 2px solid #999;
+.wp-block-modular-blocks-image-comparison {
+	margin: 2rem 0;
 }
 
-.wp-block-modular-blocks-image-comparison {
-	border: 2px solid #999;
-	margin: 10px 0;
+.image-comparison-container {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
 }
 
 .comparison-wrapper {
 	position: relative;
-	width: 100%;
 	overflow: hidden;
 	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	cursor: ew-resize;
 }
 
-.before-image-container,
+/* Don't apply wrapper styles to juxtaposition mode */
+.wp-block-modular-blocks-image-comparison:has(img-comparison-slider) .comparison-wrapper {
+	user-select: auto;
+	-webkit-user-select: auto;
+	cursor: default;
+}
+
+/* Container for before image - fills entire wrapper */
+.before-image-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.before-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+}
+
+/* Container for after image - acts as clip region, always full width */
 .after-image-container {
 	position: absolute;
 	top: 0;
@@ -30,81 +55,140 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+	clip-path: inset(0 0 0 0);
 }
 
-.before-image,
 .after-image {
-	position: absolute;
-	top: 0;
-	left: 0;
+	display: block;
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
-	display: block;
+	object-fit: contain;
+	pointer-events: none;
+	/* Position will be set by JavaScript - slides from left */
+	position: relative;
 }
 
+/* Vertical orientation */
+.orientation-vertical .comparison-wrapper {
+	flex-direction: column;
+}
+
+.orientation-vertical .before-image-container {
+	/* Height will be set by JavaScript and inline styles */
+	clip-path: none;
+}
+
+/* Slider */
 .comparison-slider {
 	position: absolute;
+	background: white;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 10;
+	transition: all 0.1s ease;
+}
+
+.orientation-horizontal .comparison-slider {
 	top: 0;
 	bottom: 0;
 	width: 4px;
-	background: white;
 	cursor: ew-resize;
-	transform: translateX(-50%);
-	z-index: 10;
-	user-select: none;
 }
 
 .orientation-vertical .comparison-slider {
-	left: 0 !important;
+	left: 0;
 	right: 0;
-	top: 50%;
-	width: 100%;
 	height: 4px;
 	cursor: ns-resize;
-	transform: translateY(-50%);
 }
 
+.comparison-slider.dragging {
+	transition: none;
+}
+
+/* Fade mode: Progress bar style */
+.comparison-wrapper[data-transition-mode="fade"] .comparison-slider {
+	background: transparent;
+	box-shadow: none;
+}
+
+.comparison-wrapper[data-transition-mode="fade"].orientation-horizontal .comparison-slider {
+	top: auto;
+	bottom: 10px;
+	left: 10px;
+	right: 10px;
+	width: auto;
+	height: 6px;
+	border-radius: 3px;
+	background: rgba(255, 255, 255, 0.3);
+	cursor: pointer;
+}
+
+.comparison-wrapper[data-transition-mode="fade"].orientation-horizontal .comparison-slider::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: var(--progress, 50%);
+	background: rgba(0, 115, 170, 0.8);
+	border-radius: 3px;
+	transition: width 0.1s ease;
+}
+
+/* Slider Handle */
 .slider-handle {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
 	width: 40px;
 	height: 40px;
-	border-radius: 50%;
 	background: white;
-	border: 2px solid #0073aa;
+	border: 3px solid #0073aa;
+	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	cursor: grab;
+	font-size: 18px;
+	color: #0073aa;
 	transition: transform 0.2s ease;
+	pointer-events: none;
 }
 
-.slider-handle:active {
-	cursor: grabbing;
+/* Hide handle in fade mode */
+.comparison-wrapper[data-transition-mode="fade"] .slider-handle {
+	display: none;
+}
+
+.orientation-horizontal .slider-handle {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.orientation-vertical .slider-handle {
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .slider-handle.hover-animation:hover {
 	transform: translate(-50%, -50%) scale(1.1);
 }
 
-.slider-icon {
-	font-size: 18px;
-	color: #0073aa;
-	user-select: none;
+.comparison-slider:focus {
+	outline: 2px solid #0073aa;
+	outline-offset: 2px;
 }
 
+/* Labels */
 .image-label {
 	position: absolute;
-	padding: 8px 16px;
+	padding: 5px 10px;
 	background: rgba(0, 0, 0, 0.7);
 	color: white;
 	border-radius: 4px;
 	font-size: 14px;
 	font-weight: 600;
 	z-index: 5;
+	pointer-events: none;
 }
 
 .before-label {
@@ -117,137 +201,52 @@
 	right: 10px;
 }
 
-/* ===== Juxtaposition Mode ===== */
-.juxtaposition-wrapper {
-	position: relative;
-	width: 100%;
-	overflow: hidden;
-	user-select: none;
-}
-
-.juxtaposition-mode .comparison-wrapper {
-	height: auto;
-	padding-bottom: 0;
-}
-
-.juxtaposition-mode .before-image-container {
-	clip-path: inset(0 50% 0 0);
-	-webkit-clip-path: inset(0 50% 0 0);
-	z-index: 2;
-}
-
-.juxtaposition-mode .after-image-container {
-	z-index: 1;
-}
-
-.orientation-vertical.juxtaposition-mode .before-image-container {
-	clip-path: inset(0 0 50% 0);
-	-webkit-clip-path: inset(0 0 50% 0);
-}
-
-/* ===== Flip Card Mode ===== */
-.wp-block-modular-blocks-image-comparison.flip-card-mode {
+/* Juxtaposition mode specific styles */
+img-comparison-slider {
+	display: block;
 	width: 100%;
 	max-width: 100%;
-	display: block;
-	border: 2px solid #f00 !important; /* Roter Rand für Flip Card */
-}
-
-.flip-card-container {
-	perspective: 1000px;
-	width: 100%;
 	position: relative;
-	cursor: pointer;
-	margin: 0;
-	padding: 0;
-	border: 2px solid #0f0; /* Grüner Rand für Container */
-	display: block;
-	background: transparent !important;
-}
-
-.flip-card-inner {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	transition: transform 0.6s;
-	transform-style: preserve-3d;
-	background: transparent;
-}
-
-/* Flipped state */
-.flip-card-container.flipped .flip-card-inner {
-	transform: rotateY(180deg);
-}
-
-/* Vertical flip */
-.flip-card-container.flip-direction-vertical .flip-card-inner {
-	transition: transform 0.6s;
-}
-
-.flip-card-container.flip-direction-vertical.flipped .flip-card-inner {
-	transform: rotateX(180deg);
-}
-
-/* Card Faces */
-.flip-card-face {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	backface-visibility: hidden;
-	-webkit-backface-visibility: hidden;
 	overflow: hidden;
-	background: #fff !important;
-	border: 2px solid #00f !important; /* Blauer Rand für Face */
+	--divider-width: 2px;
+	--divider-color: #fff;
+	--divider-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+	--default-handle-opacity: 1;
+	--default-handle-color: #fff;
+	--default-handle-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
 }
 
-.flip-card-front {
-	z-index: 2;
-	transform: rotateY(0deg);
+img-comparison-slider > * {
+	pointer-events: auto;
 }
 
-.flip-card-back {
-	transform: rotateY(180deg);
-}
-
-.flip-direction-vertical .flip-card-front {
-	transform: rotateX(0deg);
-}
-
-.flip-direction-vertical .flip-card-back {
-	transform: rotateX(180deg);
-}
-
-/* Images */
-.flip-card-image {
-	width: 100% !important;
-	height: 100% !important;
-	object-fit: cover !important;
-	display: block !important;
-	border: 2px solid #ff0 !important; /* Gelber Rand für Bild */
-	opacity: 1 !important;
-	visibility: visible !important;
-	max-width: none !important;
-	max-height: none !important;
-}
-
-/* Labels */
-.flip-card-label {
+img-comparison-slider .jux-label {
 	position: absolute;
-	bottom: 20px;
-	left: 50%;
-	transform: translateX(-50%);
+	padding: 5px 10px;
 	background: rgba(0, 0, 0, 0.7);
 	color: white;
-	padding: 10px 20px;
 	border-radius: 4px;
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: 600;
-	z-index: 10;
+	z-index: 5;
+	pointer-events: none;
 }
 
-/* Hover trigger - only show cursor pointer */
-.flip-trigger-hover.flip-card-container {
-	cursor: pointer;
+/* Responsive */
+@media (max-width: 768px) {
+	.slider-handle {
+		width: 35px;
+		height: 35px;
+		font-size: 16px;
+	}
+
+	.image-label {
+		font-size: 12px;
+		padding: 4px 8px;
+	}
+
+	img-comparison-slider .jux-label {
+		font-size: 12px;
+		padding: 4px 8px;
+	}
 }

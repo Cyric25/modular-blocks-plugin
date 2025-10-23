@@ -26,6 +26,9 @@
 		let blankStates = {};
 		let touchElement = null;
 		let touchClone = null;
+		let selectedWord = null; // For tap-to-select mode
+		let touchStartTime = 0;
+		let touchMoved = false;
 
 		// Initialize blank states
 		const blanks = blockElement.querySelectorAll('.word-blank');
@@ -47,6 +50,8 @@
 			word.addEventListener('touchstart', handleTouchStart, { passive: false });
 			word.addEventListener('touchmove', handleTouchMove, { passive: false });
 			word.addEventListener('touchend', handleTouchEnd, { passive: false });
+			// Click support for tap-to-select mode
+			word.addEventListener('click', handleWordClick);
 		});
 
 		// Setup drop zones (blanks)
@@ -55,6 +60,8 @@
 			blank.addEventListener('drop', handleDrop);
 			blank.addEventListener('dragleave', handleDragLeave);
 			blank.addEventListener('click', handleBlankClick);
+			// Touch tap support for blanks
+			blank.addEventListener('touchend', handleBlankTouchEnd, { passive: false });
 		});
 
 		// Setup buttons
@@ -106,42 +113,45 @@
 			blank.classList.remove('drag-over');
 
 			const blankIndex = parseInt(blank.getAttribute('data-blank'));
-			const word = draggedElement.getAttribute('data-word');
 			const sourceElement = draggedElement;
 
-			// Check if blank already has a word
-			if (blankStates[blankIndex].element) {
-				// Return existing word to word bank
-				const existingWord = blankStates[blankIndex].element;
-				returnWordToBank(existingWord);
-			}
-
-			// Create new word element in blank
-			const wordElement = createWordInBlank(word);
-			blank.appendChild(wordElement);
-
-			// Update state
-			blankStates[blankIndex] = {
-				word: word,
-				element: wordElement,
-				correctWord: blankStates[blankIndex].correctWord
-			};
-
-			// Remove original word from bank immediately (not reusable)
-			if (!config.enableWordReuse && sourceElement.parentNode === wordBankItems) {
-				sourceElement.remove();
-			}
+			// Use the helper function to place the word
+			placeWordInBlank(sourceElement, blank, blankIndex);
 
 			draggedElement = null;
 			return false;
 		}
 
-		// Touch event handlers for mobile devices
+		// Tap-to-select mode: Click on word to select it
+		function handleWordClick(e) {
+			if (isChecked) return;
+			e.stopPropagation();
+
+			const word = e.target;
+
+			// Deselect previously selected word
+			if (selectedWord && selectedWord !== word) {
+				selectedWord.classList.remove('selected');
+			}
+
+			// Toggle selection
+			if (selectedWord === word) {
+				word.classList.remove('selected');
+				selectedWord = null;
+			} else {
+				word.classList.add('selected');
+				selectedWord = word;
+			}
+		}
+
+		// Touch event handlers for mobile devices (drag mode)
 		function handleTouchStart(e) {
 			if (isChecked) return;
 
 			touchElement = e.target;
 			draggedElement = e.target;
+			touchStartTime = Date.now();
+			touchMoved = false;
 
 			const touch = e.touches[0];
 			const clone = touchElement.cloneNode(true);
@@ -160,6 +170,7 @@
 		function handleTouchMove(e) {
 			if (!touchElement || !touchClone) return;
 			e.preventDefault();
+			touchMoved = true;
 
 			const touch = e.touches[0];
 			touchClone.style.left = touch.pageX - 25 + 'px';
@@ -169,31 +180,33 @@
 		function handleTouchEnd(e) {
 			if (!touchElement) return;
 
+			const touchDuration = Date.now() - touchStartTime;
 			const touch = e.changedTouches[0];
 			const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
 			const blank = targetElement ? targetElement.closest('.word-blank') : null;
 
+			// If it was a quick tap (< 200ms) and didn't move much, treat as tap-to-select
+			if (touchDuration < 200 && !touchMoved) {
+				// Clean up clone
+				if (touchClone && touchClone.parentNode) {
+					touchClone.remove();
+				}
+				touchElement.style.opacity = '1';
+
+				// Trigger click event for tap-to-select mode
+				touchElement.click();
+
+				touchElement = null;
+				touchClone = null;
+				draggedElement = null;
+				return;
+			}
+
+			// Otherwise treat as drag
 			if (blank) {
 				// Simulate drop
 				const blankIndex = parseInt(blank.getAttribute('data-blank'));
-				const word = touchElement.getAttribute('data-word');
-
-				if (blankStates[blankIndex].element) {
-					returnWordToBank(blankStates[blankIndex].element);
-				}
-
-				if (!config.enableWordReuse && touchElement.parentNode === wordBankItems) {
-					touchElement.remove();
-				}
-
-				const wordElement = createWordInBlank(word);
-				blank.appendChild(wordElement);
-
-				blankStates[blankIndex] = {
-					word: word,
-					element: wordElement,
-					correctWord: blankStates[blankIndex].correctWord
-				};
+				placeWordInBlank(touchElement, blank, blankIndex);
 			} else {
 				touchElement.style.opacity = '1';
 			}
@@ -210,53 +223,127 @@
 		function handleBlankClick(e) {
 			if (isChecked) return;
 
+			// Check if user clicked on a word in blank (to remove it)
+			// Check if target IS a word-in-blank or contains one
+			let wordInBlank = null;
+			if (e.target.classList.contains('word-in-blank')) {
+				wordInBlank = e.target;
+			} else {
+				wordInBlank = e.target.closest('.word-in-blank');
+			}
+
+			if (wordInBlank) {
+				// Find the parent blank
+				const blank = wordInBlank.closest('.word-blank');
+				if (blank) {
+					const blankIndex = parseInt(blank.getAttribute('data-blank'));
+					const wordData = blankStates[blankIndex];
+					if (wordData.element) {
+						returnWordToBank(wordData.element, blankIndex);
+					}
+				}
+				return;
+			}
+
 			const blank = e.target.closest('.word-blank');
 			if (!blank) return;
 
 			const blankIndex = parseInt(blank.getAttribute('data-blank'));
 			const wordData = blankStates[blankIndex];
 
+			// If a word is selected, place it in this blank
+			if (selectedWord) {
+				placeWordInBlank(selectedWord, blank, blankIndex);
+				selectedWord.classList.remove('selected');
+				selectedWord = null;
+				return;
+			}
+
+			// If blank has a word, return it to bank
 			if (wordData.element) {
-				// Return word to bank
-				returnWordToBank(wordData.element);
+				returnWordToBank(wordData.element, blankIndex);
+			}
+		}
+
+		// Touch tap on blank (for tap-to-select mode)
+		function handleBlankTouchEnd(e) {
+			if (isChecked) return;
+
+			// Only handle if we have a selected word and this is a tap (not drag)
+			if (!selectedWord) return;
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			const blank = e.target.closest('.word-blank');
+			if (!blank) return;
+
+			const blankIndex = parseInt(blank.getAttribute('data-blank'));
+			placeWordInBlank(selectedWord, blank, blankIndex);
+			selectedWord.classList.remove('selected');
+			selectedWord = null;
+		}
+
+		// Helper function to place a word in a blank
+		function placeWordInBlank(sourceElement, blank, blankIndex) {
+			const word = sourceElement.getAttribute('data-word');
+
+			// If blank already has a word, return it to bank
+			if (blankStates[blankIndex].element) {
+				returnWordToBank(blankStates[blankIndex].element, blankIndex);
+			}
+
+			// Move the source element from bank to blank
+			// Remove it from its current parent
+			if (sourceElement.parentNode) {
+				sourceElement.parentNode.removeChild(sourceElement);
+			}
+
+			// Change styling for word in blank
+			sourceElement.className = 'word-in-blank';
+			sourceElement.style.cssText = 'display: inline-block; padding: 6px 12px; background: #ffffff; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: pointer;';
+			sourceElement.setAttribute('draggable', 'false');
+
+			// Add click handler to return word to bank when clicked
+			sourceElement.addEventListener('click', function(e) {
+				if (isChecked) return;
+				e.stopPropagation();
+				returnWordToBank(sourceElement, blankIndex);
+			});
+
+			// Append to blank
+			blank.appendChild(sourceElement);
+
+			// Update state - store reference to the actual moved element
+			blankStates[blankIndex] = {
+				word: word,
+				element: sourceElement,
+				correctWord: blankStates[blankIndex].correctWord
+			};
+		}
+
+		function returnWordToBank(wordElement, blankIndex) {
+			// Remove from its parent (the blank)
+			if (wordElement && wordElement.parentNode) {
+				wordElement.parentNode.removeChild(wordElement);
+			}
+
+			// Change styling back to draggable word
+			wordElement.className = 'draggable-word';
+			wordElement.style.cssText = 'display: inline-block; padding: 8px 16px; background: #e8e8e8; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: move;';
+			wordElement.setAttribute('draggable', 'true');
+			wordElement.classList.remove('correct', 'incorrect', 'selected');
+
+			// Append back to word bank
+			wordBankItems.appendChild(wordElement);
+
+			// Clear blank state
+			if (blankIndex !== undefined) {
 				blankStates[blankIndex] = {
 					word: null,
 					element: null,
-					correctWord: wordData.correctWord
+					correctWord: blankStates[blankIndex].correctWord
 				};
-			}
-		}
-
-		function createWordInBlank(word) {
-			const wordElement = document.createElement('span');
-			wordElement.className = 'word-in-blank';
-			wordElement.textContent = word;
-			wordElement.setAttribute('data-word', word);
-			wordElement.style.cssText = 'display: inline-block; padding: 6px 12px; background: #ffffff; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: pointer;';
-			return wordElement;
-		}
-
-		function returnWordToBank(wordElement) {
-			if (!config.enableWordReuse) {
-				const word = wordElement.getAttribute('data-word');
-
-				const newWordElement = document.createElement('div');
-				newWordElement.className = 'draggable-word';
-				newWordElement.textContent = word;
-				newWordElement.setAttribute('data-word', word);
-				newWordElement.setAttribute('draggable', 'true');
-				newWordElement.style.cssText = 'display: inline-block; padding: 8px 16px; background: #e8e8e8; border: 2px solid #cccccc; border-radius: 4px; color: #1e1e1e; font-weight: 500; cursor: move;';
-				newWordElement.addEventListener('dragstart', handleDragStart);
-				newWordElement.addEventListener('dragend', handleDragEnd);
-				newWordElement.addEventListener('touchstart', handleTouchStart, { passive: false });
-				newWordElement.addEventListener('touchmove', handleTouchMove, { passive: false });
-				newWordElement.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-				wordBankItems.appendChild(newWordElement);
-			}
-
-			if (wordElement && wordElement.parentNode) {
-				wordElement.remove();
 			}
 		}
 
@@ -347,12 +434,17 @@
 		function retry() {
 			isChecked = false;
 
+			// Clear any selected word
+			if (selectedWord) {
+				selectedWord.classList.remove('selected');
+				selectedWord = null;
+			}
+
 			// Return all words in blanks back to word bank
 			blanks.forEach((blank, index) => {
 				const wordData = blankStates[index];
 				if (wordData.element) {
-					returnWordToBank(wordData.element);
-					blankStates[index] = { word: null, element: null };
+					returnWordToBank(wordData.element, index);
 				}
 			});
 
@@ -363,12 +455,12 @@
 				wordsArray.forEach(el => wordBankItems.appendChild(el));
 			}
 
-			// Re-enable dragging
+			// Re-enable dragging and remove selection
 			const allDraggables = blockElement.querySelectorAll('.draggable-word');
 			allDraggables.forEach(el => {
 				el.setAttribute('draggable', 'true');
 				el.style.cursor = 'move';
-				el.classList.remove('correct', 'incorrect');
+				el.classList.remove('correct', 'incorrect', 'selected');
 			});
 
 			// Hide results
@@ -383,13 +475,24 @@
 		}
 
 		function showSolution() {
-			// Clear all blanks and place correct words
+			// Clear word bank first
+			wordBankItems.innerHTML = '';
+
+			// Clear all blanks completely and place correct words
 			blanks.forEach((blank, index) => {
-				const wordData = blankStates[index];
-				if (wordData.element) {
-					wordData.element.remove();
+				// Remove all children from blank
+				while (blank.firstChild) {
+					blank.removeChild(blank.firstChild);
 				}
 
+				// Reset state
+				blankStates[index] = {
+					word: null,
+					element: null,
+					correctWord: blankStates[index].correctWord
+				};
+
+				// Place correct word
 				const correctWord = blank.getAttribute('data-correct-word');
 				if (correctWord) {
 					const wordElement = document.createElement('span');
@@ -405,9 +508,6 @@
 					};
 				}
 			});
-
-			// Clear word bank
-			wordBankItems.innerHTML = '';
 
 			// Update results
 			if (resultsContainer && config.showScore) {

@@ -28,7 +28,8 @@ let copiedCount = 0;
 let errorCount = 0;
 
 // Files to copy for each block
-const filesToCopy = ['block.json', 'render.php', 'view.js', 'style.css'];
+const filesToCopy = ['block.json', 'render.php'];
+const srcFilesToCopy = ['style.css', 'editor.css'];
 
 blockDirs.forEach(blockName => {
     const targetDir = path.join(buildDir, blockName);
@@ -41,6 +42,7 @@ blockDirs.forEach(blockName => {
 
     let blockCopied = 0;
 
+    // Copy files from block root
     filesToCopy.forEach(fileName => {
         const sourceFile = path.join(blocksDir, blockName, fileName);
         const targetFile = path.join(targetDir, fileName);
@@ -52,6 +54,23 @@ blockDirs.forEach(blockName => {
                 blockCopied++;
             } catch (error) {
                 console.error(`✗ Error copying ${fileName} for ${blockName}:`, error.message);
+                errorCount++;
+            }
+        }
+    });
+
+    // Copy files from src directory
+    srcFilesToCopy.forEach(fileName => {
+        const sourceFile = path.join(blocksDir, blockName, 'src', fileName);
+        const targetFile = path.join(targetDir, fileName);
+
+        // Only copy if source file exists
+        if (fs.existsSync(sourceFile)) {
+            try {
+                fs.copyFileSync(sourceFile, targetFile);
+                blockCopied++;
+            } catch (error) {
+                console.error(`✗ Error copying ${fileName} from src for ${blockName}:`, error.message);
                 errorCount++;
             }
         }

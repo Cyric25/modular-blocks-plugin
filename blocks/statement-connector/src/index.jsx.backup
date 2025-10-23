@@ -1,6 +1,6 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ToggleControl, SelectControl, RangeControl, Button, Card, CardHeader, CardBody } from '@wordpress/components';
+import { PanelBody, TextControl, ToggleControl, SelectControl, RangeControl, Button, Card, CardHeader, CardBody, ColorPicker } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, plus } from '@wordpress/icons';
 
@@ -191,6 +191,13 @@ registerBlockType('modular-blocks/statement-connector', {
 												value={item.text}
 												onChange={(value) => updateLeftItem(index, 'text', value)}
 											/>
+											<div>
+												<label>{__('Farbe', 'modular-blocks-plugin')}</label>
+												<ColorPicker
+													color={item.color}
+													onChangeComplete={(color) => updateLeftItem(index, 'color', color.hex)}
+												/>
+											</div>
 										</CardBody>
 									</Card>
 								))}
@@ -238,6 +245,13 @@ registerBlockType('modular-blocks/statement-connector', {
 												]}
 												onChange={(value) => updateRightItem(index, 'correctConnection', value)}
 											/>
+											<div>
+												<label>{__('Farbe', 'modular-blocks-plugin')}</label>
+												<ColorPicker
+													color={item.color}
+													onChangeComplete={(color) => updateRightItem(index, 'color', color.hex)}
+												/>
+											</div>
 										</CardBody>
 									</Card>
 								))}

@@ -67,7 +67,7 @@ $block_id = wp_unique_id('statement-connector-');
 							<?php foreach ($left_column['items'] as $item): ?>
 								<div class="connector-item left-item" data-item-id="<?php echo esc_attr($item['id']); ?>">
 									<div class="item-content"><?php echo esc_html($item['text']); ?></div>
-									<div class="connection-point" style="background-color: <?php echo esc_attr($item['color']); ?>;"></div>
+									<div class="connection-point"></div>
 								</div>
 							<?php endforeach; ?>
 						<?php endif; ?>
@@ -86,7 +86,7 @@ $block_id = wp_unique_id('statement-connector-');
 						<?php if (!empty($right_column['items'])): ?>
 							<?php foreach ($right_column['items'] as $item): ?>
 								<div class="connector-item right-item" data-item-id="<?php echo esc_attr($item['id']); ?>" data-correct-connection="<?php echo esc_attr($item['correctConnection']); ?>">
-									<div class="connection-point" style="background-color: <?php echo esc_attr($item['color']); ?>;"></div>
+									<div class="connection-point"></div>
 									<div class="item-content"><?php echo esc_html($item['text']); ?></div>
 								</div>
 							<?php endforeach; ?>

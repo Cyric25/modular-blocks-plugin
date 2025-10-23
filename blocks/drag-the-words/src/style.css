@@ -161,6 +161,14 @@
 	opacity: 0.6;
 }
 
+.draggable-word.selected {
+	background: #0073aa;
+	border-color: #005a87;
+	color: #ffffff;
+	transform: translateY(-2px);
+	box-shadow: 0 3px 8px rgba(0, 115, 170, 0.4);
+}
+
 /* Controls */
 .drag-words-controls {
 	display: flex;
