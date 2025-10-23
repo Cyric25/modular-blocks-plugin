@@ -4,7 +4,8 @@
 	"description": "Modular WordPress Gutenberg Block Plugin",
 	"main": "index.js",
 	"scripts": {
-		"build": "wp-scripts build blocks/*/src/index.jsx --output-path=build/blocks",
+		"build": "wp-scripts build blocks/*/src/index.jsx --output-path=build/blocks && npm run copy-block-json",
+		"copy-block-json": "node scripts/copy-block-json.js",
 		"start": "wp-scripts start blocks/*/src/index.jsx --output-path=build/blocks",
 		"format": "wp-scripts format",
 		"lint:js": "wp-scripts lint-js",

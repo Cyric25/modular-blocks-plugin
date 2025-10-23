@@ -107,26 +107,7 @@ registerBlockType('modular-blocks/image-comparison', {
 						</div>
 					</PanelBody>
 
-					<PanelBody title={__('Einstellungen', 'modular-blocks-plugin')}>
-						<TextControl
-							label={__('Vorher-Label', 'modular-blocks-plugin')}
-							value={beforeLabel}
-							onChange={(value) => setAttributes({ beforeLabel: value })}
-						/>
-						<TextControl
-							label={__('Nachher-Label', 'modular-blocks-plugin')}
-							value={afterLabel}
-							onChange={(value) => setAttributes({ afterLabel: value })}
-						/>
-						<SelectControl
-							label={__('Orientierung', 'modular-blocks-plugin')}
-							value={orientation}
-							options={[
-								{ label: __('Horizontal', 'modular-blocks-plugin'), value: 'horizontal' },
-								{ label: __('Vertikal', 'modular-blocks-plugin'), value: 'vertical' },
-							]}
-							onChange={(value) => setAttributes({ orientation: value })}
-						/>
+					<PanelBody title={__('Anzeigemodus', 'modular-blocks-plugin')}>
 						<SelectControl
 							label={__('Überblendungsmodus', 'modular-blocks-plugin')}
 							value={transitionMode}
@@ -137,12 +118,35 @@ registerBlockType('modular-blocks/image-comparison', {
 							]}
 							onChange={(value) => setAttributes({ transitionMode: value })}
 						/>
+
+						<SelectControl
+							label={__('Orientierung', 'modular-blocks-plugin')}
+							value={orientation}
+							options={[
+								{ label: __('Horizontal', 'modular-blocks-plugin'), value: 'horizontal' },
+								{ label: __('Vertikal', 'modular-blocks-plugin'), value: 'vertical' },
+							]}
+							onChange={(value) => setAttributes({ orientation: value })}
+						/>
 						<RangeControl
 							label={__('Start-Position (%)', 'modular-blocks-plugin')}
 							value={startingPosition}
 							onChange={(value) => setAttributes({ startingPosition: value })}
 							min={0}
 							max={100}
+						/>
+					</PanelBody>
+
+					<PanelBody title={__('Beschriftung & Darstellung', 'modular-blocks-plugin')}>
+						<TextControl
+							label={__('Vorher-Label', 'modular-blocks-plugin')}
+							value={beforeLabel}
+							onChange={(value) => setAttributes({ beforeLabel: value })}
+						/>
+						<TextControl
+							label={__('Nachher-Label', 'modular-blocks-plugin')}
+							value={afterLabel}
+							onChange={(value) => setAttributes({ afterLabel: value })}
 						/>
 						<RangeControl
 							label={__('Höhe (px)', 'modular-blocks-plugin')}
@@ -266,56 +270,8 @@ registerBlockType('modular-blocks/image-comparison', {
 		);
 	},
 
-	save: ({ attributes }) => {
-		const {
-			beforeImage,
-			afterImage,
-			beforeLabel,
-			afterLabel,
-			orientation,
-			startingPosition,
-			showLabels,
-			hoverAnimation,
-			height,
-			transitionMode,
-		} = attributes;
-
-		const blockProps = useBlockProps.save();
-
-		const comparisonData = {
-			orientation,
-			startingPosition,
-			showLabels,
-			hoverAnimation,
-			beforeLabel,
-			afterLabel,
-			transitionMode,
-		};
-
-		return (
-			<div {...blockProps} data-comparison-config={JSON.stringify(comparisonData)}>
-				<div className={`image-comparison-container orientation-${orientation}`}>
-					<div className="comparison-wrapper" data-transition-mode={transitionMode} style={{ height: `${height}px` }}>
-						<div className="before-image-container">
-							{beforeImage.url && <img src={beforeImage.url} alt={beforeImage.alt} className="before-image" />}
-						</div>
-						<div className="after-image-container">
-							{afterImage.url && <img src={afterImage.url} alt={afterImage.alt} className="after-image" />}
-						</div>
-						{showLabels && (
-							<>
-								<div className="image-label before-label">{beforeLabel}</div>
-								<div className="image-label after-label">{afterLabel}</div>
-							</>
-						)}
-						<div className="comparison-slider" style={{ [orientation === 'horizontal' ? 'left' : 'top']: `${startingPosition}%` }}>
-							<div className={`slider-handle ${hoverAnimation ? 'hover-animation' : ''}`}>
-								<span className="slider-icon">{orientation === 'horizontal' ? '⇄' : '⇅'}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+	// Dynamic block - rendering is handled by render.php
+	save: () => {
+		return null;
 	},
 });

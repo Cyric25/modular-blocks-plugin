@@ -34,19 +34,12 @@ $block_id = wp_unique_id('image-comparison-');
 ?>
 
 <div id="<?php echo esc_attr($block_id); ?>" class="wp-block-modular-blocks-image-comparison" data-comparison-config="<?php echo esc_attr(wp_json_encode($config)); ?>" data-transition-mode="<?php echo esc_attr($transition_mode); ?>">
-	<?php if ($transition_mode === 'juxtaposition'):
-		// Calculate initial clip-path for before image
-		if ($orientation === 'horizontal') {
-			$initial_clip = 'inset(0 ' . (100 - $starting_position) . '% 0 0)';
-		} else {
-			$initial_clip = 'inset(0 0 ' . (100 - $starting_position) . '% 0)';
-		}
-	?>
+	<?php if ($transition_mode === 'juxtaposition'): ?>
 		<!-- Juxtaposition mode - classic split view with slider -->
 		<div class="image-comparison-container juxtaposition-mode orientation-<?php echo $orientation; ?>">
 			<div class="comparison-wrapper juxtaposition-wrapper" data-transition-mode="juxtaposition" style="height: <?php echo esc_attr($height); ?>px;">
 				<!-- Before image - clipped by slider position -->
-				<div class="before-image-container juxtaposition-before" style="clip-path: <?php echo esc_attr($initial_clip); ?>; -webkit-clip-path: <?php echo esc_attr($initial_clip); ?>;">
+				<div class="before-image-container juxtaposition-before">
 					<?php if (!empty($before_image['url'])): ?>
 						<img src="<?php echo esc_url($before_image['url']); ?>" alt="<?php echo esc_attr($before_image['alt']); ?>" class="before-image">
 					<?php endif; ?>

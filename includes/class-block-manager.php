@@ -94,8 +94,22 @@ class ModularBlocks_Block_Manager {
             $build_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'build/blocks/' . $block_name;
             $registration_dir = is_dir($build_dir) ? $build_dir : $block_dir;
 
-            // Register the block without render callback - client-side only
-            $result = register_block_type($registration_dir);
+            // Check if render.php exists for dynamic rendering
+            $render_file = $registration_dir . '/render.php';
+            $has_render_file = file_exists($render_file);
+
+            // Prepare registration args
+            $args = [];
+
+            // Add render callback if render.php exists
+            if ($has_render_file) {
+                $args['render_callback'] = function($attributes, $content, $block) use ($render_file, $block_name) {
+                    return $this->render_dynamic_block($render_file, $attributes, $content, $block, $block_name);
+                };
+            }
+
+            // Register the block
+            $result = register_block_type($registration_dir, $args);
 
             if (!$result) {
                 error_log("Modular Blocks: Failed to register block: {$block_name}");
@@ -201,30 +215,39 @@ class ModularBlocks_Block_Manager {
 
             // Check for image-comparison block in juxtaposition mode
             if ($post && has_block('modular-blocks/image-comparison', $post)) {
-                // Use CDN for img-comparison-slider library for better compatibility
-                wp_enqueue_script(
-                    'img-comparison-slider',
-                    'https://unpkg.com/img-comparison-slider@8/dist/index.js',
-                    [],
-                    '8.0.6',
-                    true
-                );
-                // Add module type attribute
-                add_filter('script_loader_tag', function($tag, $handle) {
-                    if ('img-comparison-slider' === $handle) {
-                        $tag = str_replace('<script ', '<script type="module" ', $tag);
-                    }
-                    return $tag;
-                }, 10, 2);
-
+                // Enqueue CSS first
                 wp_enqueue_style(
                     'img-comparison-slider',
                     'https://unpkg.com/img-comparison-slider@8/dist/styles.css',
                     [],
                     '8.0.6'
                 );
+
+                // Use CDN for img-comparison-slider library for better compatibility
+                wp_enqueue_script(
+                    'img-comparison-slider',
+                    'https://unpkg.com/img-comparison-slider@8/dist/index.js',
+                    [],
+                    '8.0.6',
+                    array('strategy' => 'defer', 'in_footer' => true)
+                );
+
+                // Add module type attribute (only once)
+                if (!has_filter('script_loader_tag', array($this, 'add_module_type_to_slider'))) {
+                    add_filter('script_loader_tag', array($this, 'add_module_type_to_slider'), 10, 2);
+                }
             }
         }
+    }
+
+    /**
+     * Add type="module" to img-comparison-slider script
+     */
+    public function add_module_type_to_slider($tag, $handle) {
+        if ('img-comparison-slider' === $handle) {
+            $tag = str_replace('<script ', '<script type="module" ', $tag);
+        }
+        return $tag;
     }
 
     /**
