@@ -167,7 +167,7 @@
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active {
     border-color: var(--layer-color);
     background: var(--layer-color);
-    color: white;
+    color: #ffffff;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .button-indicator {

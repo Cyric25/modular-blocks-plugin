@@ -126,31 +126,24 @@ class ModularBlocks_Block_Manager {
                 error_log("Modular Blocks Plugin: No render.php found for {$block_name}");
             }
 
-            // Override asset paths to use build versions if they exist
+            // Override asset paths to use build versions
             $build_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'build/blocks/' . basename($block_dir);
+            $build_url = MODULAR_BLOCKS_PLUGIN_URL . 'build/blocks/' . basename($block_dir);
 
-            // Handle viewScript from build folder
-            if (isset($block_data['viewScript']) && strpos($block_data['viewScript'], 'file:') === 0) {
-                $view_file = str_replace('file:./', '', $block_data['viewScript']);
-                $build_view = $build_dir . '/' . $view_file;
+            // Replace file paths with build versions if they exist
+            $assets_to_check = ['editorScript', 'script', 'viewScript', 'editorStyle', 'style'];
 
-                if (file_exists($build_view)) {
-                    error_log("Modular Blocks Plugin: Using build version for viewScript: {$build_view}");
-                    unset($block_data['viewScript']); // Remove from metadata to register manually
+            foreach ($assets_to_check as $asset_type) {
+                if (isset($block_data[$asset_type]) && is_string($block_data[$asset_type]) && strpos($block_data[$asset_type], 'file:') === 0) {
+                    // Extract filename from file:./filename.js format
+                    $filename = str_replace('file:./', '', $block_data[$asset_type]);
+                    $build_file = $build_dir . '/' . $filename;
 
-                    // Register viewScript with proper asset dependencies
-                    $asset_file = $build_dir . '/' . str_replace('.js', '.asset.php', $view_file);
-                    $asset_data = file_exists($asset_file) ? include($asset_file) : array('dependencies' => array(), 'version' => filemtime($build_view));
-
-                    wp_register_script(
-                        'modular-blocks-' . basename($block_dir) . '-view',
-                        MODULAR_BLOCKS_PLUGIN_URL . 'build/blocks/' . basename($block_dir) . '/' . $view_file,
-                        $asset_data['dependencies'],
-                        $asset_data['version'],
-                        true
-                    );
-
-                    $block_data['viewScript'] = 'modular-blocks-' . basename($block_dir) . '-view';
+                    if (file_exists($build_file)) {
+                        error_log("Modular Blocks Plugin: Using build version for {$asset_type}: {$build_file}");
+                        // Change to absolute URL pointing to build folder
+                        $block_data[$asset_type] = $build_url . '/' . $filename;
+                    }
                 }
             }
 
