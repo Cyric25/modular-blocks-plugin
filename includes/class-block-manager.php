@@ -126,6 +126,34 @@ class ModularBlocks_Block_Manager {
                 error_log("Modular Blocks Plugin: No render.php found for {$block_name}");
             }
 
+            // Override asset paths to use build versions if they exist
+            $build_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'build/blocks/' . basename($block_dir);
+
+            // Handle viewScript from build folder
+            if (isset($block_data['viewScript']) && strpos($block_data['viewScript'], 'file:') === 0) {
+                $view_file = str_replace('file:./', '', $block_data['viewScript']);
+                $build_view = $build_dir . '/' . $view_file;
+
+                if (file_exists($build_view)) {
+                    error_log("Modular Blocks Plugin: Using build version for viewScript: {$build_view}");
+                    unset($block_data['viewScript']); // Remove from metadata to register manually
+
+                    // Register viewScript with proper asset dependencies
+                    $asset_file = $build_dir . '/' . str_replace('.js', '.asset.php', $view_file);
+                    $asset_data = file_exists($asset_file) ? include($asset_file) : array('dependencies' => array(), 'version' => filemtime($build_view));
+
+                    wp_register_script(
+                        'modular-blocks-' . basename($block_dir) . '-view',
+                        MODULAR_BLOCKS_PLUGIN_URL . 'build/blocks/' . basename($block_dir) . '/' . $view_file,
+                        $asset_data['dependencies'],
+                        $asset_data['version'],
+                        true
+                    );
+
+                    $block_data['viewScript'] = 'modular-blocks-' . basename($block_dir) . '-view';
+                }
+            }
+
             // Register the block
             $result = register_block_type($block_dir, $block_data);
 
