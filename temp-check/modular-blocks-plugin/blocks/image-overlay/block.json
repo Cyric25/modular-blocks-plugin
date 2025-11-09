@@ -1,0 +1,127 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/image-overlay",
+    "version": "1.0.0",
+    "title": "Bild-Überlagerung",
+    "category": "media",
+    "icon": "images-alt2",
+    "description": "Überlagern Sie mehrere Bilder und lassen Sie Benutzer zwischen den Ebenen wechseln. Perfekt für anatomische Diagramme, Schichtdarstellungen oder Vergleiche.",
+    "keywords": ["overlay", "ebenen", "bilder", "anatomie", "schichten", "vergleich"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "baseImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "Basis-Bild",
+                "id": null
+            }
+        },
+        "layers": {
+            "type": "array",
+            "default": [
+                {
+                    "image": {
+                        "url": "",
+                        "alt": "",
+                        "id": null
+                    },
+                    "label": "Ebene 1",
+                    "description": "Erste Überlagerungs-Ebene",
+                    "opacity": 100,
+                    "visible": true,
+                    "color": "#0073aa"
+                },
+                {
+                    "image": {
+                        "url": "",
+                        "alt": "",
+                        "id": null
+                    },
+                    "label": "Ebene 2",
+                    "description": "Zweite Überlagerungs-Ebene",
+                    "opacity": 100,
+                    "visible": false,
+                    "color": "#d63638"
+                }
+            ]
+        },
+        "title": {
+            "type": "string",
+            "default": ""
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        },
+        "height": {
+            "type": "number",
+            "default": 400
+        },
+        "showLabels": {
+            "type": "boolean",
+            "default": true
+        },
+        "showDescriptions": {
+            "type": "boolean",
+            "default": true
+        },
+        "allowMultipleVisible": {
+            "type": "boolean",
+            "default": true
+        },
+        "transitionDuration": {
+            "type": "number",
+            "default": 300
+        },
+        "buttonStyle": {
+            "type": "string",
+            "default": "tabs"
+        },
+        "buttonPosition": {
+            "type": "string",
+            "default": "top"
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Anatomisches Diagramm",
+            "description": "Wählen Sie die Ebenen aus, um verschiedene anatomische Strukturen zu sehen",
+            "layers": [
+                {
+                    "label": "Skelett",
+                    "description": "Knochenstruktur",
+                    "opacity": 80,
+                    "visible": true,
+                    "color": "#f0f0f0"
+                },
+                {
+                    "label": "Muskeln",
+                    "description": "Muskulatur",
+                    "opacity": 70,
+                    "visible": false,
+                    "color": "#d63638"
+                },
+                {
+                    "label": "Nerven",
+                    "description": "Nervensystem",
+                    "opacity": 90,
+                    "visible": false,
+                    "color": "#ffb900"
+                }
+            ]
+        }
+    }
+}

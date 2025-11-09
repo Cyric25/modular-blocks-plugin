@@ -1,0 +1,136 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/point-of-interest",
+    "version": "1.0.0",
+    "title": "Points of Interest",
+    "category": "media",
+    "icon": "location",
+    "description": "Fügen Sie interaktive Hotspots zu Bildern hinzu. Benutzer können auf die Punkte klicken, um zusätzliche Informationen zu erhalten. Ideal für Karten, Diagramme und Präsentationen.",
+    "keywords": ["hotspot", "punkt", "interesse", "interaktiv", "popup", "karte"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "backgroundImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "",
+                "id": null
+            }
+        },
+        "title": {
+            "type": "string",
+            "default": ""
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        },
+        "hotspots": {
+            "type": "array",
+            "default": [
+                {
+                    "x": 25,
+                    "y": 25,
+                    "title": "Hotspot 1",
+                    "content": "Dies ist ein interaktiver Hotspot. Klicken Sie darauf, um mehr zu erfahren.",
+                    "icon": "info",
+                    "color": "#0073aa",
+                    "size": "medium",
+                    "animation": "pulse",
+                    "trigger": "click"
+                },
+                {
+                    "x": 75,
+                    "y": 75,
+                    "title": "Hotspot 2",
+                    "content": "Ein zweiter Hotspot mit weiteren Informationen zu diesem Bereich.",
+                    "icon": "star",
+                    "color": "#d63638",
+                    "size": "medium",
+                    "animation": "bounce",
+                    "trigger": "click"
+                }
+            ]
+        },
+        "hotspotStyle": {
+            "type": "string",
+            "default": "circle"
+        },
+        "popupStyle": {
+            "type": "string",
+            "default": "tooltip"
+        },
+        "popupPosition": {
+            "type": "string",
+            "default": "auto"
+        },
+        "showNumbers": {
+            "type": "boolean",
+            "default": false
+        },
+        "autoClose": {
+            "type": "boolean",
+            "default": true
+        },
+        "closeOnOutsideClick": {
+            "type": "boolean",
+            "default": true
+        },
+        "height": {
+            "type": "number",
+            "default": 400
+        },
+        "enableZoom": {
+            "type": "boolean",
+            "default": false
+        },
+        "zoomLevel": {
+            "type": "number",
+            "default": 150
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Interaktive Karte",
+            "description": "Klicken Sie auf die Hotspots, um mehr über die verschiedenen Bereiche zu erfahren",
+            "hotspots": [
+                {
+                    "x": 20,
+                    "y": 30,
+                    "title": "Historisches Zentrum",
+                    "content": "Das historische Zentrum der Stadt mit vielen Sehenswürdigkeiten und Museen.",
+                    "icon": "building",
+                    "color": "#0073aa"
+                },
+                {
+                    "x": 60,
+                    "y": 40,
+                    "title": "Park",
+                    "content": "Ein großer öffentlicher Park, ideal für Erholung und Freizeitaktivitäten.",
+                    "icon": "nature",
+                    "color": "#00a32a"
+                },
+                {
+                    "x": 80,
+                    "y": 70,
+                    "title": "Shopping District",
+                    "content": "Das Einkaufsviertel mit vielen Geschäften, Restaurants und Cafés.",
+                    "icon": "store",
+                    "color": "#ffb900"
+                }
+            ]
+        }
+    }
+}

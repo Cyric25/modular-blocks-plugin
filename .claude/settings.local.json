@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm run build:*)",
+      "Bash(npm install)",
+      "Bash(npm view:*)",
+      "Bash(npm run download-libs:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(python:*)",
+      "Bash(node:*)",
+      "Bash(npm run:*)",
+      "Bash(unzip:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

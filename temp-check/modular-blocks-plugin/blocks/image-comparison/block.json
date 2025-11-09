@@ -1,0 +1,76 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/image-comparison",
+    "version": "1.0.0",
+    "title": "Bild-Vergleich",
+    "category": "media",
+    "icon": "image-flip-horizontal",
+    "description": "Vergleichen Sie zwei Bilder mit einem interaktiven Schieberegler. Inspiriert von H5P Image Juxtaposition.",
+    "keywords": ["vergleich", "bilder", "vorher", "nachher", "slider", "h5p"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "beforeImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "",
+                "id": null
+            }
+        },
+        "afterImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "",
+                "id": null
+            }
+        },
+        "beforeLabel": {
+            "type": "string",
+            "default": "Vorher"
+        },
+        "afterLabel": {
+            "type": "string",
+            "default": "Nachher"
+        },
+        "orientation": {
+            "type": "string",
+            "default": "horizontal"
+        },
+        "startingPosition": {
+            "type": "number",
+            "default": 50
+        },
+        "showLabels": {
+            "type": "boolean",
+            "default": true
+        },
+        "hoverAnimation": {
+            "type": "boolean",
+            "default": true
+        },
+        "height": {
+            "type": "number",
+            "default": 400
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "beforeLabel": "Original",
+            "afterLabel": "Bearbeitet",
+            "startingPosition": 30
+        }
+    }
+}

@@ -1,0 +1,167 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/drag-the-words",
+    "version": "1.0.0",
+    "title": "Drag the Words",
+    "category": "widgets",
+    "icon": "text",
+    "description": "Erstellen Sie Lückentexte bei denen Benutzer Wörter per Drag & Drop in die richtigen Lücken ziehen müssen. Inspiriert von H5P Drag the Words.",
+    "keywords": ["lückentext", "drag", "drop", "wörter", "text", "h5p", "cloze"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Vervollständigen Sie den Text"
+        },
+        "description": {
+            "type": "string",
+            "default": "Ziehen Sie die Wörter unten in die passenden Lücken im Text."
+        },
+        "textWithBlanks": {
+            "type": "string",
+            "default": "Die *Sonne* scheint hell am *blauen* Himmel. Die *Vögel* singen in den *Bäumen* und die *Blumen* blühen im Garten."
+        },
+        "wordBank": {
+            "type": "array",
+            "default": [
+                {
+                    "word": "Sonne",
+                    "isCorrect": true,
+                    "blanks": [0]
+                },
+                {
+                    "word": "blauen",
+                    "isCorrect": true,
+                    "blanks": [1]
+                },
+                {
+                    "word": "Vögel",
+                    "isCorrect": true,
+                    "blanks": [2]
+                },
+                {
+                    "word": "Bäumen",
+                    "isCorrect": true,
+                    "blanks": [3]
+                },
+                {
+                    "word": "Blumen",
+                    "isCorrect": true,
+                    "blanks": [4]
+                },
+                {
+                    "word": "Wolken",
+                    "isCorrect": false,
+                    "blanks": []
+                },
+                {
+                    "word": "Regen",
+                    "isCorrect": false,
+                    "blanks": []
+                }
+            ]
+        },
+        "showFeedback": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "instantFeedback": {
+            "type": "boolean",
+            "default": false
+        },
+        "enableWordReuse": {
+            "type": "boolean",
+            "default": false
+        },
+        "showScore": {
+            "type": "boolean",
+            "default": true
+        },
+        "randomizeWords": {
+            "type": "boolean",
+            "default": true
+        },
+        "highlightCorrectOnDrop": {
+            "type": "boolean",
+            "default": true
+        },
+        "caseSensitive": {
+            "type": "boolean",
+            "default": false
+        },
+        "scoreText": {
+            "type": "string",
+            "default": "Sie haben @score von @total Punkten erreicht."
+        },
+        "successText": {
+            "type": "string",
+            "default": "Perfekt! Sie haben alle Lücken korrekt ausgefüllt."
+        },
+        "partialSuccessText": {
+            "type": "string",
+            "default": "Gut gemacht! Einige Antworten sind richtig."
+        },
+        "failText": {
+            "type": "string",
+            "default": "Versuchen Sie es noch einmal. Überprüfen Sie Ihre Antworten."
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Vervollständigen Sie den Satz über das Wetter",
+            "textWithBlanks": "Heute ist das *Wetter* sehr *schön*. Die *Sonne* scheint und es ist *warm*.",
+            "wordBank": [
+                {
+                    "word": "Wetter",
+                    "isCorrect": true,
+                    "blanks": [0]
+                },
+                {
+                    "word": "schön",
+                    "isCorrect": true,
+                    "blanks": [1]
+                },
+                {
+                    "word": "Sonne",
+                    "isCorrect": true,
+                    "blanks": [2]
+                },
+                {
+                    "word": "warm",
+                    "isCorrect": true,
+                    "blanks": [3]
+                },
+                {
+                    "word": "kalt",
+                    "isCorrect": false,
+                    "blanks": []
+                },
+                {
+                    "word": "regnerisch",
+                    "isCorrect": false,
+                    "blanks": []
+                }
+            ]
+        }
+    }
+}

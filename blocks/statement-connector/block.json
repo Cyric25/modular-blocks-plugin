@@ -1,0 +1,183 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/statement-connector",
+    "version": "1.0.0",
+    "title": "Statement Connector",
+    "category": "widgets",
+    "icon": "networking",
+    "description": "Verbinden Sie Aussagen miteinander durch Drag & Drop. Benutzer müssen die richtigen Verbindungen zwischen zwei Spalten von Aussagen herstellen. Ideal für Zuordnungsaufgaben.",
+    "keywords": ["verbinden", "zuordnung", "drag", "drop", "aussagen", "matching"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Verbinden Sie die zugehörigen Aussagen"
+        },
+        "description": {
+            "type": "string",
+            "default": "Ziehen Sie die Punkte von der linken Spalte zu den passenden Aussagen in der rechten Spalte."
+        },
+        "leftColumn": {
+            "type": "object",
+            "default": {
+                "title": "Begriffe",
+                "items": [
+                    {
+                        "id": "item1",
+                        "text": "Photosynthese",
+                        "color": "#0073aa"
+                    },
+                    {
+                        "id": "item2",
+                        "text": "Atmung",
+                        "color": "#d63638"
+                    },
+                    {
+                        "id": "item3",
+                        "text": "Verdauung",
+                        "color": "#00a32a"
+                    }
+                ]
+            }
+        },
+        "rightColumn": {
+            "type": "object",
+            "default": {
+                "title": "Definitionen",
+                "items": [
+                    {
+                        "id": "def1",
+                        "text": "Prozess der Energiegewinnung aus Nahrung",
+                        "color": "#00a32a",
+                        "correctConnection": "item3"
+                    },
+                    {
+                        "id": "def2",
+                        "text": "Umwandlung von Lichtenergie in chemische Energie",
+                        "color": "#0073aa",
+                        "correctConnection": "item1"
+                    },
+                    {
+                        "id": "def3",
+                        "text": "Aufnahme von Sauerstoff und Abgabe von Kohlendioxid",
+                        "color": "#d63638",
+                        "correctConnection": "item2"
+                    }
+                ]
+            }
+        },
+        "connections": {
+            "type": "array",
+            "default": [
+                { "from": "item1", "to": "def2" },
+                { "from": "item2", "to": "def3" },
+                { "from": "item3", "to": "def1" }
+            ]
+        },
+        "showFeedback": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "allowMultipleConnections": {
+            "type": "boolean",
+            "default": false
+        },
+        "connectionStyle": {
+            "type": "string",
+            "default": "line"
+        },
+        "lineWidth": {
+            "type": "number",
+            "default": 3
+        },
+        "animateConnections": {
+            "type": "boolean",
+            "default": true
+        },
+        "instantFeedback": {
+            "type": "boolean",
+            "default": false
+        },
+        "successText": {
+            "type": "string",
+            "default": "Ausgezeichnet! Alle Verbindungen sind korrekt."
+        },
+        "partialSuccessText": {
+            "type": "string",
+            "default": "Gut gemacht! Einige Verbindungen sind richtig."
+        },
+        "failText": {
+            "type": "string",
+            "default": "Versuchen Sie es noch einmal. Überprüfen Sie Ihre Verbindungen."
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Ordnen Sie die Planeten zu",
+            "description": "Verbinden Sie jeden Planeten mit seiner korrekten Beschreibung",
+            "leftColumn": {
+                "title": "Planeten",
+                "items": [
+                    {
+                        "id": "mars",
+                        "text": "Mars",
+                        "color": "#d63638"
+                    },
+                    {
+                        "id": "venus",
+                        "text": "Venus",
+                        "color": "#ffb900"
+                    },
+                    {
+                        "id": "jupiter",
+                        "text": "Jupiter",
+                        "color": "#ff8c00"
+                    }
+                ]
+            },
+            "rightColumn": {
+                "title": "Beschreibungen",
+                "items": [
+                    {
+                        "id": "desc1",
+                        "text": "Der größte Planet unseres Sonnensystems",
+                        "color": "#ff8c00",
+                        "correctConnection": "jupiter"
+                    },
+                    {
+                        "id": "desc2",
+                        "text": "Wird auch der rote Planet genannt",
+                        "color": "#d63638",
+                        "correctConnection": "mars"
+                    },
+                    {
+                        "id": "desc3",
+                        "text": "Der heißeste Planet im Sonnensystem",
+                        "color": "#ffb900",
+                        "correctConnection": "venus"
+                    }
+                ]
+            }
+        }
+    }
+}

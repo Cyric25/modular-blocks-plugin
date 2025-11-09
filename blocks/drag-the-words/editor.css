@@ -1,0 +1,311 @@
+/**
+ * Drag the Words Block Editor Styles
+ * Gutenberg Editor specific styling
+ */
+
+.wp-block-modular-blocks-drag-the-words-editor {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Editor Controls */
+.editor-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.editor-controls .components-button {
+    margin-left: 8px;
+}
+
+/* Editor Sections */
+.editor-section {
+    margin-bottom: 24px;
+}
+
+.editor-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e1e1e;
+    font-size: 14px;
+}
+
+.help-text {
+    font-weight: normal;
+    color: #666666;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* Rich Text Styling */
+.wp-block-modular-blocks-drag-the-words-editor .wp-block[data-type="core/heading"] h3,
+.wp-block-modular-blocks-drag-the-words-editor h3 {
+    font-size: 20px;
+    color: #1e1e1e;
+    margin: 0;
+    padding: 8px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor h3:hover,
+.wp-block-modular-blocks-drag-the-words-editor h3:focus {
+    border-color: #0073aa;
+    background: rgba(0, 115, 170, 0.05);
+}
+
+.wp-block-modular-blocks-drag-the-words-editor p {
+    margin: 0;
+    padding: 8px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    color: #666666;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor p:hover,
+.wp-block-modular-blocks-drag-the-words-editor p:focus {
+    border-color: #0073aa;
+    background: rgba(0, 115, 170, 0.05);
+}
+
+/* Text with Blanks */
+.wp-block-modular-blocks-drag-the-words-editor .components-textarea-control {
+    margin-bottom: 12px;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-textarea-control textarea {
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Word Bank Items */
+.word-bank-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.word-bank-item h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.word-bank-item .components-base-control {
+    margin-bottom: 12px;
+}
+
+.word-bank-item .components-base-control:last-child {
+    margin-bottom: 0;
+}
+
+.word-bank-item .components-button.is-destructive {
+    margin-top: 12px;
+}
+
+/* Preview Mode */
+.preview-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.drag-words-preview {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 20px;
+    background: #ffffff;
+}
+
+.drag-words-preview-container h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e1e1e;
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.drag-words-preview-container p {
+    color: #666666;
+    text-align: center;
+    margin: 0 0 20px 0;
+}
+
+.text-preview {
+    background: #f8f9fa;
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: 1.8;
+    min-height: 80px;
+}
+
+.blank-preview {
+    display: inline-block;
+    border-bottom: 2px solid #0073aa;
+    min-width: 80px;
+    height: 24px;
+    margin: 0 4px;
+    background: linear-gradient(to right, transparent 0%, rgba(0, 115, 170, 0.1) 50%, transparent 100%);
+}
+
+.word-bank-preview {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.word-bank-preview h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.words-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.word-preview {
+    display: inline-block;
+    background: #0073aa;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.word-preview.correct {
+    background: #0073aa;
+}
+
+.word-preview.distractor {
+    background: #666666;
+}
+
+/* Inspector Controls Adjustments */
+.wp-block-modular-blocks-drag-the-words-editor .components-panel__body {
+    border: none;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-base-control__help {
+    color: #666666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-drag-the-words-editor {
+        padding: 16px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .editor-controls {
+        justify-content: center;
+    }
+
+    .words-preview {
+        justify-content: center;
+    }
+}
+
+/* Focus States */
+.wp-block-modular-blocks-drag-the-words-editor .components-text-control__input:focus,
+.wp-block-modular-blocks-drag-the-words-editor .components-textarea-control__input:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+}
+
+/* Toggle Control Styling */
+.wp-block-modular-blocks-drag-the-words-editor .components-toggle-control {
+    margin-bottom: 16px;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-toggle-control .components-toggle-control__label {
+    font-weight: 500;
+}
+
+/* Button Styling */
+.wp-block-modular-blocks-drag-the-words-editor .components-button.is-secondary {
+    border-color: #0073aa;
+    color: #0073aa;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-button.is-secondary:hover {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-button.is-destructive {
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.wp-block-modular-blocks-drag-the-words-editor .components-button.is-destructive:hover {
+    background: #d63638;
+    color: #ffffff;
+}
+
+/* Empty States */
+.word-bank-item:empty::after {
+    content: "Klicken Sie 'Wortbank aktualisieren', um Wörter aus dem Text zu extrahieren";
+    display: block;
+    padding: 20px;
+    text-align: center;
+    color: #666666;
+    font-style: italic;
+    background: #f8f9fa;
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+}
+
+/* Animation for adding/removing items */
+.word-bank-item {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

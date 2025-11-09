@@ -1,0 +1,146 @@
+/* Viewer Container */
+.chemviz-viewer {
+    position: relative;
+    width: 100%;
+    margin: 20px 0;
+    max-width: 100%;
+}
+
+.chemviz-viewer__container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 75%; /* 4:3 Aspect Ratio default */
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chemviz-viewer__canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: grab;
+}
+
+.chemviz-viewer__canvas:active {
+    cursor: grabbing;
+}
+
+/* Controls */
+.chemviz-viewer__controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.chemviz-viewer__button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 16px;
+    background-color: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.chemviz-viewer__button:hover {
+    background-color: #005a87;
+}
+
+.chemviz-viewer__button:focus {
+    outline: 3px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+.chemviz-viewer__button:active {
+    background-color: #004a70;
+}
+
+/* Screen Reader Only */
+.chemviz-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Loading State */
+.chemviz-viewer__loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 16px;
+}
+
+/* Error State */
+.chemviz-viewer__error {
+    padding: 20px;
+    background-color: #f44336;
+    color: #fff;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chemviz-viewer__controls {
+        flex-direction: column;
+    }
+
+    .chemviz-viewer__button {
+        width: 100%;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .chemviz-viewer__button {
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Fullscreen Mode */
+.chemviz-viewer:-webkit-full-screen {
+    width: 100%;
+    height: 100%;
+}
+
+.chemviz-viewer:-moz-full-screen {
+    width: 100%;
+    height: 100%;
+}
+
+.chemviz-viewer:fullscreen {
+    width: 100%;
+    height: 100%;
+}
+
+.chemviz-viewer:-webkit-full-screen .chemviz-viewer__container {
+    padding-bottom: 0;
+    height: 100%;
+}
+
+.chemviz-viewer:-moz-full-screen .chemviz-viewer__container {
+    padding-bottom: 0;
+    height: 100%;
+}
+
+.chemviz-viewer:fullscreen .chemviz-viewer__container {
+    padding-bottom: 0;
+    height: 100%;
+}

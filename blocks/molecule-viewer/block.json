@@ -1,0 +1,88 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/molecule-viewer",
+    "version": "1.0.0",
+    "title": "3D Molekül-Viewer",
+    "category": "widgets",
+    "icon": "admin-site",
+    "description": "Interaktive 3D-Visualisierung von Molekülstrukturen mit 3Dmol.js",
+    "keywords": ["molecule", "3d", "chemistry", "structure", "pdb"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "sourceType": {
+            "type": "string",
+            "default": "pdb",
+            "enum": ["pdb", "url", "upload"]
+        },
+        "pdbId": {
+            "type": "string",
+            "default": "1YCR"
+        },
+        "structureUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "structureData": {
+            "type": "string",
+            "default": ""
+        },
+        "displayStyle": {
+            "type": "string",
+            "default": "stick",
+            "enum": ["stick", "sphere", "cartoon", "line", "surface"]
+        },
+        "colorScheme": {
+            "type": "string",
+            "default": "default",
+            "enum": ["default", "carbon", "spectrum", "chain", "ss"]
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "#000000"
+        },
+        "width": {
+            "type": "number",
+            "default": 800
+        },
+        "height": {
+            "type": "number",
+            "default": 600
+        },
+        "showControls": {
+            "type": "boolean",
+            "default": true
+        },
+        "enableSpin": {
+            "type": "boolean",
+            "default": false
+        },
+        "ariaLabel": {
+            "type": "string",
+            "default": "3D Molekülstruktur"
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "pdbId": "1YCR",
+            "displayStyle": "cartoon",
+            "colorScheme": "spectrum",
+            "description": "Beispiel: Protein-Struktur aus der PDB-Datenbank"
+        }
+    }
+}

@@ -1,0 +1,60 @@
+# Development files
+/.git
+/.github
+/node_modules
+/src
+
+# Build tools
+/webpack.config.js
+/package.json
+/package-lock.json
+/.npmrc
+/.nvmrc
+
+# Testing
+/tests
+/phpunit.xml
+/phpunit.xml.dist
+/.phpunit.result.cache
+
+# Editor config
+/.vscode
+/.idea
+/.editorconfig
+/.eslintrc
+/.eslintrc.js
+/.eslintignore
+/.stylelintrc
+/.stylelintrc.json
+
+# Git
+/.gitignore
+/.gitattributes
+
+# Documentation (optional - können auch inkludiert werden)
+/chemviz-entwicklungsplan.md
+/CHEMVIZ_INTEGRATION.md
+/BUILD_SUCCESS.md
+/CLAUDE.md
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Development blocks source (we only need build/)
+# Keep blocks/ folder but exclude source JS/CSS that's already in build/
+# Actually, we need blocks/ for block.json and render.php, but not the source JS

@@ -1,0 +1,657 @@
+/**
+ * Drag the Words Block Styles
+ * H5P-inspired styling for WordPress Gutenberg blocks
+ */
+
+.wp-block-modular-blocks-drag-the-words {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #1e1e1e;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Container */
+.drag-words-container {
+    max-width: 100%;
+    position: relative;
+}
+
+/* Header */
+.drag-words-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.drag-words-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e1e1e;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+}
+
+.drag-words-description {
+    font-size: 16px;
+    color: #666666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Text Area */
+.text-area {
+    background: #f8f9fa;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    min-height: 120px;
+    transition: all 0.3s ease;
+}
+
+.text-content {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #1e1e1e;
+}
+
+/* Word Blanks */
+.word-blank {
+    display: inline-block;
+    position: relative;
+    margin: 0 4px;
+    min-width: 80px;
+    min-height: 32px;
+    vertical-align: baseline;
+    transition: all 0.3s ease;
+}
+
+.blank-placeholder {
+    display: inline-block;
+    border-bottom: 2px solid #0073aa;
+    min-width: 80px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    color: #666666;
+    font-style: italic;
+    background: linear-gradient(to right, transparent 0%, rgba(0, 115, 170, 0.1) 50%, transparent 100%);
+    transition: all 0.3s ease;
+}
+
+.word-blank.filled .blank-placeholder {
+    display: none;
+}
+
+.word-blank.drag-over {
+    transform: scale(1.05);
+}
+
+.word-blank.drag-over .blank-placeholder {
+    background: rgba(0, 115, 170, 0.2);
+    border-color: #005a87;
+}
+
+/* Word Bank */
+.word-bank {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.word-bank-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e1e1e;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.word-bank-title::before {
+    content: "📝";
+    font-size: 20px;
+}
+
+.word-bank-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 60px;
+    padding: 12px;
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.word-bank-items.drag-active {
+    border-color: #0073aa;
+    background: rgba(0, 115, 170, 0.05);
+}
+
+.word-bank-items:empty::after {
+    content: "Alle Wörter wurden verwendet";
+    color: #666666;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 100%;
+}
+
+/* Draggable Words */
+.draggable-word {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0073aa;
+    color: #ffffff;
+    border: 2px solid #005a87;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.3s ease;
+    position: relative;
+    min-width: 60px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draggable-word:hover {
+    background: #005a87;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+}
+
+.draggable-word:active,
+.draggable-word.dragging {
+    cursor: grabbing;
+    transform: scale(1.05) rotate(2deg);
+    box-shadow: 0 6px 20px rgba(0, 115, 170, 0.4);
+    z-index: 1000;
+}
+
+.draggable-word:focus {
+    outline: 3px solid rgba(0, 115, 170, 0.5);
+    outline-offset: 2px;
+}
+
+.draggable-word.selected {
+    background: #d63638;
+    border-color: #b32d2e;
+    animation: pulse 1s infinite;
+}
+
+.draggable-word.distractor-word {
+    background: #666666;
+    border-color: #4a4a4a;
+}
+
+.draggable-word.distractor-word:hover {
+    background: #4a4a4a;
+}
+
+/* Word in Blank */
+.word-blank .draggable-word {
+    position: static;
+    margin: 0;
+    border-radius: 16px;
+    font-size: 16px;
+    min-width: auto;
+}
+
+.word-blank.filled {
+    min-width: auto;
+}
+
+/* Feedback States */
+.draggable-word.feedback-correct {
+    background: #00a32a !important;
+    border-color: #007a1f !important;
+    animation: bounceIn 0.6s ease;
+}
+
+.draggable-word.feedback-incorrect {
+    background: #d63638 !important;
+    border-color: #b32d2e !important;
+    animation: shakeX 0.6s ease;
+}
+
+.draggable-word.result-correct {
+    background: #00a32a !important;
+    border-color: #007a1f !important;
+}
+
+.draggable-word.result-incorrect {
+    background: #d63638 !important;
+    border-color: #b32d2e !important;
+}
+
+.word-blank.result-correct {
+    background: rgba(0, 163, 42, 0.1);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.word-blank.result-incorrect {
+    background: rgba(214, 54, 56, 0.1);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+/* Word Feedback */
+.word-feedback {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    opacity: 0;
+    animation: fadeInDown 0.3s ease forwards;
+}
+
+.word-feedback::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #1e1e1e;
+}
+
+.word-feedback.correct {
+    background: #00a32a;
+}
+
+.word-feedback.incorrect {
+    background: #d63638;
+}
+
+/* Controls */
+.drag-words-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.drag-words-button {
+    background: #0073aa;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.drag-words-button:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+.drag-words-button:active {
+    transform: translateY(0);
+}
+
+.drag-words-button:disabled {
+    background: #e0e0e0;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.drag-words-button.drag-words-retry {
+    background: #d63638;
+}
+
+.drag-words-button.drag-words-retry:hover {
+    background: #b32d2e;
+}
+
+.drag-words-button.drag-words-solution {
+    background: #00a32a;
+}
+
+.drag-words-button.drag-words-solution:hover {
+    background: #007a1f;
+}
+
+/* Results */
+.drag-words-results {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.score-display {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e1e1e;
+    margin-bottom: 12px;
+}
+
+.result-message {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    padding: 12px 20px;
+    border-radius: 6px;
+}
+
+.result-message.success {
+    background: rgba(0, 163, 42, 0.1);
+    color: #007a1f;
+    border: 2px solid rgba(0, 163, 42, 0.3);
+}
+
+.result-message.partial {
+    background: rgba(255, 193, 7, 0.1);
+    color: #b8860b;
+    border: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+.result-message.fail {
+    background: rgba(214, 54, 56, 0.1);
+    color: #b32d2e;
+    border: 2px solid rgba(214, 54, 56, 0.3);
+}
+
+.blank-feedback {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.feedback-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.feedback-item.correct {
+    background: rgba(0, 163, 42, 0.1);
+    color: #007a1f;
+}
+
+.feedback-item.incorrect {
+    background: rgba(214, 54, 56, 0.1);
+    color: #b32d2e;
+}
+
+.feedback-element {
+    font-weight: 500;
+}
+
+.feedback-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: currentColor;
+    color: white;
+}
+
+/* Instructions */
+.drag-words-instructions {
+    background: rgba(0, 115, 170, 0.05);
+    border: 1px solid rgba(0, 115, 170, 0.2);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+}
+
+.instruction-text {
+    margin: 0;
+    font-size: 14px;
+    color: #0073aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.instruction-text svg {
+    flex-shrink: 0;
+}
+
+/* Touch and Mobile Optimizations */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-drag-the-words {
+        padding: 16px;
+        margin: 16px 0;
+    }
+
+    .drag-words-title {
+        font-size: 20px;
+    }
+
+    .text-content {
+        font-size: 16px;
+    }
+
+    .draggable-word {
+        padding: 10px 16px;
+        font-size: 15px;
+        min-height: 44px; /* Touch target size */
+        border-radius: 22px;
+    }
+
+    .word-bank-items {
+        gap: 8px;
+    }
+
+    .drag-words-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .drag-words-button {
+        width: 100%;
+        max-width: 280px;
+        min-height: 48px; /* Touch target size */
+    }
+
+    .blank-feedback {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Touch Clone for Mobile Dragging */
+.touch-clone {
+    opacity: 0.8 !important;
+    transform: rotate(5deg) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* High Contrast and Accessibility */
+@media (prefers-contrast: high) {
+    .wp-block-modular-blocks-drag-the-words {
+        border-width: 2px;
+    }
+
+    .draggable-word {
+        border-width: 3px;
+    }
+
+    .blank-placeholder {
+        border-bottom-width: 3px;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .wp-block-modular-blocks-drag-the-words {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 2px solid #000;
+    }
+
+    .drag-words-controls {
+        display: none;
+    }
+
+    .drag-words-results {
+        border: 1px solid #000;
+    }
+}
+
+/* Screen Reader Only */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shakeX {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Instant Feedback Mode */
+.wp-block-modular-blocks-drag-the-words.instant-feedback .word-blank {
+    transition: all 0.3s ease;
+}
+
+.wp-block-modular-blocks-drag-the-words.instant-feedback .draggable-word {
+    transition: all 0.3s ease;
+}
+
+/* Highlight on Drop Mode */
+.wp-block-modular-blocks-drag-the-words.highlight-on-drop .word-blank.filled {
+    animation: highlightFlash 1s ease;
+}
+
+@keyframes highlightFlash {
+    0%, 100% {
+        background: transparent;
+    }
+    50% {
+        background: rgba(0, 115, 170, 0.2);
+    }
+}
+
+/* Case Sensitive Mode Visual Indicator */
+.wp-block-modular-blocks-drag-the-words.case-sensitive .text-area::before {
+    content: "⚠️ Groß-/Kleinschreibung beachten";
+    display: block;
+    font-size: 12px;
+    color: #d63638;
+    margin-bottom: 12px;
+    font-style: italic;
+}
+
+/* Focus States for Better Keyboard Navigation */
+.draggable-word:focus,
+.word-blank:focus {
+    outline: 3px solid rgba(0, 115, 170, 0.6);
+    outline-offset: 2px;
+    z-index: 10;
+}
+
+.draggable-word.selected {
+    outline: 3px solid #d63638;
+    outline-offset: 2px;
+}
+
+/* Available Drop Zone Highlighting */
+.word-blank.available {
+    background: rgba(0, 115, 170, 0.1);
+    animation: pulse 2s infinite;
+}
+
+.word-blank.available .blank-placeholder {
+    border-color: #0073aa;
+    color: #0073aa;
+}

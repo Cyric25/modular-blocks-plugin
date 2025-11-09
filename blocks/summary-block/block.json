@@ -1,0 +1,151 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/summary-block",
+    "version": "1.0.0",
+    "title": "Summary - Zusammenfassung",
+    "category": "widgets",
+    "icon": "list-view",
+    "description": "Erstellen Sie ein Summary-Quiz bei dem Nutzer drei Aussagen auswählen und in die richtige Reihenfolge bringen müssen. Inspiriert von H5P Summary.",
+    "keywords": ["summary", "zusammenfassung", "reihenfolge", "sortieren", "h5p", "quiz"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Wählen Sie die drei wichtigsten Aussagen aus und bringen Sie sie in die richtige Reihenfolge."
+        },
+        "description": {
+            "type": "string",
+            "default": "Klicken Sie auf drei Aussagen und ziehen Sie sie in die korrekte Reihenfolge."
+        },
+        "statements": {
+            "type": "array",
+            "default": [
+                {
+                    "text": "Erste wichtige Aussage zum Thema",
+                    "isCorrect": true,
+                    "correctPosition": 1,
+                    "feedback": "Das ist richtig - diese Aussage gehört an die erste Stelle."
+                },
+                {
+                    "text": "Zweite wichtige Aussage zum Thema",
+                    "isCorrect": true,
+                    "correctPosition": 2,
+                    "feedback": "Richtig - diese Aussage gehört an die zweite Stelle."
+                },
+                {
+                    "text": "Dritte wichtige Aussage zum Thema",
+                    "isCorrect": true,
+                    "correctPosition": 3,
+                    "feedback": "Perfekt - diese Aussage gehört an die dritte Stelle."
+                },
+                {
+                    "text": "Unwichtige Aussage die nicht ausgewählt werden sollte",
+                    "isCorrect": false,
+                    "correctPosition": 0,
+                    "feedback": "Diese Aussage sollte nicht ausgewählt werden."
+                },
+                {
+                    "text": "Weitere unwichtige Aussage",
+                    "isCorrect": false,
+                    "correctPosition": 0,
+                    "feedback": "Diese Aussage ist nicht relevant für die Zusammenfassung."
+                }
+            ]
+        },
+        "requiredSelections": {
+            "type": "number",
+            "default": 3
+        },
+        "showFeedback": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "allowReordering": {
+            "type": "boolean",
+            "default": true
+        },
+        "scoreForSelection": {
+            "type": "number",
+            "default": 1
+        },
+        "scoreForOrder": {
+            "type": "number",
+            "default": 1
+        },
+        "passPercentage": {
+            "type": "number",
+            "default": 80
+        },
+        "instructionText": {
+            "type": "string",
+            "default": "Wählen Sie @count Aussagen aus:"
+        },
+        "orderText": {
+            "type": "string",
+            "default": "Bringen Sie die ausgewählten Aussagen in die richtige Reihenfolge:"
+        },
+        "successText": {
+            "type": "string",
+            "default": "Ausgezeichnet! Sie haben die richtigen Aussagen in der korrekten Reihenfolge gewählt."
+        },
+        "partialSuccessText": {
+            "type": "string",
+            "default": "Gut gemacht! Einige Ihrer Auswahlen und Anordnungen sind korrekt."
+        },
+        "failText": {
+            "type": "string",
+            "default": "Versuchen Sie es noch einmal. Achten Sie sowohl auf die Auswahl als auch auf die Reihenfolge."
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Die wichtigsten Schritte beim Lernen",
+            "statements": [
+                {
+                    "text": "Information aufnehmen und verstehen",
+                    "isCorrect": true,
+                    "correctPosition": 1,
+                    "feedback": "Richtig - zuerst müssen wir Informationen aufnehmen."
+                },
+                {
+                    "text": "Das Gelernte praktisch anwenden",
+                    "isCorrect": true,
+                    "correctPosition": 2,
+                    "feedback": "Genau - Anwendung festigt das Gelernte."
+                },
+                {
+                    "text": "Regelmäßig wiederholen und reflektieren",
+                    "isCorrect": true,
+                    "correctPosition": 3,
+                    "feedback": "Perfekt - Wiederholung ist der Schlüssel zum Erfolg."
+                },
+                {
+                    "text": "Sofort alles vergessen",
+                    "isCorrect": false,
+                    "correctPosition": 0,
+                    "feedback": "Das wäre nicht hilfreich beim Lernen!"
+                }
+            ]
+        }
+    }
+}

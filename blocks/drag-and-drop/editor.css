@@ -1,0 +1,480 @@
+/**
+ * Drag and Drop Block Editor Styles
+ * Gutenberg Editor specific styling
+ */
+
+.wp-block-modular-blocks-drag-and-drop-editor {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Editor Controls */
+.editor-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.editor-controls .components-button {
+    margin-left: 8px;
+}
+
+/* Editor Sections */
+.editor-section {
+    margin-bottom: 24px;
+}
+
+.editor-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e1e1e;
+    font-size: 14px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* Tabs */
+.editor-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.editor-tabs .components-button {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px 4px 0 0;
+    color: #666666;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.editor-tabs .components-button:hover {
+    background: #f8f9fa;
+    color: #1e1e1e;
+}
+
+.editor-tabs .components-button.active {
+    background: #0073aa;
+    color: #ffffff;
+    border-bottom: 2px solid #0073aa;
+}
+
+/* Rich Text Styling */
+.wp-block-modular-blocks-drag-and-drop-editor .wp-block[data-type="core/heading"] h3,
+.wp-block-modular-blocks-drag-and-drop-editor h3 {
+    font-size: 20px;
+    color: #1e1e1e;
+    margin: 0;
+    padding: 8px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor h3:hover,
+.wp-block-modular-blocks-drag-and-drop-editor h3:focus {
+    border-color: #0073aa;
+    background: rgba(0, 115, 170, 0.05);
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor p {
+    margin: 0;
+    padding: 8px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    color: #666666;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor p:hover,
+.wp-block-modular-blocks-drag-and-drop-editor p:focus {
+    border-color: #0073aa;
+    background: rgba(0, 115, 170, 0.05);
+}
+
+/* Draggable Items */
+.draggable-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.draggable-item h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+    padding: 8px 12px;
+    background: #0073aa;
+    color: #ffffff;
+    border-radius: 4px;
+    margin: -16px -16px 16px -16px;
+}
+
+.draggable-item .components-base-control {
+    margin-bottom: 12px;
+}
+
+.draggable-item .components-base-control:last-of-type:not(.components-button) {
+    margin-bottom: 16px;
+}
+
+.draggable-item .components-button.is-destructive {
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* Drop Zone Items */
+.dropzone-item {
+    background: #f0f8ff;
+    border: 1px solid #0073aa;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.dropzone-item h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    padding: 8px 12px;
+    background: #0073aa;
+    border-radius: 4px;
+    margin: -16px -16px 16px -16px;
+}
+
+.dropzone-item .components-base-control {
+    margin-bottom: 12px;
+}
+
+.dropzone-item .components-button.is-destructive {
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* Position Controls */
+.position-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0, 115, 170, 0.05);
+    border-radius: 4px;
+}
+
+.position-controls .components-range-control {
+    margin-bottom: 0;
+}
+
+/* Color Control */
+.color-control {
+    margin-bottom: 16px;
+}
+
+.color-control label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #1e1e1e;
+}
+
+.color-control .components-color-picker {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* Preview Mode */
+.preview-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.drag-drop-preview {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 20px;
+    background: #ffffff;
+}
+
+.drag-drop-preview-container h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e1e1e;
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.drag-drop-preview-container p {
+    color: #666666;
+    text-align: center;
+    margin: 0 0 20px 0;
+}
+
+.activity-preview {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+    padding: 16px;
+    background: #f8f9fa;
+}
+
+.draggables-preview {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+}
+
+.draggables-preview h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.draggable-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.draggable-preview.draggable-small {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.draggable-preview.draggable-large {
+    padding: 10px 16px;
+    font-size: 16px;
+}
+
+.drop-area-preview {
+    position: relative;
+    background: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.background-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.7;
+}
+
+.dropzone-preview {
+    position: absolute;
+    border: 2px dashed #0073aa;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #0073aa;
+    text-align: center;
+    padding: 4px;
+}
+
+/* Media Upload Controls */
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-primary {
+    background: #0073aa;
+    border-color: #0073aa;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+/* Inspector Controls Adjustments */
+.wp-block-modular-blocks-drag-and-drop-editor .components-panel__body {
+    border: none;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-base-control__help {
+    color: #666666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-range-control__wrapper {
+    margin-bottom: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-drag-and-drop-editor {
+        padding: 16px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .editor-controls {
+        justify-content: center;
+    }
+
+    .editor-tabs {
+        justify-content: center;
+    }
+
+    .position-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .activity-preview {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* Focus States */
+.wp-block-modular-blocks-drag-and-drop-editor .components-text-control__input:focus,
+.wp-block-modular-blocks-drag-and-drop-editor .components-textarea-control__input:focus,
+.wp-block-modular-blocks-drag-and-drop-editor .components-select-control__input:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+}
+
+/* Toggle Control Styling */
+.wp-block-modular-blocks-drag-and-drop-editor .components-toggle-control {
+    margin-bottom: 16px;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-toggle-control .components-toggle-control__label {
+    font-weight: 500;
+}
+
+/* Button Styling */
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-secondary {
+    border-color: #0073aa;
+    color: #0073aa;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-secondary:hover {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-destructive {
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-button.is-destructive:hover {
+    background: #d63638;
+    color: #ffffff;
+}
+
+/* Empty States */
+.draggables-preview:empty::after {
+    content: "Keine Elemente konfiguriert";
+    display: block;
+    padding: 20px;
+    text-align: center;
+    color: #666666;
+    font-style: italic;
+    background: #f8f9fa;
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+}
+
+.drop-area-preview:empty::after {
+    content: "Keine Drop-Zonen konfiguriert";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666666;
+    font-style: italic;
+    background: #f8f9fa;
+}
+
+/* Animation for adding/removing items */
+.draggable-item,
+.dropzone-item {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Select Control Styling */
+.wp-block-modular-blocks-drag-and-drop-editor .components-select-control__input {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+/* Range Control Custom Styling */
+.wp-block-modular-blocks-drag-and-drop-editor .components-range-control__slider {
+    color: #0073aa;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-range-control__track {
+    background: #e0e0e0;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-range-control__thumb {
+    background: #0073aa;
+    border-color: #0073aa;
+}
+
+/* Panel Body Spacing */
+.wp-block-modular-blocks-drag-and-drop-editor .components-panel__body-content > * {
+    margin-bottom: 12px;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .components-panel__body-content > *:last-child {
+    margin-bottom: 0;
+}

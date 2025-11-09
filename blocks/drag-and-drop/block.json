@@ -1,0 +1,212 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/drag-and-drop",
+    "version": "1.0.0",
+    "title": "Drag and Drop",
+    "category": "media",
+    "icon": "move",
+    "description": "Erstellen Sie interaktive Drag & Drop Aufgaben mit Bildern oder Text-Elementen. Benutzer ziehen Elemente auf die richtigen Drop-Zonen. Nach H5P Drag and Drop Vorbild.",
+    "keywords": ["drag", "drop", "bilder", "zuordnung", "interactive", "h5p"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Ziehen Sie die Elemente an die richtige Stelle"
+        },
+        "description": {
+            "type": "string",
+            "default": "Ziehen Sie die Elemente von links auf die passenden Drop-Zonen rechts."
+        },
+        "backgroundImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "",
+                "id": null
+            }
+        },
+        "draggables": {
+            "type": "array",
+            "default": [
+                {
+                    "id": "drag1",
+                    "type": "text",
+                    "content": "Element 1",
+                    "image": {
+                        "url": "",
+                        "alt": "",
+                        "id": null
+                    },
+                    "correctZones": ["zone1"],
+                    "color": "#0073aa",
+                    "size": "medium"
+                },
+                {
+                    "id": "drag2",
+                    "type": "text",
+                    "content": "Element 2",
+                    "image": {
+                        "url": "",
+                        "alt": "",
+                        "id": null
+                    },
+                    "correctZones": ["zone2"],
+                    "color": "#d63638",
+                    "size": "medium"
+                }
+            ]
+        },
+        "dropZones": {
+            "type": "array",
+            "default": [
+                {
+                    "id": "zone1",
+                    "label": "Drop Zone 1",
+                    "x": 20,
+                    "y": 20,
+                    "width": 150,
+                    "height": 100,
+                    "acceptMultiple": false,
+                    "backgroundColor": "rgba(0, 115, 170, 0.1)",
+                    "borderColor": "#0073aa"
+                },
+                {
+                    "id": "zone2",
+                    "label": "Drop Zone 2",
+                    "x": 70,
+                    "y": 60,
+                    "width": 150,
+                    "height": 100,
+                    "acceptMultiple": false,
+                    "backgroundColor": "rgba(214, 54, 56, 0.1)",
+                    "borderColor": "#d63638"
+                }
+            ]
+        },
+        "showFeedback": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "instantFeedback": {
+            "type": "boolean",
+            "default": false
+        },
+        "enableSnap": {
+            "type": "boolean",
+            "default": true
+        },
+        "showScore": {
+            "type": "boolean",
+            "default": true
+        },
+        "randomizeDraggables": {
+            "type": "boolean",
+            "default": false
+        },
+        "allowPartialScore": {
+            "type": "boolean",
+            "default": true
+        },
+        "backgroundHeight": {
+            "type": "number",
+            "default": 400
+        },
+        "scoreText": {
+            "type": "string",
+            "default": "Sie haben @score von @total Punkten erreicht."
+        },
+        "successText": {
+            "type": "string",
+            "default": "Hervorragend! Alle Elemente wurden korrekt platziert."
+        },
+        "partialSuccessText": {
+            "type": "string",
+            "default": "Gut gemacht! Einige Elemente sind richtig platziert."
+        },
+        "failText": {
+            "type": "string",
+            "default": "Versuchen Sie es noch einmal. Überprüfen Sie die Platzierungen."
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Ordnen Sie die Tiere ihren Lebensräumen zu",
+            "description": "Ziehen Sie jedes Tier in seinen natürlichen Lebensraum",
+            "draggables": [
+                {
+                    "id": "fish",
+                    "type": "text",
+                    "content": "🐠 Fisch",
+                    "correctZones": ["water"],
+                    "color": "#0073aa"
+                },
+                {
+                    "id": "bird",
+                    "type": "text",
+                    "content": "🐦 Vogel",
+                    "correctZones": ["sky"],
+                    "color": "#00a32a"
+                },
+                {
+                    "id": "rabbit",
+                    "type": "text",
+                    "content": "🐰 Hase",
+                    "correctZones": ["land"],
+                    "color": "#d63638"
+                }
+            ],
+            "dropZones": [
+                {
+                    "id": "water",
+                    "label": "Wasser",
+                    "x": 10,
+                    "y": 60,
+                    "width": 120,
+                    "height": 80,
+                    "backgroundColor": "rgba(0, 115, 170, 0.2)",
+                    "borderColor": "#0073aa"
+                },
+                {
+                    "id": "sky",
+                    "label": "Himmel",
+                    "x": 40,
+                    "y": 10,
+                    "width": 120,
+                    "height": 80,
+                    "backgroundColor": "rgba(0, 163, 42, 0.2)",
+                    "borderColor": "#00a32a"
+                },
+                {
+                    "id": "land",
+                    "label": "Land",
+                    "x": 70,
+                    "y": 40,
+                    "width": 120,
+                    "height": 80,
+                    "backgroundColor": "rgba(214, 54, 56, 0.2)",
+                    "borderColor": "#d63638"
+                }
+            ]
+        }
+    }
+}

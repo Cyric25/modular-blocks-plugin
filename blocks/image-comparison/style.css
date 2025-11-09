@@ -1,0 +1,325 @@
+/**
+ * Frontend styles for Image Comparison Block
+ */
+
+.wp-block-modular-blocks-image-comparison {
+    --starting-position: 50%;
+    --comparison-height: 400px;
+    --slider-width: 4px;
+    --slider-color: #0073aa;
+    --slider-handle-size: 48px;
+    --slider-button-size: 32px;
+    --label-bg: rgba(0, 0, 0, 0.7);
+    --label-color: #ffffff;
+    --transition-duration: 0.3s;
+
+    margin: 1.5em 0;
+    position: relative;
+    user-select: none;
+}
+
+.image-comparison-container {
+    position: relative;
+    width: 100%;
+    height: var(--comparison-height);
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: ew-resize;
+}
+
+.orientation-vertical .image-comparison-container {
+    cursor: ns-resize;
+}
+
+/* Image containers */
+.image-comparison-before,
+.image-comparison-after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.image-comparison-before img,
+.image-comparison-after img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* After image clipping */
+.image-comparison-after {
+    clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
+    transition: clip-path var(--transition-duration) ease;
+}
+
+.orientation-vertical .image-comparison-after {
+    clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
+}
+
+/* Slider */
+.image-comparison-slider {
+    position: absolute;
+    top: 0;
+    left: var(--starting-position);
+    width: var(--slider-width);
+    height: 100%;
+    transform: translateX(-50%);
+    z-index: 10;
+    transition: left var(--transition-duration) ease;
+}
+
+.orientation-vertical .image-comparison-slider {
+    top: var(--starting-position);
+    left: 0;
+    width: 100%;
+    height: var(--slider-width);
+    transform: translateY(-50%);
+    transition: top var(--transition-duration) ease;
+}
+
+.slider-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--slider-width);
+    height: 100%;
+    background-color: var(--slider-color);
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(0, 115, 170, 0.5);
+}
+
+.orientation-vertical .slider-line {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: var(--slider-width);
+    transform: translateY(-50%);
+}
+
+/* Slider handle */
+.slider-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--slider-handle-size);
+    height: var(--slider-handle-size);
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+
+.slider-button {
+    width: var(--slider-button-size);
+    height: var(--slider-button-size);
+    background-color: var(--slider-color);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: ew-resize;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    margin: 0 auto;
+}
+
+.orientation-vertical .slider-button {
+    cursor: ns-resize;
+}
+
+.slider-button:hover {
+    background-color: #005177;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.slider-button svg {
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+.slider-button svg:first-child {
+    margin-right: -2px;
+}
+
+.slider-button svg:last-child {
+    margin-left: -2px;
+}
+
+.orientation-vertical .slider-button svg {
+    transform: rotate(90deg);
+}
+
+/* Labels */
+.image-comparison-label {
+    position: absolute;
+    padding: 8px 12px;
+    background-color: var(--label-bg);
+    color: var(--label-color);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+    transition: opacity var(--transition-duration) ease;
+}
+
+.label-before {
+    top: 16px;
+    left: 16px;
+}
+
+.label-after {
+    top: 16px;
+    right: 16px;
+}
+
+.orientation-vertical .label-before {
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.orientation-vertical .label-after {
+    bottom: 16px;
+    top: auto;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Hover animation */
+.has-hover-animation .image-comparison-container:hover .image-comparison-after {
+    animation: comparison-reveal 2s ease-in-out infinite;
+}
+
+@keyframes comparison-reveal {
+    0% { clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%); }
+    25% { clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 10% 100%); }
+    75% { clip-path: polygon(90% 0%, 100% 0%, 100% 100%, 90% 100%); }
+    100% { clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%); }
+}
+
+.orientation-vertical.has-hover-animation .image-comparison-container:hover .image-comparison-after {
+    animation: comparison-reveal-vertical 2s ease-in-out infinite;
+}
+
+@keyframes comparison-reveal-vertical {
+    0% { clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%); }
+    25% { clip-path: polygon(0% 10%, 100% 10%, 100% 100%, 0% 100%); }
+    75% { clip-path: polygon(0% 90%, 100% 90%, 100% 100%, 0% 100%); }
+    100% { clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%); }
+}
+
+/* Active state */
+.image-comparison-container.is-dragging {
+    cursor: ew-resize !important;
+}
+
+.orientation-vertical .image-comparison-container.is-dragging {
+    cursor: ns-resize !important;
+}
+
+.image-comparison-container.is-dragging .has-hover-animation .image-comparison-after {
+    animation: none !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-image-comparison {
+        --slider-handle-size: 40px;
+        --slider-button-size: 28px;
+        --comparison-height: 300px;
+    }
+
+    .image-comparison-label {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .label-before,
+    .label-after {
+        top: 12px;
+    }
+
+    .label-before {
+        left: 12px;
+    }
+
+    .label-after {
+        right: 12px;
+    }
+
+    .orientation-vertical .label-after {
+        bottom: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .wp-block-modular-blocks-image-comparison {
+        --comparison-height: 250px;
+        --slider-handle-size: 36px;
+        --slider-button-size: 24px;
+    }
+
+    .slider-button svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Focus styles for accessibility */
+.slider-button:focus {
+    outline: 2px solid var(--slider-color);
+    outline-offset: 2px;
+}
+
+/* Loading placeholder */
+.image-comparison-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--comparison-height);
+    background-color: #f6f7f7;
+    border: 2px dashed #c3c4c7;
+    border-radius: 8px;
+    color: #646970;
+    font-style: italic;
+}
+
+/* Alignment support */
+.wp-block-modular-blocks-image-comparison.alignwide {
+    max-width: none;
+    width: 100%;
+}
+
+.wp-block-modular-blocks-image-comparison.alignfull {
+    max-width: none;
+    width: 100vw;
+    margin-left: calc(-100vw / 2 + 100% / 2);
+    margin-right: calc(-100vw / 2 + 100% / 2);
+}
+
+/* Print styles */
+@media print {
+    .wp-block-modular-blocks-image-comparison {
+        break-inside: avoid;
+    }
+
+    .image-comparison-after {
+        clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+    }
+
+    .image-comparison-slider,
+    .has-hover-animation .image-comparison-after {
+        display: none;
+        animation: none;
+    }
+}

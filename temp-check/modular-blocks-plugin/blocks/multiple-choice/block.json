@@ -1,0 +1,133 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/multiple-choice",
+    "version": "1.0.0",
+    "title": "Multiple Choice Quiz",
+    "category": "widgets",
+    "icon": "yes-alt",
+    "description": "Erstellen Sie interaktive Multiple Choice Fragen mit sofortiger Bewertung und Feedback. Inspiriert von H5P Multiple Choice.",
+    "keywords": ["quiz", "multiple choice", "frage", "antwort", "h5p", "test"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "question": {
+            "type": "string",
+            "default": "Was ist die richtige Antwort?"
+        },
+        "questionImage": {
+            "type": "object",
+            "default": {
+                "url": "",
+                "alt": "",
+                "id": null
+            }
+        },
+        "answers": {
+            "type": "array",
+            "default": [
+                {
+                    "text": "Antwort A",
+                    "isCorrect": true,
+                    "feedback": "Das ist richtig! Gut gemacht.",
+                    "tip": ""
+                },
+                {
+                    "text": "Antwort B",
+                    "isCorrect": false,
+                    "feedback": "Das ist leider nicht korrekt.",
+                    "tip": ""
+                },
+                {
+                    "text": "Antwort C",
+                    "isCorrect": false,
+                    "feedback": "Das ist leider nicht korrekt.",
+                    "tip": ""
+                }
+            ]
+        },
+        "multipleCorrect": {
+            "type": "boolean",
+            "default": false
+        },
+        "randomizeAnswers": {
+            "type": "boolean",
+            "default": false
+        },
+        "showFeedback": {
+            "type": "boolean",
+            "default": true
+        },
+        "showTips": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "confirmCheck": {
+            "type": "boolean",
+            "default": false
+        },
+        "confirmRetry": {
+            "type": "boolean",
+            "default": false
+        },
+        "passPercentage": {
+            "type": "number",
+            "default": 100
+        },
+        "scoreText": {
+            "type": "string",
+            "default": "Sie haben @score von @total Punkten erreicht."
+        },
+        "successText": {
+            "type": "string",
+            "default": "Hervorragend! Sie haben alle Fragen richtig beantwortet."
+        },
+        "failText": {
+            "type": "string",
+            "default": "Leider nicht bestanden. Versuchen Sie es nochmal."
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "question": "Welche Farbe entsteht beim Mischen von Rot und Blau?",
+            "answers": [
+                {
+                    "text": "Violett",
+                    "isCorrect": true,
+                    "feedback": "Richtig! Rot und Blau ergeben Violett.",
+                    "tip": "Denken Sie an die Grundfarben"
+                },
+                {
+                    "text": "Grün",
+                    "isCorrect": false,
+                    "feedback": "Nein, Grün entsteht aus Blau und Gelb.",
+                    "tip": ""
+                },
+                {
+                    "text": "Orange",
+                    "isCorrect": false,
+                    "feedback": "Nein, Orange entsteht aus Rot und Gelb.",
+                    "tip": ""
+                }
+            ]
+        }
+    }
+}

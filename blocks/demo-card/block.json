@@ -1,0 +1,56 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/demo-card",
+    "version": "1.0.0",
+    "title": "Demo Karte",
+    "category": "design",
+    "icon": "id-alt",
+    "description": "Ein Demo-Block der eine einfache Karte mit Titel, Text und Button anzeigt.",
+    "keywords": ["card", "demo", "beispiel"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Demo Titel"
+        },
+        "content": {
+            "type": "string",
+            "default": "Dies ist ein Demo-Text für die Karte. Hier können Sie beliebigen Inhalt einfügen."
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Mehr erfahren"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": "#"
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "#ffffff"
+        },
+        "textColor": {
+            "type": "string",
+            "default": "#333333"
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Beispiel Karte",
+            "content": "Dies ist eine Beispiel-Karte um zu zeigen, wie der Block aussieht.",
+            "buttonText": "Jetzt entdecken",
+            "buttonUrl": "https://example.com"
+        }
+    }
+}

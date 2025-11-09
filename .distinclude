@@ -1,0 +1,6 @@
+blocks/*/block.json
+blocks/*/render.php
+blocks/*/view.js
+assets/
+assets/js/vendor/
+assets/structures/
