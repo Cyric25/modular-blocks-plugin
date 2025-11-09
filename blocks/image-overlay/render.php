@@ -224,13 +224,3 @@ $overlay_data = [
 
     </div>
 </div>
-
-<script>
-// Initialize image overlay functionality when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const overlayBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (overlayBlock && typeof window.initImageOverlay === 'function') {
-        window.initImageOverlay(overlayBlock);
-    }
-});
-</script>
