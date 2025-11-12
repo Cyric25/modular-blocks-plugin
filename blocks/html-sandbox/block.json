@@ -1,0 +1,64 @@
+{
+  "apiVersion": 3,
+  "name": "modular-blocks/html-sandbox",
+  "title": "HTML Sandbox",
+  "category": "widgets",
+  "icon": "code-standards",
+  "description": "Rendert HTML-Code isoliert vom Rest der Seite (iframe oder Shadow DOM)",
+  "keywords": ["html", "code", "iframe", "sandbox", "isoliert"],
+  "textdomain": "modular-blocks-plugin",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+  "style": "file:./style.css",
+  "viewScript": "file:./view.js",
+  "attributes": {
+    "htmlCode": {
+      "type": "string",
+      "default": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n</head>\n<body>\n  <h1>Hallo Welt!</h1>\n  <p>Dies ist isolierter HTML-Code.</p>\n</body>\n</html>"
+    },
+    "cssCode": {
+      "type": "string",
+      "default": "body {\n  font-family: Arial, sans-serif;\n  padding: 20px;\n  background: #f5f5f5;\n}\n\nh1 {\n  color: #333;\n}"
+    },
+    "jsCode": {
+      "type": "string",
+      "default": "// Ihr JavaScript-Code hier\nconsole.log('HTML Sandbox geladen');"
+    },
+    "externalScripts": {
+      "type": "string",
+      "default": ""
+    },
+    "isolationMode": {
+      "type": "string",
+      "default": "iframe",
+      "enum": ["iframe", "shadow-dom"]
+    },
+    "sandboxFlags": {
+      "type": "object",
+      "default": {
+        "allowScripts": true,
+        "allowForms": false,
+        "allowModals": false,
+        "allowPointerLock": false,
+        "allowPopups": false,
+        "allowSameOrigin": false
+      }
+    },
+    "autoHeight": {
+      "type": "boolean",
+      "default": true
+    },
+    "minHeight": {
+      "type": "number",
+      "default": 200
+    },
+    "maxHeight": {
+      "type": "number",
+      "default": 800
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  }
+}

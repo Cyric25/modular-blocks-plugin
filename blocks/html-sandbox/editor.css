@@ -1,0 +1,147 @@
+/**
+ * HTML Sandbox Block - Editor Styles
+ */
+
+.html-sandbox-editor {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fff;
+	padding: 0;
+	margin: 20px 0;
+}
+
+/* Tab Controls */
+.html-sandbox-controls {
+	background: #f5f5f5;
+	border-bottom: 1px solid #ddd;
+	padding: 16px;
+}
+
+.html-sandbox-tabs {
+	margin: 0;
+}
+
+.html-sandbox-tabs .components-tab-panel__tabs {
+	display: flex;
+	gap: 8px;
+	border-bottom: none;
+	margin-bottom: 16px;
+}
+
+.html-sandbox-tabs .components-tab-panel__tabs-item {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 8px 16px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.html-sandbox-tabs .components-tab-panel__tabs-item:hover {
+	background: #f9f9f9;
+	border-color: #999;
+}
+
+.html-sandbox-tabs .components-tab-panel__tabs-item.is-active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+.html-sandbox-tab-content {
+	background: #fff;
+	padding: 16px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+/* Code Editor Textareas */
+.html-sandbox-tab-content .components-textarea-control {
+	margin-bottom: 0;
+}
+
+.html-sandbox-tab-content .components-textarea-control__input.code-editor {
+	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+	font-size: 13px;
+	line-height: 1.6;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	border: 1px solid #333;
+	border-radius: 4px;
+	padding: 12px;
+	min-height: 200px;
+	resize: vertical;
+}
+
+.html-sandbox-tab-content .components-textarea-control__input.code-editor:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Preview Area */
+.html-sandbox-preview {
+	padding: 16px;
+	background: #fafafa;
+	border-top: 1px solid #ddd;
+}
+
+.html-sandbox-preview .preview-label {
+	font-weight: 600;
+	font-size: 12px;
+	text-transform: uppercase;
+	color: #666;
+	margin-bottom: 12px;
+	letter-spacing: 0.5px;
+}
+
+.html-sandbox-preview iframe {
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-dom-preview-note {
+	padding: 12px;
+}
+
+.shadow-dom-preview-note .components-notice {
+	margin: 0;
+}
+
+/* Inspector Controls */
+.html-sandbox-editor .components-panel__body-title {
+	font-weight: 600;
+}
+
+.html-sandbox-editor .components-toggle-control {
+	margin-bottom: 16px;
+}
+
+.html-sandbox-editor .components-range-control {
+	margin-bottom: 20px;
+}
+
+.html-sandbox-editor .components-select-control {
+	margin-bottom: 16px;
+}
+
+/* Notices in sidebar */
+.html-sandbox-editor .components-notice {
+	margin: 0 0 16px 0;
+	font-size: 13px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+	.html-sandbox-tabs .components-tab-panel__tabs {
+		flex-wrap: wrap;
+	}
+
+	.html-sandbox-tabs .components-tab-panel__tabs-item {
+		flex: 1 1 auto;
+		min-width: 100px;
+	}
+
+	.html-sandbox-tab-content .components-textarea-control__input.code-editor {
+		font-size: 12px;
+	}
+}

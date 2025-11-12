@@ -34,6 +34,26 @@
     border-left: 4px solid #dcdcde;
 }
 
+/* Admin Actions */
+.admin-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.admin-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
 /* Block Header */
 .block-header {
     display: flex;
@@ -46,6 +66,31 @@
     margin: 0;
     font-size: 16px;
     color: #1d2327;
+    flex: 1;
+}
+
+/* Block Actions */
+.block-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delete-block {
+    color: #d63638;
+    padding: 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.delete-block:hover {
+    color: #a00;
+}
+
+.delete-block .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Toggle Switch */
@@ -192,6 +237,166 @@ input:checked + .slider:before {
     pointer-events: none;
 }
 
+/* Modals */
+.modular-blocks-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display: none;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    margin: 50px auto;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #646970;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #d63638;
+}
+
+.modal-close .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid #dcdcde;
+    background: #f9f9f9;
+}
+
+/* Form Fields */
+.form-field {
+    margin-bottom: 20px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.form-field input[type="text"],
+.form-field textarea,
+.form-field select,
+.form-field input[type="file"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-field input[type="text"]:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.form-field .description {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #646970;
+}
+
+.form-field .description a {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.form-field .description a:hover {
+    text-decoration: underline;
+}
+
+.upload-info {
+    background: #f9f9f9;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.upload-info p {
+    margin: 0 0 10px 0;
+}
+
+.upload-info ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.upload-info li {
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #646970;
+}
+
+.info-item code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-family: Consolas, Monaco, monospace;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .blocks-container {
@@ -212,5 +417,20 @@ input:checked + .slider:before {
         flex-direction: column;
         align-items: flex-start;
         gap: 5px;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 20px auto;
+        max-height: 95vh;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+
+    .admin-actions .button {
+        width: 100%;
+        justify-content: center;
     }
 }

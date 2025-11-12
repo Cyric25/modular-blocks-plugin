@@ -30,14 +30,25 @@ console.log('Copying plugin files...');
 // Copy main PHP file
 fs.copyFileSync('modular-blocks-plugin.php', path.join(TEMP_DIR, 'modular-blocks-plugin.php'));
 
-// Copy directories
-const dirsToopy = ['includes', 'admin', 'assets', 'build'];
-dirsToopy.forEach(dir => {
+// Copy directories (excluding build/ which will be merged into blocks/)
+const dirsToCopy = ['includes', 'admin', 'assets'];
+dirsToCopy.forEach(dir => {
     if (fs.existsSync(dir)) {
         copyDirectory(dir, path.join(TEMP_DIR, dir));
         console.log(`  ✓ Copied ${dir}/`);
     }
 });
+
+// Copy compiled assets from build/assets/
+if (fs.existsSync('build/assets')) {
+    console.log('Copying compiled assets from build/...');
+    const buildAssets = path.join('build', 'assets');
+    const destAssets = path.join(TEMP_DIR, 'assets');
+
+    // Merge build/assets/ into assets/
+    mergeDirectory(buildAssets, destAssets);
+    console.log('  ✓ Merged build/assets/ into assets/');
+}
 
 // Copy blocks directory (selective)
 console.log('Copying blocks directory...');
@@ -54,14 +65,25 @@ blocks.forEach(blockName => {
         const destPath = path.join(TEMP_DIR, 'blocks', blockName);
         fs.mkdirSync(destPath);
 
-        // Copy only block.json and render.php (view.js is in build/)
-        const filesToCopy = ['block.json', 'render.php'];
-        filesToCopy.forEach(file => {
+        // Copy block.json and render.php from source
+        const sourceFiles = ['block.json', 'render.php'];
+        sourceFiles.forEach(file => {
             const srcFile = path.join(blockPath, file);
             if (fs.existsSync(srcFile)) {
                 fs.copyFileSync(srcFile, path.join(destPath, file));
             }
         });
+
+        // Copy compiled files from build/blocks/
+        const buildBlockPath = path.join('build', 'blocks', blockName);
+        if (fs.existsSync(buildBlockPath)) {
+            const buildFiles = fs.readdirSync(buildBlockPath);
+            buildFiles.forEach(file => {
+                const srcFile = path.join(buildBlockPath, file);
+                const destFile = path.join(destPath, file);
+                fs.copyFileSync(srcFile, destFile);
+            });
+        }
 
         console.log(`  ✓ Copied ${blockName}`);
     }
@@ -155,7 +177,7 @@ setTimeout(() => {
     } else if (!zipCreated) {
         console.error('\n❌ Failed to create ZIP file');
     }
-}, 1000);
+}, 3000);
 
 // Helper function to copy directory recursively
 function copyDirectory(src, dest) {
@@ -168,6 +190,26 @@ function copyDirectory(src, dest) {
 
         if (entry.isDirectory()) {
             copyDirectory(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
+// Helper function to merge directory (overwrites existing files)
+function mergeDirectory(src, dest) {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (let entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            mergeDirectory(srcPath, destPath);
         } else {
             fs.copyFileSync(srcPath, destPath);
         }

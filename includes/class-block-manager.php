@@ -106,120 +106,56 @@ class ModularBlocks_Block_Manager {
         }
 
         try {
-            $block_data = json_decode(file_get_contents($block_json_path), true);
-
-            if (!$block_data) {
-                error_log("Modular Blocks Plugin: Invalid block.json in {$block_name}");
-                return;
-            }
-
-            error_log("Modular Blocks Plugin: Block data loaded for {$block_name}: " . json_encode(array_keys($block_data)));
-
-            // Set up render callback for dynamic blocks
-            $render_file = $block_dir . '/render.php';
-            if (file_exists($render_file)) {
-                error_log("Modular Blocks Plugin: Setting up render callback for {$block_name}");
-                $block_data['render_callback'] = function($attributes, $content, $block) use ($render_file, $block_name) {
-                    return $this->render_dynamic_block($render_file, $attributes, $content, $block, $block_name);
-                };
-            } else {
-                error_log("Modular Blocks Plugin: No render.php found for {$block_name}");
-            }
-
-            // Override asset paths to use build versions by registering them separately
+            // For production (installed plugin): All compiled files are in blocks/* directory
+            // For development: Check if build directory exists
             $build_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'build/blocks/' . basename($block_dir);
-            $build_url = MODULAR_BLOCKS_PLUGIN_URL . 'build/blocks/' . basename($block_dir);
-            $block_slug = basename($block_dir);
+            $use_build_dir = is_dir($build_dir);
 
-            // Register viewScript from build if it exists
-            if (isset($block_data['viewScript']) && strpos($block_data['viewScript'], 'file:') === 0) {
-                $view_file = str_replace('file:./', '', $block_data['viewScript']);
-                $build_view = $build_dir . '/' . $view_file;
+            if ($use_build_dir) {
+                error_log("Modular Blocks Plugin: Using build directory for {$block_name}");
+                // Development mode - read block.json and override with build paths
+                $block_data = json_decode(file_get_contents($block_json_path), true);
 
-                if (file_exists($build_view)) {
-                    $handle = 'modular-blocks-' . $block_slug . '-view-script';
-                    $asset_file = str_replace('.js', '.asset.php', $build_view);
-                    $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_view)];
-
-                    wp_register_script(
-                        $handle,
-                        $build_url . '/' . $view_file,
-                        $asset_data['dependencies'],
-                        $asset_data['version'],
-                        true
-                    );
-
-                    $block_data['viewScript'] = $handle;
-                    error_log("Modular Blocks Plugin: Registered viewScript handle '{$handle}' for {$block_name}");
+                if (!$block_data) {
+                    error_log("Modular Blocks Plugin: Invalid block.json in {$block_name}");
+                    return;
                 }
-            }
 
-            // Register editorScript from build if it exists
-            if (isset($block_data['editorScript']) && strpos($block_data['editorScript'], 'file:') === 0) {
-                $editor_file = str_replace('file:./', '', $block_data['editorScript']);
-                $build_editor = $build_dir . '/' . $editor_file;
-
-                if (file_exists($build_editor)) {
-                    $handle = 'modular-blocks-' . $block_slug . '-editor-script';
-                    $asset_file = str_replace('.js', '.asset.php', $build_editor);
-                    $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_editor)];
-
-                    wp_register_script(
-                        $handle,
-                        $build_url . '/' . $editor_file,
-                        $asset_data['dependencies'],
-                        $asset_data['version'],
-                        true
-                    );
-
-                    $block_data['editorScript'] = $handle;
-                    error_log("Modular Blocks Plugin: Registered editorScript handle '{$handle}' for {$block_name}");
+                // Set up render callback for dynamic blocks
+                $render_file = $block_dir . '/render.php';
+                if (file_exists($render_file)) {
+                    $block_data['render_callback'] = function($attributes, $content, $block) use ($render_file, $block_name) {
+                        return $this->render_dynamic_block($render_file, $attributes, $content, $block, $block_name);
+                    };
                 }
-            }
 
-            // Register style from build if it exists
-            if (isset($block_data['style']) && strpos($block_data['style'], 'file:') === 0) {
-                // Webpack compiles style.css to style-index.css
-                $build_style = $build_dir . '/style-index.css';
+                // Override asset paths with build versions
+                $build_url = MODULAR_BLOCKS_PLUGIN_URL . 'build/blocks/' . basename($block_dir);
+                $block_slug = basename($block_dir);
 
-                if (file_exists($build_style)) {
-                    $handle = 'modular-blocks-' . $block_slug . '-style';
+                // Register scripts and styles from build directory
+                $this->register_block_assets_from_build($block_data, $build_dir, $build_url, $block_slug);
 
-                    wp_register_style(
-                        $handle,
-                        $build_url . '/style-index.css',
-                        [],
-                        filemtime($build_style)
-                    );
+                // Register with modified data
+                $result = register_block_type($block_dir, $block_data);
 
-                    $block_data['style'] = $handle;
-                    error_log("Modular Blocks Plugin: Registered style handle '{$handle}' for {$block_name}");
+            } else {
+                error_log("Modular Blocks Plugin: Using production mode for {$block_name} (no build dir)");
+                // Production mode - WordPress will automatically load assets from block directory
+                // Just need to add render callback if render.php exists
+                $args = [];
+
+                $render_file = $block_dir . '/render.php';
+                if (file_exists($render_file)) {
+                    error_log("Modular Blocks Plugin: Setting up render callback for {$block_name}");
+                    $args['render_callback'] = function($attributes, $content, $block) use ($render_file, $block_name) {
+                        return $this->render_dynamic_block($render_file, $attributes, $content, $block, $block_name);
+                    };
                 }
+
+                // Register block - WordPress will automatically load block.json and assets
+                $result = register_block_type($block_dir, $args);
             }
-
-            // Register editorStyle from build if it exists
-            if (isset($block_data['editorStyle']) && strpos($block_data['editorStyle'], 'file:') === 0) {
-                $editor_style_file = str_replace('file:./', '', $block_data['editorStyle']);
-                // Editor styles are compiled to index.css in build
-                $build_editor_style = $build_dir . '/index.css';
-
-                if (file_exists($build_editor_style)) {
-                    $handle = 'modular-blocks-' . $block_slug . '-editor-style';
-
-                    wp_register_style(
-                        $handle,
-                        $build_url . '/index.css',
-                        [],
-                        filemtime($build_editor_style)
-                    );
-
-                    $block_data['editorStyle'] = $handle;
-                    error_log("Modular Blocks Plugin: Registered editorStyle handle '{$handle}' for {$block_name}");
-                }
-            }
-
-            // Register the block
-            $result = register_block_type($block_dir, $block_data);
 
             if ($result) {
                 error_log("Modular Blocks Plugin: Successfully registered block: {$block_name}");
@@ -229,6 +165,93 @@ class ModularBlocks_Block_Manager {
 
         } catch (Exception $e) {
             error_log("Modular Blocks Plugin: Error registering block {$block_name}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Register block assets from build directory (development mode)
+     */
+    private function register_block_assets_from_build(&$block_data, $build_dir, $build_url, $block_slug) {
+        // Register viewScript from build if it exists
+        if (isset($block_data['viewScript']) && strpos($block_data['viewScript'], 'file:') === 0) {
+            $view_file = str_replace('file:./', '', $block_data['viewScript']);
+            $build_view = $build_dir . '/' . $view_file;
+
+            if (file_exists($build_view)) {
+                $handle = 'modular-blocks-' . $block_slug . '-view-script';
+                $asset_file = str_replace('.js', '.asset.php', $build_view);
+                $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_view)];
+
+                wp_register_script(
+                    $handle,
+                    $build_url . '/' . $view_file,
+                    $asset_data['dependencies'],
+                    $asset_data['version'],
+                    true
+                );
+
+                $block_data['viewScript'] = $handle;
+            }
+        }
+
+        // Register editorScript from build if it exists
+        if (isset($block_data['editorScript']) && strpos($block_data['editorScript'], 'file:') === 0) {
+            $editor_file = str_replace('file:./', '', $block_data['editorScript']);
+            $build_editor = $build_dir . '/' . $editor_file;
+
+            if (file_exists($build_editor)) {
+                $handle = 'modular-blocks-' . $block_slug . '-editor-script';
+                $asset_file = str_replace('.js', '.asset.php', $build_editor);
+                $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_editor)];
+
+                wp_register_script(
+                    $handle,
+                    $build_url . '/' . $editor_file,
+                    $asset_data['dependencies'],
+                    $asset_data['version'],
+                    true
+                );
+
+                $block_data['editorScript'] = $handle;
+            }
+        }
+
+        // Register style from build if it exists
+        if (isset($block_data['style']) && strpos($block_data['style'], 'file:') === 0) {
+            // Webpack compiles style.css to style-index.css
+            $build_style = $build_dir . '/style-index.css';
+
+            if (file_exists($build_style)) {
+                $handle = 'modular-blocks-' . $block_slug . '-style';
+
+                wp_register_style(
+                    $handle,
+                    $build_url . '/style-index.css',
+                    [],
+                    filemtime($build_style)
+                );
+
+                $block_data['style'] = $handle;
+            }
+        }
+
+        // Register editorStyle from build if it exists
+        if (isset($block_data['editorStyle']) && strpos($block_data['editorStyle'], 'file:') === 0) {
+            // Editor styles are compiled to index.css in build
+            $build_editor_style = $build_dir . '/index.css';
+
+            if (file_exists($build_editor_style)) {
+                $handle = 'modular-blocks-' . $block_slug . '-editor-style';
+
+                wp_register_style(
+                    $handle,
+                    $build_url . '/index.css',
+                    [],
+                    filemtime($build_editor_style)
+                );
+
+                $block_data['editorStyle'] = $handle;
+            }
         }
     }
 
