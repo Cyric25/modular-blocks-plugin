@@ -4,12 +4,34 @@ Ein modulares WordPress Plugin, das dynamisch Gutenberg Blöcke aus Ordnern regi
 
 ## 🚀 Features
 
+### Block-Verwaltung
 - **Dynamische Block-Registrierung**: Automatische Erkennung und Registrierung von Blöcken aus dem `/blocks/` Verzeichnis
 - **Modulare Architektur**: Jeder Block lebt in seinem eigenen Ordner ohne Abhängigkeiten
-- **Admin-Interface**: Einfache Verwaltung zum Aktivieren/Deaktivieren einzelner Blöcke
+- **Erweiterte Admin-Oberfläche**:
+  - ✨ **Neue Blöcke direkt über UI erstellen** mit Template-Generator
+  - 📦 **ZIP-Upload** für fertige Blöcke
+  - 🗑️ **Blöcke löschen** mit Sicherheitsabfrage
+  - 🔄 Aktivieren/Deaktivieren einzelner Blöcke
+- **Plug-and-Play**: Neue Blöcke einfach durch Hinzufügen von Ordnern installieren
+
+### Enthaltene Blöcke
+- **HTML Sandbox**: Isolierte HTML/CSS/JavaScript-Ausführung (iframe oder Shadow DOM) - **NEU!**
+- **Demo Card**: Beispiel-Block mit Titel, Text, Button und Farbauswahl
+- **Image Comparison**: Before/After-Bilder mit interaktivem Slider
+- **Multiple Choice**: Quiz-Block mit Feedback
+- **Image Overlay**: Bilder mit klickbaren Hotspots
+- **Point of Interest**: Interaktive Markierungen auf Bildern
+- **Summary Block**: Aufklappbare Inhaltsbereiche
+- **Statement Connector**: Drag-and-Drop-Zuordnungsübung
+- **Drag the Words**: Lückentext mit ziehbaren Wörtern
+- **Drag and Drop**: Allgemeiner Drag-and-Drop-Block
+- **Molecule Viewer**: 3D-Moleküldarstellung mit 3Dmol.js (ChemViz)
+- **Chart Block**: Wissenschaftliche Diagramme mit Plotly.js (ChemViz)
+
+### Technologie
 - **PHP 8+ Kompatibel**: Moderne PHP-Entwicklung mit aktuellen Standards
 - **WordPress 6.0+ Unterstützung**: Nutzt die neuesten WordPress Block-APIs
-- **Plug-and-Play**: Neue Blöcke einfach durch Hinzufügen von Ordnern installieren
+- **Development/Production Modus**: Automatische Erkennung der Umgebung
 
 ## 📁 Plugin-Struktur
 
@@ -65,17 +87,35 @@ Nach der Aktivierung finden Sie die Plugin-Einstellungen unter:
 **Einstellungen → Modulare Blöcke**
 
 Hier können Sie:
+- **Neue Blöcke erstellen** über das Modal-Formular
+- **ZIP-Dateien hochladen** mit fertigen Blöcken
 - Alle verfügbaren Blöcke anzeigen
 - Einzelne Blöcke aktivieren/deaktivieren
+- Blöcke löschen (mit Sicherheitsabfrage)
 - Block-Informationen einsehen
 
 ### Block-Entwicklung
 
+> 📖 **Ausführliche Dokumentation**: Siehe [BLOCK-DEVELOPMENT.md](./BLOCK-DEVELOPMENT.md) für eine vollständige Anleitung zur Block-Entwicklung mit Beispielen, Best Practices und Troubleshooting.
+
 #### Neuen Block erstellen
+
+**Option 1: Über Admin-UI (Empfohlen)**
+
+1. WordPress Admin → **Einstellungen → Modulare Blöcke**
+2. Klick auf **"Neuer Block"**
+3. Formular ausfüllen (Slug, Titel, Beschreibung, etc.)
+4. **"Block erstellen"** klicken
+5. Automatisch generierte Dateien werden erstellt
+6. `npm run build` ausführen
+7. Block ist sofort verfügbar!
+
+**Option 2: Manuell**
 
 1. Erstellen Sie einen neuen Ordner in `/blocks/`
 2. Fügen Sie mindestens eine `block.json` Datei hinzu
-3. Der Block wird automatisch erkannt und im Admin-Interface angezeigt
+3. `npm run build` ausführen
+4. Der Block wird automatisch erkannt und im Admin-Interface angezeigt
 
 #### Block-Struktur (Minimal)
 
@@ -155,11 +195,26 @@ Das Plugin unterstützt moderne Block-Entwicklung. Für JavaScript-basierte Blö
 Für Entwicklung mit modernen JavaScript-Features:
 
 ```bash
-# Development
+# Abhängigkeiten installieren
+npm install
+
+# Development-Modus (Watch)
 npm start
+# oder
+npm run dev
 
 # Production Build
 npm run build
+
+# Plugin-ZIP für WordPress erstellen
+npm run plugin-zip
+
+# Code-Qualität
+npm run lint:js
+npm run lint:css
+
+# ChemViz-Bibliotheken herunterladen
+npm run download-libs
 ```
 
 ## 🎨 Beispiel-Block: Demo Card
