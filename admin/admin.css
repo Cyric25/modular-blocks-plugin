@@ -397,6 +397,20 @@ input:checked + .slider:before {
     font-family: Consolas, Monaco, monospace;
 }
 
+/* Spin animation for loading */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .blocks-container {

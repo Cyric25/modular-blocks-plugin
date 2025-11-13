@@ -25,6 +25,7 @@ class ModularBlocks_Admin_Manager {
         add_action('wp_ajax_modular_blocks_create_block', [$this, 'ajax_create_block']);
         add_action('wp_ajax_modular_blocks_delete_block', [$this, 'ajax_delete_block']);
         add_action('wp_ajax_modular_blocks_upload_block', [$this, 'ajax_upload_block']);
+        add_action('wp_ajax_modular_blocks_clear_cache', [$this, 'ajax_clear_cache']);
     }
 
     /**
@@ -147,6 +148,14 @@ class ModularBlocks_Admin_Manager {
                         <span class="dashicons dashicons-upload"></span>
                         <?php _e('Block hochladen (ZIP)', 'modular-blocks-plugin'); ?>
                     </button>
+                    <button type="button" class="button button-secondary" id="clear-cache-button" style="background: #f0f0f1; border-color: #d63638; color: #d63638;">
+                        <span class="dashicons dashicons-update"></span>
+                        <?php _e('Cache leeren', 'modular-blocks-plugin'); ?>
+                    </button>
+                </div>
+
+                <div class="notice notice-info inline" style="margin: 15px 0;">
+                    <p><strong><?php _e('Blöcke in falscher Kategorie?', 'modular-blocks-plugin'); ?></strong> <?php _e('Klicken Sie auf "Cache leeren" und laden Sie dann den Browser neu (Strg+Shift+R).', 'modular-blocks-plugin'); ?></p>
                 </div>
 
                 <div class="blocks-grid">
@@ -765,5 +774,36 @@ if (!defined('ABSPATH')) {
 
         $diagnostics = new ModularBlocks_Diagnostics();
         $diagnostics->render_diagnostics_page();
+    }
+
+    /**
+     * AJAX: Clear WordPress caches
+     */
+    public function ajax_clear_cache() {
+        check_ajax_referer('modular_blocks_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Keine Berechtigung.', 'modular-blocks-plugin'));
+            return;
+        }
+
+        // Clear WordPress object cache
+        wp_cache_flush();
+
+        // Clear transients
+        global $wpdb;
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%'");
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_site_transient_%'");
+
+        // Clear block type registry (this forces re-registration)
+        if (function_exists('WP_Block_Type_Registry')) {
+            $registry = WP_Block_Type_Registry::get_instance();
+            // We can't directly clear it, but we can trigger a refresh by touching the plugin file
+            touch(MODULAR_BLOCKS_PLUGIN_PATH . 'modular-blocks-plugin.php');
+        }
+
+        wp_send_json_success([
+            'message' => __('Cache erfolgreich geleert! Bitte laden Sie den Browser neu (Strg+Shift+R).', 'modular-blocks-plugin')
+        ]);
     }
 }

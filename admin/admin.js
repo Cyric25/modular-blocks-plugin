@@ -62,6 +62,11 @@
                     .replace(/^-+|-+$/g, '');
                 $('#block-slug').val(slug);
             });
+
+            // Clear cache button
+            $('#clear-cache-button').on('click', () => {
+                this.clearCache();
+            });
         }
 
         toggleBlock(e) {
@@ -265,6 +270,53 @@
 
         closeModals() {
             $('.modular-blocks-modal').fadeOut(200);
+        }
+
+        clearCache() {
+            if (!confirm('Cache leeren? Dies löscht WordPress-Caches und erzwingt eine Neuregistrierung der Blöcke.')) {
+                return;
+            }
+
+            const $button = $('#clear-cache-button');
+            const originalText = $button.html();
+            $button.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Leere Cache...');
+
+            $.ajax({
+                url: modularBlocksAdmin.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'modular_blocks_clear_cache',
+                    nonce: modularBlocksAdmin.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.showNotice(response.data.message, 'success');
+
+                        // Show prominent reload message
+                        const $reloadNotice = $(`
+                            <div class="notice notice-warning is-dismissible" style="border-left: 4px solid #d63638; padding: 15px;">
+                                <p style="font-size: 16px; font-weight: bold;">
+                                    Cache geleert! Laden Sie JETZT den Browser neu:
+                                </p>
+                                <p style="font-size: 14px;">
+                                    <strong>Windows:</strong> Strg + Shift + R<br>
+                                    <strong>Mac:</strong> Cmd + Shift + R
+                                </p>
+                            </div>
+                        `);
+                        $('.wrap h1').after($reloadNotice);
+                    } else {
+                        this.showNotice(response.data || 'Fehler beim Leeren des Caches.', 'error');
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX Error:', error);
+                    this.showNotice('Fehler beim Leeren des Caches.', 'error');
+                },
+                complete: () => {
+                    $button.prop('disabled', false).html(originalText);
+                }
+            });
         }
 
         showNotice(message, type = 'info') {
