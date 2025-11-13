@@ -211,6 +211,19 @@
     margin: 1.5em 0;
 }
 
+/* IMPORTANT: Disable hover animations in editor */
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison.has-hover-animation .image-comparison-container:hover .image-comparison-after,
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison.has-hover-animation .image-comparison-after {
+    animation: none !important;
+}
+
+/* Disable slider button hover effect in editor */
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison .slider-button:hover {
+    background-color: var(--slider-color);
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Inspector controls specific styles */
 .components-panel__body .image-upload-section {
     margin-bottom: 16px;

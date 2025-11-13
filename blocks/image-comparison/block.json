@@ -56,6 +56,30 @@
         "height": {
             "type": "number",
             "default": 400
+        },
+        "sliderColor": {
+            "type": "string",
+            "default": "#0073aa"
+        },
+        "sliderWidth": {
+            "type": "number",
+            "default": 4
+        },
+        "handleSize": {
+            "type": "number",
+            "default": 48
+        },
+        "animationSpeed": {
+            "type": "number",
+            "default": 2
+        },
+        "labelBackground": {
+            "type": "string",
+            "default": "rgba(0, 0, 0, 0.7)"
+        },
+        "labelColor": {
+            "type": "string",
+            "default": "#ffffff"
         }
     },
     "supports": {

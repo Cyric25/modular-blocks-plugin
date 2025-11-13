@@ -19,6 +19,8 @@ import {
     Placeholder,
     Toolbar,
     ToolbarButton,
+    ColorPalette,
+    ColorPicker,
 } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
 
@@ -43,6 +45,12 @@ registerBlockType('modular-blocks/image-comparison', {
             showLabels,
             hoverAnimation,
             height,
+            sliderColor,
+            sliderWidth,
+            handleSize,
+            animationSpeed,
+            labelBackground,
+            labelColor,
         } = attributes;
 
         const onSelectBeforeImage = (media) => {
@@ -80,6 +88,13 @@ registerBlockType('modular-blocks/image-comparison', {
         const blockStyle = {
             '--starting-position': `${startingPosition}%`,
             '--comparison-height': `${height}px`,
+            '--slider-color': sliderColor,
+            '--slider-width': `${sliderWidth}px`,
+            '--slider-handle-size': `${handleSize}px`,
+            '--slider-button-size': `${handleSize * 0.67}px`,
+            '--label-bg': labelBackground,
+            '--label-color': labelColor,
+            '--animation-speed': `${animationSpeed}s`,
         };
 
         const blockClasses = [
@@ -286,6 +301,81 @@ registerBlockType('modular-blocks/image-comparison', {
                             checked={hoverAnimation}
                             onChange={(value) => setAttributes({ hoverAnimation: value })}
                         />
+
+                        {hoverAnimation && (
+                            <RangeControl
+                                label={__('Animationsgeschwindigkeit (Sekunden)', 'modular-blocks-plugin')}
+                                value={animationSpeed}
+                                onChange={(value) => setAttributes({ animationSpeed: value })}
+                                min={0.5}
+                                max={5}
+                                step={0.5}
+                                help={__('Wie schnell die Hover-Animation abläuft', 'modular-blocks-plugin')}
+                            />
+                        )}
+                    </PanelBody>
+
+                    <PanelBody title={__('Slider-Styling', 'modular-blocks-plugin')} initialOpen={false}>
+                        <div style={{ marginBottom: '15px' }}>
+                            <strong>{__('Slider-Farbe', 'modular-blocks-plugin')}</strong>
+                            <ColorPalette
+                                value={sliderColor}
+                                onChange={(color) => setAttributes({ sliderColor: color })}
+                                colors={[
+                                    { name: 'Blau', color: '#0073aa' },
+                                    { name: 'Rot', color: '#dc3232' },
+                                    { name: 'Grün', color: '#46b450' },
+                                    { name: 'Orange', color: '#f56e28' },
+                                    { name: 'Schwarz', color: '#000000' },
+                                    { name: 'Weiß', color: '#ffffff' },
+                                ]}
+                            />
+                        </div>
+
+                        <RangeControl
+                            label={__('Slider-Dicke (px)', 'modular-blocks-plugin')}
+                            value={sliderWidth}
+                            onChange={(value) => setAttributes({ sliderWidth: value })}
+                            min={1}
+                            max={10}
+                            step={1}
+                        />
+
+                        <RangeControl
+                            label={__('Handle-Größe (px)', 'modular-blocks-plugin')}
+                            value={handleSize}
+                            onChange={(value) => setAttributes({ handleSize: value })}
+                            min={24}
+                            max={72}
+                            step={4}
+                        />
+                    </PanelBody>
+
+                    <PanelBody title={__('Label-Styling', 'modular-blocks-plugin')} initialOpen={false}>
+                        <div style={{ marginBottom: '15px' }}>
+                            <strong>{__('Label-Hintergrundfarbe', 'modular-blocks-plugin')}</strong>
+                            <ColorPicker
+                                color={labelBackground}
+                                onChangeComplete={(color) => {
+                                    const rgba = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+                                    setAttributes({ labelBackground: rgba });
+                                }}
+                                enableAlpha
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '15px' }}>
+                            <strong>{__('Label-Textfarbe', 'modular-blocks-plugin')}</strong>
+                            <ColorPalette
+                                value={labelColor}
+                                onChange={(color) => setAttributes({ labelColor: color })}
+                                colors={[
+                                    { name: 'Weiß', color: '#ffffff' },
+                                    { name: 'Schwarz', color: '#000000' },
+                                    { name: 'Grau', color: '#646970' },
+                                ]}
+                            />
+                        </div>
                     </PanelBody>
                 </InspectorControls>
 
