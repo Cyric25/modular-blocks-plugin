@@ -399,6 +399,19 @@ class ModularBlocks_Admin_Manager {
             return;
         }
 
+        // Rate limiting: Max 5 block creations per minute per user
+        $user_id = get_current_user_id();
+        $rate_limit_key = 'modular_blocks_create_limit_' . $user_id;
+        $recent_creates = get_transient($rate_limit_key);
+
+        if ($recent_creates && $recent_creates >= 5) {
+            wp_send_json_error(__('Zu viele Anfragen. Bitte warten Sie eine Minute.', 'modular-blocks-plugin'));
+            return;
+        }
+
+        // Increment rate limit counter
+        set_transient($rate_limit_key, ($recent_creates ? $recent_creates + 1 : 1), 60);
+
         $slug = sanitize_title($_POST['slug'] ?? '');
         $title = sanitize_text_field($_POST['title'] ?? '');
         $description = sanitize_textarea_field($_POST['description'] ?? '');
@@ -636,25 +649,59 @@ if (!defined('ABSPATH')) {
      * Recursively delete a directory
      */
     private function delete_directory($dir) {
-        if (!file_exists($dir)) {
+        // SECURITY: Validate path is within plugin directory to prevent path traversal attacks
+        $plugin_path = realpath(MODULAR_BLOCKS_PLUGIN_PATH);
+        $dir_real = realpath($dir);
+
+        // If realpath returns false, path doesn't exist or is invalid
+        if ($dir_real === false) {
+            // Try with parent directory for paths that don't exist yet
+            $parent_dir = dirname($dir);
+            $parent_real = realpath($parent_dir);
+
+            if ($parent_real === false || strpos($parent_real, $plugin_path) !== 0) {
+                error_log('Modular Blocks: Attempted to delete invalid path: ' . $dir);
+                return false;
+            }
+
+            // Path doesn't exist, consider it "deleted"
             return true;
         }
 
-        if (!is_dir($dir)) {
-            return unlink($dir);
+        // Ensure the real path is within the plugin directory
+        if (strpos($dir_real, $plugin_path) !== 0) {
+            error_log('Modular Blocks: Attempted to delete directory outside plugin: ' . $dir);
+            return false;
         }
 
-        foreach (scandir($dir) as $item) {
-            if ($item == '.' || $item == '..') {
-                continue;
-            }
-
-            if (!$this->delete_directory($dir . DIRECTORY_SEPARATOR . $item)) {
-                return false;
-            }
+        if (!file_exists($dir_real)) {
+            return true;
         }
 
-        return rmdir($dir);
+        if (!is_dir($dir_real)) {
+            return unlink($dir_real);
+        }
+
+        // Use RecursiveIteratorIterator for safer deletion
+        try {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($dir_real, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($iterator as $file) {
+                if ($file->isDir()) {
+                    rmdir($file->getRealPath());
+                } else {
+                    unlink($file->getRealPath());
+                }
+            }
+
+            return rmdir($dir_real);
+        } catch (Exception $e) {
+            error_log('Modular Blocks: Error deleting directory: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -681,11 +728,31 @@ if (!defined('ABSPATH')) {
             return;
         }
 
-        // Check file type
+        // Check file type - both extension and MIME type
         $file_type = wp_check_filetype($file['name']);
+        $allowed_mime = array('application/zip', 'application/x-zip-compressed', 'application/x-zip');
+
         if ($file_type['ext'] !== 'zip') {
             wp_send_json_error(__('Nur ZIP-Dateien sind erlaubt.', 'modular-blocks-plugin'));
             return;
+        }
+
+        // Verify MIME type from $_FILES
+        if (!in_array($file['type'], $allowed_mime, true)) {
+            wp_send_json_error(__('Ung\u00fcltiger Dateityp. Nur ZIP-Dateien sind erlaubt.', 'modular-blocks-plugin'));
+            return;
+        }
+
+        // Additional check: Verify actual file content using finfo
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mime, $allowed_mime, true)) {
+                wp_send_json_error(__('Die hochgeladene Datei ist keine g\u00fcltige ZIP-Datei.', 'modular-blocks-plugin'));
+                return;
+            }
         }
 
         // Load WordPress file system
@@ -693,8 +760,8 @@ if (!defined('ABSPATH')) {
         WP_Filesystem();
         global $wp_filesystem;
 
-        // Create temporary directory
-        $temp_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'temp-' . uniqid();
+        // Create temporary directory with secure random ID
+        $temp_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'temp-' . bin2hex(random_bytes(8));
         wp_mkdir_p($temp_dir);
 
         // Unzip file
@@ -792,8 +859,14 @@ if (!defined('ABSPATH')) {
 
         // Clear transients
         global $wpdb;
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%'");
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_site_transient_%'");
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $wpdb->esc_like('_transient_') . '%'
+        ));
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $wpdb->esc_like('_site_transient_') . '%'
+        ));
 
         // Clear block type registry (this forces re-registration)
         if (function_exists('WP_Block_Type_Registry')) {

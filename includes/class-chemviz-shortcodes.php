@@ -231,7 +231,18 @@ class ModularBlocks_ChemViz_Shortcodes {
         // Sanitize attributes
         $template = sanitize_text_field($atts['template']);
         $type = sanitize_text_field($atts['type']);
-        $data = wp_kses_post($atts['data']); // Allow some HTML but sanitize
+
+        // Sanitize JSON data - should be plain text, not HTML
+        $data = sanitize_textarea_field($atts['data']);
+        // Validate JSON
+        if (!empty($data)) {
+            $decoded = json_decode($data, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Invalid JSON, clear it
+                $data = '';
+            }
+        }
+
         $title = sanitize_text_field($atts['title']);
         $xlabel = sanitize_text_field($atts['xlabel']);
         $ylabel = sanitize_text_field($atts['ylabel']);
@@ -239,8 +250,8 @@ class ModularBlocks_ChemViz_Shortcodes {
         $width = absint($atts['width']);
         $height = absint($atts['height']);
 
-        // Generate unique ID
-        $chart_id = 'chemviz-chart-' . uniqid();
+        // Generate unique ID with secure random value
+        $chart_id = 'chemviz-chart-' . bin2hex(random_bytes(8));
 
         // Build HTML
         ob_start();

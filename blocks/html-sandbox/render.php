@@ -11,6 +11,17 @@ if (!defined('ABSPATH')) {
 	exit; // Exit if accessed directly
 }
 
+// SECURITY: This block allows execution of arbitrary HTML, CSS, and JavaScript
+// Only administrators should be able to use this block
+if (!current_user_can('unfiltered_html')) {
+	return '<div class="wp-block-modular-blocks-html-sandbox">
+		<div class="html-sandbox-error" style="padding: 1em; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
+			<strong>' . esc_html__('Zugriff verweigert', 'modular-blocks-plugin') . '</strong>
+			<p>' . esc_html__('Dieser Block erfordert erweiterte Berechtigungen. Nur Benutzer mit der Berechtigung "unfiltered_html" können diesen Block verwenden.', 'modular-blocks-plugin') . '</p>
+		</div>
+	</div>';
+}
+
 // Extract attributes with defaults
 $html_code = $block_attributes['htmlCode'] ?? '';
 $css_code = $block_attributes['cssCode'] ?? '';
@@ -45,7 +56,7 @@ if (!empty($sandbox_flags['allowSameOrigin'])) {
 $sandbox_attr = implode(' ', $sandbox_attr_parts);
 
 // Generate unique ID for this block instance
-$block_id = 'html-sandbox-' . uniqid();
+$block_id = 'html-sandbox-' . wp_unique_id();
 
 // Wrapper classes
 $wrapper_classes = ['wp-block-modular-blocks-html-sandbox'];

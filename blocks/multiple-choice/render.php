@@ -38,7 +38,8 @@ if (empty($answers) || !is_array($answers)) {
 }
 
 // Generate unique ID for this block instance
-$block_id = 'multiple-choice-' . wp_unique_id();
+// wp_unique_id() returns only numeric values, but we sanitize for extra safety
+$block_id = sanitize_key('multiple-choice-' . wp_unique_id());
 
 // Randomize answers if enabled
 if ($randomize_answers) {

@@ -81,32 +81,50 @@
 
                 // Load structure based on source type
                 if (config.sourceType === 'pdb' && config.pdbId) {
-                    window.jQuery.get(`https://files.rcsb.org/download/${config.pdbId}.pdb`, (data) => {
-                        viewer.addModel(data, 'pdb');
-                        this.applyStyle(viewer, config);
-                        viewer.zoomTo();
-                        viewer.render();
+                    fetch(`https://files.rcsb.org/download/${config.pdbId}.pdb`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            viewer.addModel(data, 'pdb');
+                            this.applyStyle(viewer, config);
+                            viewer.zoomTo();
+                            viewer.render();
 
-                        if (config.enableSpin) {
-                            viewer.spin(true);
-                        }
-                    }).fail(() => {
-                        this.showError(element, `Failed to load PDB: ${config.pdbId}`);
-                    });
+                            if (config.enableSpin) {
+                                viewer.spin(true);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('ChemViz: Error loading PDB', error);
+                            this.showError(element, `Failed to load PDB: ${config.pdbId}`);
+                        });
                 } else if (config.structureUrl) {
                     const format = this.getFormatFromUrl(config.structureUrl);
-                    window.jQuery.get(config.structureUrl, (data) => {
-                        viewer.addModel(data, format);
-                        this.applyStyle(viewer, config);
-                        viewer.zoomTo();
-                        viewer.render();
+                    fetch(config.structureUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            viewer.addModel(data, format);
+                            this.applyStyle(viewer, config);
+                            viewer.zoomTo();
+                            viewer.render();
 
-                        if (config.enableSpin) {
-                            viewer.spin(true);
-                        }
-                    }).fail(() => {
-                        this.showError(element, 'Failed to load structure from URL');
-                    });
+                            if (config.enableSpin) {
+                                viewer.spin(true);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('ChemViz: Error loading structure from URL', error);
+                            this.showError(element, 'Failed to load structure from URL');
+                        });
                 }
 
                 this.viewers.set(canvas.id, viewer);

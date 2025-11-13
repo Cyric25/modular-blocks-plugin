@@ -25,6 +25,20 @@ define('MODULAR_BLOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
+/**
+ * Global debug logging function
+ * Only logs when WP_DEBUG and WP_DEBUG_LOG are enabled
+ *
+ * @param string $message The message to log
+ */
+if (!function_exists('modular_blocks_debug_log')) {
+    function modular_blocks_debug_log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            error_log('Modular Blocks: ' . $message);
+        }
+    }
+}
+
 // Main plugin class
 class ModularBlocksPlugin {
 
@@ -40,10 +54,21 @@ class ModularBlocksPlugin {
     }
 
     private function __construct() {
-        error_log('Modular Blocks Plugin: Constructor called');
+        $this->debug_log('Constructor called');
         $this->init_hooks();
         $this->load_dependencies();
-        error_log('Modular Blocks Plugin: Dependencies loaded');
+        $this->debug_log('Dependencies loaded');
+    }
+
+    /**
+     * Log debug messages only when WP_DEBUG is enabled
+     *
+     * @param string $message The message to log
+     */
+    private function debug_log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            error_log('Modular Blocks Plugin: ' . $message);
+        }
     }
 
     private function init_hooks() {
@@ -71,11 +96,11 @@ class ModularBlocksPlugin {
     }
 
     public function init() {
-        error_log('Modular Blocks Plugin: init() method called');
+        $this->debug_log('init() method called');
         $this->block_manager->init();
-        error_log('Modular Blocks Plugin: Block manager initialized');
+        $this->debug_log('Block manager initialized');
         $this->admin_manager->init();
-        error_log('Modular Blocks Plugin: Admin manager initialized');
+        $this->debug_log('Admin manager initialized');
 
         // Initialize ChemViz features
         if (class_exists('ModularBlocks_ChemViz_Enqueue')) {
@@ -87,7 +112,7 @@ class ModularBlocksPlugin {
             $chemviz_shortcodes = new ModularBlocks_ChemViz_Shortcodes();
             $chemviz_shortcodes->init();
         }
-        error_log('Modular Blocks Plugin: init() completed');
+        $this->debug_log('init() completed');
     }
 
     public function activate() {
@@ -113,6 +138,10 @@ class ModularBlocksPlugin {
 }
 
 // Initialize plugin
-error_log('Modular Blocks Plugin: Initializing plugin instance...');
+if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+    error_log('Modular Blocks Plugin: Initializing plugin instance...');
+}
 ModularBlocksPlugin::get_instance();
-error_log('Modular Blocks Plugin: Plugin instance created');
+if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+    error_log('Modular Blocks Plugin: Plugin instance created');
+}
