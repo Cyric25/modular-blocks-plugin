@@ -111,25 +111,9 @@
     transform: translateY(-50%);
 }
 
-/* Slider transitions for different modes */
-.display-mode-slide .image-comparison-slider {
+/* Slider should always move instantly with the mouse - no transitions */
+.image-comparison-slider {
     transition: none;
-}
-
-.display-mode-juxtaposition .image-comparison-slider {
-    transition: left var(--transition-duration) ease;
-}
-
-.display-mode-juxtaposition.orientation-vertical .image-comparison-slider {
-    transition: top var(--transition-duration) ease;
-}
-
-.display-mode-fade .image-comparison-slider {
-    transition: left var(--transition-duration) ease;
-}
-
-.display-mode-fade.orientation-vertical .image-comparison-slider {
-    transition: top var(--transition-duration) ease;
 }
 
 .slider-line {

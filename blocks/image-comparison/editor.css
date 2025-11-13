@@ -3,7 +3,7 @@
  */
 
 .wp-block-modular-blocks-image-comparison {
-    --starting-position: 50%;
+    /* --starting-position is set via inline style from React */
     --comparison-height: 400px;
     --slider-width: 4px;
     --slider-color: #0073aa;
