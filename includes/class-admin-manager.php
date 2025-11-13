@@ -31,12 +31,35 @@ class ModularBlocks_Admin_Manager {
      * Add admin menu page
      */
     public function add_admin_menu() {
-        add_options_page(
+        // Main menu page
+        add_menu_page(
             __('Modulare Blöcke', 'modular-blocks-plugin'),
             __('Modulare Blöcke', 'modular-blocks-plugin'),
             'manage_options',
-            'modular-blocks-settings',
+            'modular-blocks',
+            [$this, 'admin_page_callback'],
+            'dashicons-block-default',
+            30
+        );
+
+        // Settings submenu (same page with different tab)
+        add_submenu_page(
+            'modular-blocks',
+            __('Einstellungen', 'modular-blocks-plugin'),
+            __('Einstellungen', 'modular-blocks-plugin'),
+            'manage_options',
+            'modular-blocks',
             [$this, 'admin_page_callback']
+        );
+
+        // Diagnostics submenu
+        add_submenu_page(
+            'modular-blocks',
+            __('Diagnose', 'modular-blocks-plugin'),
+            __('Diagnose', 'modular-blocks-plugin'),
+            'manage_options',
+            'modular-blocks-diagnostics',
+            [$this, 'diagnostics_page_callback']
         );
     }
 
@@ -728,5 +751,17 @@ if (!defined('ABSPATH')) {
             'message' => sprintf(__('Block "%s" erfolgreich hochgeladen!', 'modular-blocks-plugin'), $block_name),
             'block' => $block_name
         ]);
+    }
+
+    /**
+     * Diagnostics page callback
+     */
+    public function diagnostics_page_callback() {
+        if (!class_exists('ModularBlocks_Diagnostics')) {
+            require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-diagnostics.php';
+        }
+
+        $diagnostics = new ModularBlocks_Diagnostics();
+        $diagnostics->render_diagnostics_page();
     }
 }

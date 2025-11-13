@@ -56,6 +56,7 @@ class ModularBlocksPlugin {
     private function load_dependencies() {
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-block-manager.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-admin-manager.php';
+        require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-diagnostics.php';
 
         // ChemViz integration
         if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-enqueue.php')) {
