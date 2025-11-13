@@ -41,6 +41,7 @@ registerBlockType('modular-blocks/image-comparison', {
             beforeLabel,
             afterLabel,
             orientation,
+            displayMode,
             startingPosition,
             showLabels,
             hoverAnimation,
@@ -100,7 +101,9 @@ registerBlockType('modular-blocks/image-comparison', {
         const blockClasses = [
             className,
             'wp-block-modular-blocks-image-comparison',
+            'is-editor-preview', // Flag to disable animations in editor
             `orientation-${orientation}`,
+            `display-mode-${displayMode}`,
             hoverAnimation ? 'has-hover-animation' : '',
             showLabels ? 'has-labels' : '',
         ].filter(Boolean).join(' ');
@@ -252,6 +255,21 @@ registerBlockType('modular-blocks/image-comparison', {
                                 { label: __('Horizontal', 'modular-blocks-plugin'), value: 'horizontal' },
                                 { label: __('Vertikal', 'modular-blocks-plugin'), value: 'vertical' },
                             ]}
+                        />
+
+                        <SelectControl
+                            label={__('Anzeigemodus', 'modular-blocks-plugin')}
+                            value={displayMode}
+                            onChange={(value) => setAttributes({ displayMode: value })}
+                            options={[
+                                { label: __('Slide (von der Seite eingeschoben)', 'modular-blocks-plugin'), value: 'slide' },
+                                { label: __('Fade (Überblendung)', 'modular-blocks-plugin'), value: 'fade' },
+                            ]}
+                            help={
+                                displayMode === 'slide'
+                                    ? __('Das nachher-Bild wird von der Seite eingeschoben und überdeckt das vorher-Bild.', 'modular-blocks-plugin')
+                                    : __('Das nachher-Bild wird übergeblendet basierend auf der Slider-Position.', 'modular-blocks-plugin')
+                            }
                         />
 
                         <RangeControl

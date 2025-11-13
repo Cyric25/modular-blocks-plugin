@@ -53,7 +53,25 @@
     user-select: none;
 }
 
-/* After image clipping */
+/* After image clipping - SLIDE MODE (default) */
+.display-mode-slide .image-comparison-after {
+    clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
+    transition: clip-path var(--transition-duration) ease;
+    opacity: 1;
+}
+
+.display-mode-slide.orientation-vertical .image-comparison-after {
+    clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
+}
+
+/* After image opacity - FADE MODE */
+.display-mode-fade .image-comparison-after {
+    clip-path: none;
+    opacity: calc(var(--starting-position) / 100);
+    transition: opacity var(--transition-duration) ease;
+}
+
+/* Backwards compatibility: default behavior is slide */
 .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
     transition: clip-path var(--transition-duration) ease;

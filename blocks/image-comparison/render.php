@@ -17,6 +17,7 @@ $after_image = $block_attributes['afterImage'] ?? ['url' => '', 'alt' => '', 'id
 $before_label = $block_attributes['beforeLabel'] ?? 'Vorher';
 $after_label = $block_attributes['afterLabel'] ?? 'Nachher';
 $orientation = $block_attributes['orientation'] ?? 'horizontal';
+$display_mode = $block_attributes['displayMode'] ?? 'slide';
 $starting_position = $block_attributes['startingPosition'] ?? 50;
 $show_labels = $block_attributes['showLabels'] ?? true;
 $hover_animation = $block_attributes['hoverAnimation'] ?? true;
@@ -32,6 +33,7 @@ $label_color = $block_attributes['labelColor'] ?? '#ffffff';
 $before_label = esc_html($before_label);
 $after_label = esc_html($after_label);
 $orientation = sanitize_text_field($orientation);
+$display_mode = in_array($display_mode, ['slide', 'fade']) ? $display_mode : 'slide';
 $starting_position = max(0, min(100, intval($starting_position)));
 $height = max(200, min(800, intval($height)));
 $slider_color = sanitize_hex_color($slider_color) ?: '#0073aa';
@@ -53,6 +55,7 @@ $block_id = 'image-comparison-' . wp_unique_id();
 $css_classes = [
     'wp-block-modular-blocks-image-comparison',
     'orientation-' . $orientation,
+    'display-mode-' . $display_mode,
     $hover_animation ? 'has-hover-animation' : '',
     $show_labels ? 'has-labels' : ''
 ];

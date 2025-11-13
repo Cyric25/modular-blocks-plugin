@@ -41,6 +41,11 @@
             "type": "string",
             "default": "horizontal"
         },
+        "displayMode": {
+            "type": "string",
+            "default": "slide",
+            "enum": ["slide", "fade"]
+        },
         "startingPosition": {
             "type": "number",
             "default": 50

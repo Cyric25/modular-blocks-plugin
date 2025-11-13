@@ -23,11 +23,12 @@
         if (!container || !afterImage || !slider || !sliderButton) return;
 
         const isVertical = element.classList.contains('orientation-vertical');
+        const isFadeMode = element.classList.contains('display-mode-fade');
         let isMouseDown = false;
         let startPos = 0;
 
         /**
-         * Update slider position and image clipping
+         * Update slider position and image clipping/opacity
          * @param {number} position - Position percentage (0-100)
          */
         function updateSlider(position) {
@@ -40,10 +41,23 @@
             // Update slider position
             if (isVertical) {
                 slider.style.top = position + '%';
-                afterImage.style.clipPath = `polygon(0% ${position}%, 100% ${position}%, 100% 100%, 0% 100%)`;
             } else {
                 slider.style.left = position + '%';
-                afterImage.style.clipPath = `polygon(${position}% 0%, 100% 0%, 100% 100%, ${position}% 100%)`;
+            }
+
+            // Update effect based on display mode
+            if (isFadeMode) {
+                // Fade mode: adjust opacity
+                afterImage.style.opacity = position / 100;
+                afterImage.style.clipPath = 'none';
+            } else {
+                // Slide mode: adjust clip-path
+                afterImage.style.opacity = '1';
+                if (isVertical) {
+                    afterImage.style.clipPath = `polygon(0% ${position}%, 100% ${position}%, 100% 100%, 0% 100%)`;
+                } else {
+                    afterImage.style.clipPath = `polygon(${position}% 0%, 100% 0%, 100% 100%, ${position}% 100%)`;
+                }
             }
         }
 
