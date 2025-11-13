@@ -71,6 +71,39 @@
     transition: opacity var(--transition-duration) ease;
 }
 
+/* JUXTAPOSITION MODE - Side by side comparison */
+.display-mode-juxtaposition .image-comparison-before {
+    width: 50%;
+    position: relative;
+}
+
+.display-mode-juxtaposition .image-comparison-after {
+    width: 50%;
+    position: relative;
+    left: 50%;
+    clip-path: none;
+    opacity: 1;
+}
+
+.display-mode-juxtaposition.orientation-vertical .image-comparison-before {
+    width: 100%;
+    height: 50%;
+    position: relative;
+}
+
+.display-mode-juxtaposition.orientation-vertical .image-comparison-after {
+    width: 100%;
+    height: 50%;
+    position: relative;
+    left: 0;
+    top: 50%;
+}
+
+/* Hide slider in juxtaposition mode */
+.display-mode-juxtaposition .image-comparison-slider {
+    display: none;
+}
+
 /* Backwards compatibility: default behavior is slide */
 .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);

@@ -44,7 +44,7 @@
         "displayMode": {
             "type": "string",
             "default": "slide",
-            "enum": ["slide", "fade"]
+            "enum": ["slide", "fade", "juxtaposition"]
         },
         "startingPosition": {
             "type": "number",

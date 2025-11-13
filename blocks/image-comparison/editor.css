@@ -79,6 +79,39 @@
     opacity: calc(var(--starting-position) / 100);
 }
 
+/* JUXTAPOSITION MODE - Side by side in editor */
+.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition .image-comparison-before {
+    width: 50%;
+    position: relative;
+}
+
+.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition .image-comparison-after {
+    width: 50%;
+    position: relative;
+    left: 50%;
+    clip-path: none;
+    opacity: 1;
+}
+
+.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition.orientation-vertical .image-comparison-before {
+    width: 100%;
+    height: 50%;
+    position: relative;
+}
+
+.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition.orientation-vertical .image-comparison-after {
+    width: 100%;
+    height: 50%;
+    position: relative;
+    left: 0;
+    top: 50%;
+}
+
+/* Hide slider in juxtaposition mode in editor */
+.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition .image-comparison-slider {
+    display: none;
+}
+
 /* Backwards compatibility: default behavior is slide */
 .wp-block-modular-blocks-image-comparison .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);

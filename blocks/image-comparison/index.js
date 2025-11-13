@@ -264,11 +264,14 @@ registerBlockType('modular-blocks/image-comparison', {
                             options={[
                                 { label: __('Slide (von der Seite eingeschoben)', 'modular-blocks-plugin'), value: 'slide' },
                                 { label: __('Fade (Überblendung)', 'modular-blocks-plugin'), value: 'fade' },
+                                { label: __('Juxtaposition (Nebeneinander)', 'modular-blocks-plugin'), value: 'juxtaposition' },
                             ]}
                             help={
                                 displayMode === 'slide'
                                     ? __('Das nachher-Bild wird von der Seite eingeschoben und überdeckt das vorher-Bild.', 'modular-blocks-plugin')
-                                    : __('Das nachher-Bild wird übergeblendet basierend auf der Slider-Position.', 'modular-blocks-plugin')
+                                    : displayMode === 'fade'
+                                    ? __('Das nachher-Bild wird übergeblendet basierend auf der Slider-Position.', 'modular-blocks-plugin')
+                                    : __('Beide Bilder werden statisch nebeneinander angezeigt ohne Slider.', 'modular-blocks-plugin')
                             }
                         />
 
