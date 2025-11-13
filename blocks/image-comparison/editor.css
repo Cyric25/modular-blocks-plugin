@@ -17,6 +17,8 @@
     margin: 1.5em 0;
     position: relative;
     user-select: none;
+    /* Ensure block wrapper itself is clickable */
+    pointer-events: auto;
 }
 
 /* Editor-specific container */
@@ -47,6 +49,8 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    /* CRITICAL: These containers must not block clicks in editor */
+    pointer-events: none;
 }
 
 .wp-block-modular-blocks-image-comparison .image-comparison-before img,
