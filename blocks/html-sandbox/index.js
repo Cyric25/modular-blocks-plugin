@@ -8,9 +8,12 @@ import {
 	RangeControl,
 	Notice,
 	TabPanel,
+	Placeholder,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
+import { code as icon } from '@wordpress/icons';
 
 // Import styles
 import './editor.css';
@@ -34,6 +37,38 @@ registerBlockType('modular-blocks/html-sandbox', {
 		const blockProps = useBlockProps({
 			className: 'html-sandbox-editor',
 		});
+
+		// Check if current user can edit posts (as a proxy for checking capabilities)
+		const canEdit = useSelect((select) => {
+			const currentUser = select('core').getCurrentUser();
+			// Check if user has unfiltered_html capability (usually admins and super-admins)
+			return currentUser && (
+				currentUser.capabilities?.unfiltered_html ||
+				currentUser.capabilities?.manage_options
+			);
+		}, []);
+
+		// Show warning if user doesn't have permission
+		if (canEdit === false) {
+			return (
+				<div {...blockProps}>
+					<Placeholder
+						icon={icon}
+						label={__('HTML Sandbox', 'modular-blocks-plugin')}
+					>
+						<Notice status="error" isDismissible={false}>
+							<strong>{__('Zugriff verweigert', 'modular-blocks-plugin')}</strong>
+							<p>
+								{__(
+									'Dieser Block erfordert erweiterte Berechtigungen. Nur Benutzer mit der Berechtigung "unfiltered_html" können diesen Block verwenden. Bitte kontaktieren Sie Ihren Administrator.',
+									'modular-blocks-plugin'
+								)}
+							</p>
+						</Notice>
+					</Placeholder>
+				</div>
+			);
+		}
 
 		// Update iframe content when code changes
 		useEffect(() => {
@@ -102,7 +137,16 @@ registerBlockType('modular-blocks/html-sandbox', {
 		return (
 			<>
 				<InspectorControls>
-					<PanelBody title={__('Isolierungsmodus', 'modular-blocks-plugin')} initialOpen={true}>
+					<PanelBody title={__('⚠️ Sicherheitshinweis', 'modular-blocks-plugin')} initialOpen={true}>
+						<Notice status="warning" isDismissible={false}>
+							{__(
+								'Dieser Block führt benutzerdefinierten Code aus. Verwenden Sie ihn nur, wenn Sie dem Code vertrauen. Ungeprüfter Code kann Sicherheitsrisiken darstellen.',
+								'modular-blocks-plugin'
+							)}
+						</Notice>
+					</PanelBody>
+
+					<PanelBody title={__('Isolierungsmodus', 'modular-blocks-plugin')} initialOpen={false}>
 						<SelectControl
 							label={__('Methode', 'modular-blocks-plugin')}
 							value={isolationMode}
