@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "modular-blocks/html-sandbox",
   "title": "HTML Sandbox",
-  "category": "widgets",
+  "category": "modular-blocks",
   "icon": "code-standards",
   "description": "Rendert HTML-Code isoliert vom Rest der Seite (iframe oder Shadow DOM)",
   "keywords": ["html", "code", "iframe", "sandbox", "isoliert"],

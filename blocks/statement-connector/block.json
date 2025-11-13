@@ -3,7 +3,7 @@
     "name": "modular-blocks/statement-connector",
     "version": "1.0.0",
     "title": "Statement Connector",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "networking",
     "description": "Verbinden Sie Aussagen miteinander durch Drag & Drop. Benutzer müssen die richtigen Verbindungen zwischen zwei Spalten von Aussagen herstellen. Ideal für Zuordnungsaufgaben.",
     "keywords": ["verbinden", "zuordnung", "drag", "drop", "aussagen", "matching"],

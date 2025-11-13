@@ -3,7 +3,7 @@
     "name": "modular-blocks/drag-the-words",
     "version": "1.0.0",
     "title": "Drag the Words",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "text",
     "description": "Erstellen Sie Lückentexte bei denen Benutzer Wörter per Drag & Drop in die richtigen Lücken ziehen müssen. Inspiriert von H5P Drag the Words.",
     "keywords": ["lückentext", "drag", "drop", "wörter", "text", "h5p", "cloze"],

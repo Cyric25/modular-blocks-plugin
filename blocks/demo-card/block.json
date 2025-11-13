@@ -3,7 +3,7 @@
     "name": "modular-blocks/demo-card",
     "version": "1.0.0",
     "title": "Demo Karte",
-    "category": "design",
+    "category": "modular-blocks",
     "icon": "id-alt",
     "description": "Ein Demo-Block der eine einfache Karte mit Titel, Text und Button anzeigt.",
     "keywords": ["card", "demo", "beispiel"],

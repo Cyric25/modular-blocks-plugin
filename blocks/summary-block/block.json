@@ -3,7 +3,7 @@
     "name": "modular-blocks/summary-block",
     "version": "1.0.0",
     "title": "Summary - Zusammenfassung",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "list-view",
     "description": "Erstellen Sie ein Summary-Quiz bei dem Nutzer drei Aussagen auswählen und in die richtige Reihenfolge bringen müssen. Inspiriert von H5P Summary.",
     "keywords": ["summary", "zusammenfassung", "reihenfolge", "sortieren", "h5p", "quiz"],

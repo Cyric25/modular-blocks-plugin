@@ -3,7 +3,7 @@
     "name": "modular-blocks/drag-and-drop",
     "version": "1.0.0",
     "title": "Drag and Drop",
-    "category": "media",
+    "category": "modular-blocks",
     "icon": "move",
     "description": "Erstellen Sie interaktive Drag & Drop Aufgaben mit Bildern oder Text-Elementen. Benutzer ziehen Elemente auf die richtigen Drop-Zonen. Nach H5P Drag and Drop Vorbild.",
     "keywords": ["drag", "drop", "bilder", "zuordnung", "interactive", "h5p"],

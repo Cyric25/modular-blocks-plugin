@@ -3,7 +3,7 @@
     "name": "modular-blocks/chart-block",
     "version": "1.0.0",
     "title": "Chemie-Diagramm",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "chart-line",
     "description": "Interaktive wissenschaftliche Diagramme mit Plotly.js für Chemie-Anwendungen",
     "keywords": ["chart", "graph", "diagram", "chemistry", "plotly", "science"],

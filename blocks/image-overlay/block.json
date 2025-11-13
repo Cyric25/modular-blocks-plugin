@@ -3,7 +3,7 @@
     "name": "modular-blocks/image-overlay",
     "version": "1.0.0",
     "title": "Bild-Überlagerung",
-    "category": "media",
+    "category": "modular-blocks",
     "icon": "images-alt2",
     "description": "Fügen Sie einem Bild interaktive Informations-Ebenen hinzu. Perfekt für Moleküle, anatomische Diagramme oder Schichtdarstellungen mit Beschriftungen.",
     "keywords": ["overlay", "ebenen", "bilder", "anatomie", "schichten", "didaktik", "molekül", "beschriftung"],

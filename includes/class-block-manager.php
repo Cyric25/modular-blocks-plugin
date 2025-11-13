@@ -20,9 +20,28 @@ class ModularBlocks_Block_Manager {
     }
 
     public function init() {
+        // Register custom block category
+        add_filter('block_categories_all', [$this, 'register_block_category'], 10, 2);
+
         // Register blocks immediately - we're already in the init hook
         $this->register_blocks();
         add_action('enqueue_block_assets', [$this, 'enqueue_block_assets']);
+    }
+
+    /**
+     * Register custom block category
+     */
+    public function register_block_category($categories, $post) {
+        return array_merge(
+            [
+                [
+                    'slug'  => 'modular-blocks',
+                    'title' => __('Modulare Blöcke', 'modular-blocks-plugin'),
+                    'icon'  => 'block-default',
+                ],
+            ],
+            $categories
+        );
     }
 
     /**

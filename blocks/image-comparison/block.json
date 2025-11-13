@@ -3,7 +3,7 @@
     "name": "modular-blocks/image-comparison",
     "version": "1.0.0",
     "title": "Bild-Vergleich",
-    "category": "media",
+    "category": "modular-blocks",
     "icon": "image-flip-horizontal",
     "description": "Vergleichen Sie zwei Bilder mit einem interaktiven Schieberegler. Inspiriert von H5P Image Juxtaposition.",
     "keywords": ["vergleich", "bilder", "vorher", "nachher", "slider", "h5p"],

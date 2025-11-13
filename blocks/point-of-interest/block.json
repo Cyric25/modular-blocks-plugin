@@ -3,7 +3,7 @@
     "name": "modular-blocks/point-of-interest",
     "version": "1.0.0",
     "title": "Points of Interest",
-    "category": "media",
+    "category": "modular-blocks",
     "icon": "location",
     "description": "Fügen Sie interaktive Hotspots zu Bildern hinzu. Benutzer können auf die Punkte klicken, um zusätzliche Informationen zu erhalten. Ideal für Karten, Diagramme und Präsentationen.",
     "keywords": ["hotspot", "punkt", "interesse", "interaktiv", "popup", "karte"],

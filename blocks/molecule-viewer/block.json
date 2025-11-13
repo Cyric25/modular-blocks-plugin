@@ -3,7 +3,7 @@
     "name": "modular-blocks/molecule-viewer",
     "version": "1.0.0",
     "title": "3D Molekül-Viewer",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "admin-site",
     "description": "Interaktive 3D-Visualisierung von Molekülstrukturen mit 3Dmol.js",
     "keywords": ["molecule", "3d", "chemistry", "structure", "pdb"],

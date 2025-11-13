@@ -3,7 +3,7 @@
     "name": "modular-blocks/multiple-choice",
     "version": "1.0.0",
     "title": "Multiple Choice Quiz",
-    "category": "widgets",
+    "category": "modular-blocks",
     "icon": "yes-alt",
     "description": "Erstellen Sie interaktive Multiple Choice Fragen mit sofortiger Bewertung und Feedback. Inspiriert von H5P Multiple Choice.",
     "keywords": ["quiz", "multiple choice", "frage", "antwort", "h5p", "test"],
