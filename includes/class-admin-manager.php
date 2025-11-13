@@ -92,7 +92,9 @@ class ModularBlocks_Admin_Manager {
      * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts($hook) {
-        if ($hook !== 'settings_page_modular-blocks-settings') {
+        // Check if we're on one of our plugin pages
+        // Hook can be 'toplevel_page_modular-blocks' or 'modulare-blocke_page_modular-blocks-diagnostics'
+        if (strpos($hook, 'modular-blocks') === false) {
             return;
         }
 
