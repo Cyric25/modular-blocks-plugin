@@ -29,6 +29,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border: 2px solid transparent;
     transition: border-color 0.2s ease;
+    /* IMPORTANT: Allow clicks in editor to select the block */
+    pointer-events: auto;
 }
 
 .wp-block-modular-blocks-image-comparison.is-selected .image-comparison-container {
@@ -227,13 +229,23 @@
     margin: 1.5em 0;
 }
 
-/* IMPORTANT: Completely disable all animations in editor preview */
-.wp-block-modular-blocks-image-comparison.is-editor-preview *,
-.wp-block-modular-blocks-image-comparison.is-editor-preview *:hover,
+/* IMPORTANT: Disable animations in editor preview, but keep block clickable */
 .wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-after,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-container:hover .image-comparison-after {
+.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-before,
+.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-slider,
+.wp-block-modular-blocks-image-comparison.is-editor-preview .slider-button,
+.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-label {
     animation: none !important;
     transition: none !important;
+}
+
+/* Ensure block container is clickable in editor */
+.wp-block-modular-blocks-image-comparison.is-editor-preview {
+    pointer-events: auto !important;
+}
+
+.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-container {
+    pointer-events: auto !important;
 }
 
 /* Disable slider button hover effect in editor */
