@@ -1,0 +1,6 @@
+/* Point of Interest Block - Editor Styles */
+.point-of-interest-editor {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
