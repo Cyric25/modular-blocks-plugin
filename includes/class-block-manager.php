@@ -20,7 +20,8 @@ class ModularBlocks_Block_Manager {
     }
 
     public function init() {
-        add_action('init', [$this, 'register_blocks']);
+        // Register blocks immediately - we're already in the init hook
+        $this->register_blocks();
         add_action('enqueue_block_assets', [$this, 'enqueue_block_assets']);
     }
 
@@ -280,12 +281,18 @@ class ModularBlocks_Block_Manager {
      * Check if a block is enabled in admin settings
      */
     private function is_block_enabled($block_name) {
+        error_log("Modular Blocks Plugin: Checking if block '{$block_name}' is enabled");
+        error_log("Modular Blocks Plugin: Enabled blocks array: " . print_r($this->enabled_blocks, true));
+
         // If no blocks are specifically enabled, enable all by default
         if (empty($this->enabled_blocks)) {
+            error_log("Modular Blocks Plugin: No blocks enabled, enabling all by default");
             return true;
         }
 
-        return in_array($block_name, $this->enabled_blocks);
+        $is_enabled = in_array($block_name, $this->enabled_blocks);
+        error_log("Modular Blocks Plugin: Block '{$block_name}' enabled status: " . ($is_enabled ? 'YES' : 'NO'));
+        return $is_enabled;
     }
 
     /**

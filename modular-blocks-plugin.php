@@ -40,8 +40,10 @@ class ModularBlocksPlugin {
     }
 
     private function __construct() {
+        error_log('Modular Blocks Plugin: Constructor called');
         $this->init_hooks();
         $this->load_dependencies();
+        error_log('Modular Blocks Plugin: Dependencies loaded');
     }
 
     private function init_hooks() {
@@ -68,8 +70,11 @@ class ModularBlocksPlugin {
     }
 
     public function init() {
+        error_log('Modular Blocks Plugin: init() method called');
         $this->block_manager->init();
+        error_log('Modular Blocks Plugin: Block manager initialized');
         $this->admin_manager->init();
+        error_log('Modular Blocks Plugin: Admin manager initialized');
 
         // Initialize ChemViz features
         if (class_exists('ModularBlocks_ChemViz_Enqueue')) {
@@ -81,6 +86,7 @@ class ModularBlocksPlugin {
             $chemviz_shortcodes = new ModularBlocks_ChemViz_Shortcodes();
             $chemviz_shortcodes->init();
         }
+        error_log('Modular Blocks Plugin: init() completed');
     }
 
     public function activate() {
@@ -106,4 +112,6 @@ class ModularBlocksPlugin {
 }
 
 // Initialize plugin
+error_log('Modular Blocks Plugin: Initializing plugin instance...');
 ModularBlocksPlugin::get_instance();
+error_log('Modular Blocks Plugin: Plugin instance created');
