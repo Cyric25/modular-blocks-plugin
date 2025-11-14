@@ -8,6 +8,7 @@ import {
     MediaUpload,
     MediaUploadCheck,
     BlockControls,
+    useBlockProps,
 } from '@wordpress/block-editor';
 import {
     PanelBody,
@@ -99,7 +100,6 @@ registerBlockType('modular-blocks/image-comparison', {
         };
 
         const blockClasses = [
-            className,
             'wp-block-modular-blocks-image-comparison',
             `orientation-${orientation}`,
             `display-mode-${displayMode}`,
@@ -107,10 +107,15 @@ registerBlockType('modular-blocks/image-comparison', {
             showLabels ? 'has-labels' : '',
         ].filter(Boolean).join(' ');
 
+        const blockProps = useBlockProps({
+            className: blockClasses,
+            style: blockStyle,
+        });
+
         // Show placeholder if no images are selected
         if (!beforeImage.url || !afterImage.url) {
             return (
-                <Fragment>
+                <div {...blockProps}>
                     <InspectorControls>
                         <PanelBody title={__('Bild-Einstellungen', 'modular-blocks-plugin')}>
                             <MediaUploadCheck>
@@ -182,7 +187,7 @@ registerBlockType('modular-blocks/image-comparison', {
                             </MediaUploadCheck>
                         </div>
                     </Placeholder>
-                </Fragment>
+                </div>
             );
         }
 
@@ -400,7 +405,7 @@ registerBlockType('modular-blocks/image-comparison', {
                     </PanelBody>
                 </InspectorControls>
 
-                <div className={blockClasses} style={blockStyle}>
+                <div {...blockProps}>
                     <div className="image-comparison-container">
                         <div className="image-comparison-before">
                             <img src={beforeImage.url} alt={beforeImage.alt} draggable={false} />
