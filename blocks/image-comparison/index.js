@@ -101,7 +101,6 @@ registerBlockType('modular-blocks/image-comparison', {
         const blockClasses = [
             className,
             'wp-block-modular-blocks-image-comparison',
-            'is-editor-preview', // Flag to disable animations in editor
             `orientation-${orientation}`,
             `display-mode-${displayMode}`,
             hoverAnimation ? 'has-hover-animation' : '',
@@ -401,55 +400,52 @@ registerBlockType('modular-blocks/image-comparison', {
                     </PanelBody>
                 </InspectorControls>
 
-                <Placeholder
-                    icon="image-flip-horizontal"
-                    label={__('Bild-Vergleich', 'modular-blocks-plugin')}
-                >
-                    <div style={{
-                        padding: '20px',
-                        textAlign: 'center',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: '4px',
-                        minHeight: '200px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: '15px'
-                    }}>
-                        <div style={{ fontSize: '48px', opacity: 0.3 }}>
-                            🔄
+                <div className={blockClasses} style={blockStyle}>
+                    <div className="image-comparison-container">
+                        <div className="image-comparison-before">
+                            <img src={beforeImage.url} alt={beforeImage.alt} draggable={false} />
+                            {showLabels && beforeLabel && (
+                                <div className="image-comparison-label label-before">
+                                    {beforeLabel}
+                                </div>
+                            )}
                         </div>
-                        <div style={{ fontSize: '14px', color: '#555', maxWidth: '400px' }}>
-                            <strong>{__('Bild-Vergleich Block', 'modular-blocks-plugin')}</strong>
-                            <p style={{ margin: '10px 0 0 0', fontSize: '12px', lineHeight: '1.5' }}>
-                                {__('Vorher-Bild:', 'modular-blocks-plugin')} ✓<br/>
-                                {__('Nachher-Bild:', 'modular-blocks-plugin')} ✓<br/>
-                                <br/>
-                                {__('Anzeigemodus:', 'modular-blocks-plugin')} <strong>{displayMode === 'slide' ? __('Slide (sofort)', 'modular-blocks-plugin') : displayMode === 'fade' ? __('Fade (Überblendung)', 'modular-blocks-plugin') : __('Juxtaposition (gleitend)', 'modular-blocks-plugin')}</strong><br/>
-                                {__('Orientierung:', 'modular-blocks-plugin')} <strong>{orientation === 'horizontal' ? __('Horizontal', 'modular-blocks-plugin') : __('Vertikal', 'modular-blocks-plugin')}</strong><br/>
-                                {__('Startposition:', 'modular-blocks-plugin')} <strong>{startingPosition}%</strong>
-                            </p>
+
+                        <div className="image-comparison-after">
+                            <img src={afterImage.url} alt={afterImage.alt} draggable={false} />
+                            {showLabels && afterLabel && (
+                                <div className="image-comparison-label label-after">
+                                    {afterLabel}
+                                </div>
+                            )}
                         </div>
-                        <div style={{
-                            padding: '10px 15px',
-                            backgroundColor: '#0073aa',
-                            color: 'white',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: '600'
-                        }}>
-                            ℹ️ {__('Nutze die Seitenleiste rechts zum Anpassen', 'modular-blocks-plugin')}
-                        </div>
-                        <div style={{
-                            fontSize: '11px',
-                            color: '#999',
-                            fontStyle: 'italic'
-                        }}>
-                            {__('Die Vorschau wird nur im Frontend angezeigt', 'modular-blocks-plugin')}
+
+                        <div className="image-comparison-slider">
+                            <div className="slider-handle">
+                                <div className="slider-button">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15 19L8 12L15 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div className="slider-line"></div>
                         </div>
                     </div>
-                </Placeholder>
+
+                    <div className="editor-notice" style={{
+                        marginTop: '10px',
+                        padding: '10px',
+                        backgroundColor: '#f0f6fc',
+                        borderLeft: '4px solid #0073aa',
+                        fontSize: '12px',
+                        color: '#646970'
+                    }}>
+                        {__('Vorschau: Der interaktive Slider funktioniert im Frontend. Im Editor wird eine statische Vorschau angezeigt.', 'modular-blocks-plugin')}
+                    </div>
+                </div>
             </Fragment>
         );
     },

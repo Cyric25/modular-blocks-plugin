@@ -252,40 +252,14 @@
     margin: 1.5em 0;
 }
 
-/* IMPORTANT: Disable animations in editor preview, but keep block clickable */
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-after,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-before,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-slider,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .slider-button,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-label {
+/* Disable animations in editor */
+.wp-block-modular-blocks-image-comparison .image-comparison-after,
+.wp-block-modular-blocks-image-comparison .image-comparison-before,
+.wp-block-modular-blocks-image-comparison .image-comparison-slider,
+.wp-block-modular-blocks-image-comparison .slider-button,
+.wp-block-modular-blocks-image-comparison .image-comparison-label {
     animation: none !important;
     transition: none !important;
-}
-
-/* Ensure block container is clickable in editor */
-.wp-block-modular-blocks-image-comparison.is-editor-preview {
-    pointer-events: auto !important;
-}
-
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-container {
-    pointer-events: auto !important;
-}
-
-/* CRITICAL: Ensure image containers don't block clicks in editor */
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-before,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-after,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-before *,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-after *,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-slider,
-.wp-block-modular-blocks-image-comparison.is-editor-preview .image-comparison-slider * {
-    pointer-events: none !important;
-}
-
-/* Disable slider button hover effect in editor */
-.wp-block-modular-blocks-image-comparison.is-editor-preview .slider-button:hover {
-    background-color: var(--slider-color) !important;
-    transform: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Inspector controls specific styles */
