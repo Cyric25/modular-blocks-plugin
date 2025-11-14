@@ -13,8 +13,12 @@
 		const blocks = document.querySelectorAll('.wp-block-modular-blocks-html-sandbox');
 
 		blocks.forEach((block) => {
-			if (block.dataset.initialized) return;
-			block.dataset.initialized = 'true';
+			const container = block.querySelector('.html-sandbox-container');
+			if (!container) return;
+
+			// Check if already initialized
+			if (container.dataset.initialized) return;
+			container.dataset.initialized = 'true';
 
 			const mode = block.dataset.mode || 'iframe';
 

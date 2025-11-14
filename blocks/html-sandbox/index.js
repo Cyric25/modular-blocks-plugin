@@ -40,15 +40,23 @@ registerBlockType('modular-blocks/html-sandbox', {
 
 		// Check if current user can edit posts (as a proxy for checking capabilities)
 		const canEdit = useSelect((select) => {
-			const currentUser = select('core').getCurrentUser();
-			// Check if user has unfiltered_html capability (usually admins and super-admins)
-			return currentUser && (
-				currentUser.capabilities?.unfiltered_html ||
-				currentUser.capabilities?.manage_options
-			);
+			try {
+				const currentUser = select('core')?.getCurrentUser?.();
+				if (!currentUser) return null; // Still loading
+				// Check if user has unfiltered_html capability (usually admins and super-admins)
+				return (
+					currentUser.capabilities?.unfiltered_html ||
+					currentUser.capabilities?.manage_options ||
+					false
+				);
+			} catch (error) {
+				console.error('HTML Sandbox: Error checking user capabilities', error);
+				return true; // Allow on error to prevent blocking
+			}
 		}, []);
 
 		// Show warning if user doesn't have permission
+		// Only show error if explicitly false, not while loading (null)
 		if (canEdit === false) {
 			return (
 				<div {...blockProps}>
@@ -65,6 +73,21 @@ registerBlockType('modular-blocks/html-sandbox', {
 								)}
 							</p>
 						</Notice>
+					</Placeholder>
+				</div>
+			);
+		}
+
+		// Show loading placeholder while checking permissions
+		if (canEdit === null) {
+			return (
+				<div {...blockProps}>
+					<Placeholder
+						icon={icon}
+						label={__('HTML Sandbox', 'modular-blocks-plugin')}
+						isColumnLayout={true}
+					>
+						<p>{__('Überprüfe Berechtigungen...', 'modular-blocks-plugin')}</p>
 					</Placeholder>
 				</div>
 			);
