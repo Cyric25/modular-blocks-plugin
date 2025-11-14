@@ -76,7 +76,7 @@
         },
         "animationSpeed": {
             "type": "number",
-            "default": 4
+            "default": 12
         },
         "labelBackground": {
             "type": "string",

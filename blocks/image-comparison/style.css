@@ -56,29 +56,31 @@
 /* After image clipping - SLIDE MODE */
 .display-mode-slide .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-    transition: clip-path var(--transition-duration) ease;
+    transition: none;
     opacity: 1;
 }
 
 .display-mode-slide.orientation-vertical .image-comparison-after {
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
+    transition: none;
 }
 
 /* After image opacity - FADE MODE */
+/* Note: Opacity is set via JavaScript in view.js for accurate control */
 .display-mode-fade .image-comparison-after {
     clip-path: none;
-    opacity: calc(var(--starting-position) / 100);
-    transition: opacity var(--transition-duration) ease;
+    transition: none;
 }
 
 /* Backwards compatibility: default behavior is slide */
 .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-    transition: clip-path var(--transition-duration) ease;
+    transition: none;
 }
 
 .orientation-vertical .image-comparison-after {
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
+    transition: none;
 }
 
 /* Slider */

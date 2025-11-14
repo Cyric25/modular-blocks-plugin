@@ -330,8 +330,8 @@ registerBlockType('modular-blocks/image-comparison', {
                                 label={__('Animationsgeschwindigkeit (Sekunden)', 'modular-blocks-plugin')}
                                 value={animationSpeed}
                                 onChange={(value) => setAttributes({ animationSpeed: value })}
-                                min={0.5}
-                                max={5}
+                                min={2}
+                                max={15}
                                 step={0.5}
                                 help={__('Wie schnell die Hover-Animation abläuft', 'modular-blocks-plugin')}
                             />

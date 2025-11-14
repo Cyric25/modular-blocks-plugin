@@ -4,16 +4,72 @@ const { execSync } = require('child_process');
 
 const PLUGIN_NAME = 'modular-blocks-plugin';
 const VERSION = '1.0.0';
+const OUTPUT_DIR = path.join(__dirname, 'plugin-zips');
 const ZIP_NAME = `${PLUGIN_NAME}-${VERSION}.zip`;
+const ZIP_PATH = path.join(OUTPUT_DIR, ZIP_NAME);
 const TEMP_DIR = PLUGIN_NAME;
 
 console.log(`Creating WordPress Plugin ZIP: ${ZIP_NAME}`);
 console.log('='.repeat(50));
 
+// Ensure output directory exists
+if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+}
+
+// Validate required files exist
+console.log('Validating plugin files...\n');
+
+const requiredFiles = [
+    { path: 'modular-blocks-plugin.php', critical: true },
+    { path: 'includes', critical: true, isDir: true },
+    { path: 'admin', critical: true, isDir: true },
+    { path: 'assets', critical: true, isDir: true },
+    { path: 'blocks', critical: true, isDir: true },
+    { path: 'build/blocks', critical: true, isDir: true },
+];
+
+let validationErrors = [];
+let validationWarnings = [];
+
+// Check required files
+requiredFiles.forEach(file => {
+    if (!fs.existsSync(file.path)) {
+        validationErrors.push(`Missing critical ${file.isDir ? 'directory' : 'file'}: ${file.path}`);
+    } else if (file.isDir) {
+        const files = fs.readdirSync(file.path);
+        if (files.length === 0 && file.path === 'blocks') {
+            validationErrors.push(`Directory ${file.path}/ is empty - no blocks found!`);
+        }
+    }
+});
+
+// Check if build was run
+if (!fs.existsSync('build/blocks')) {
+    validationErrors.push('Build directory not found - please run "npm run build" first');
+}
+
+if (validationWarnings.length > 0) {
+    console.log('⚠️  Warnings:');
+    validationWarnings.forEach(warning => console.log(`   ${warning}`));
+    console.log('');
+}
+
+if (validationErrors.length > 0) {
+    console.log('❌ Validation Errors:');
+    validationErrors.forEach(error => console.log(`   ${error}`));
+    console.log('\n' + '='.repeat(50));
+    console.error('Cannot create plugin ZIP due to validation errors.');
+    console.error('Please run "npm run build" first if build files are missing.');
+    process.exit(1);
+}
+
+console.log('✓ All required files validated successfully!\n');
+
 // Remove old ZIP if exists
-if (fs.existsSync(ZIP_NAME)) {
+if (fs.existsSync(ZIP_PATH)) {
     console.log('Removing old ZIP file...');
-    fs.unlinkSync(ZIP_NAME);
+    fs.unlinkSync(ZIP_PATH);
 }
 
 // Remove old temp directory if exists
@@ -110,7 +166,7 @@ let zipCreated = false;
 // Try using archiver (Node.js solution that works cross-platform)
 try {
     const archiver = require('archiver');
-    const output = fs.createWriteStream(ZIP_NAME);
+    const output = fs.createWriteStream(ZIP_PATH);
     const archive = archiver('zip', {
         zlib: { level: 9 }
     });
@@ -120,6 +176,7 @@ try {
         console.log('\n' + '='.repeat(50));
         console.log('✓ Plugin ZIP created successfully!');
         console.log(`  File: ${ZIP_NAME}`);
+        console.log(`  Location: ${OUTPUT_DIR}`);
         console.log(`  Size: ${sizeMB} MB`);
         console.log('\nYou can now upload this ZIP file to WordPress:');
         console.log('  Plugins → Add New → Upload Plugin');
@@ -140,14 +197,14 @@ try {
 
     // Fallback to PowerShell Compress-Archive
     try {
-        execSync(`powershell -Command "Compress-Archive -Path '${TEMP_DIR}' -DestinationPath '${ZIP_NAME}' -Force"`, { stdio: 'inherit' });
+        execSync(`powershell -Command "Compress-Archive -Path '${TEMP_DIR}' -DestinationPath '${ZIP_PATH}' -Force"`, { stdio: 'inherit' });
         zipCreated = true;
     } catch (e2) {
         console.log('PowerShell Compress-Archive failed, trying 7zip...');
 
         // Try 7zip
         try {
-            execSync(`7z a -tzip "${ZIP_NAME}" "${TEMP_DIR}"`, { stdio: 'inherit' });
+            execSync(`7z a -tzip "${ZIP_PATH}" "${TEMP_DIR}"`, { stdio: 'inherit' });
             zipCreated = true;
         } catch (e3) {
             console.error('Could not create ZIP. Please run: npm install archiver');
@@ -163,13 +220,14 @@ setTimeout(() => {
     }
 
     // Show success message if not using archiver (archiver shows it in the close event)
-    if (zipCreated && fs.existsSync(ZIP_NAME) && !require.cache[require.resolve('archiver')]) {
-        const stats = fs.statSync(ZIP_NAME);
+    if (zipCreated && fs.existsSync(ZIP_PATH) && !require.cache[require.resolve('archiver')]) {
+        const stats = fs.statSync(ZIP_PATH);
         const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
         console.log('\n' + '='.repeat(50));
         console.log('✓ Plugin ZIP created successfully!');
         console.log(`  File: ${ZIP_NAME}`);
+        console.log(`  Location: ${OUTPUT_DIR}`);
         console.log(`  Size: ${sizeMB} MB`);
         console.log('\nYou can now upload this ZIP file to WordPress:');
         console.log('  Plugins → Add New → Upload Plugin');

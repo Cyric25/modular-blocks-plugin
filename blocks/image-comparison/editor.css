@@ -67,9 +67,11 @@
 }
 
 /* FADE MODE - Opacity based */
+/* Note: In editor, we need to calculate opacity from CSS variable */
+/* We use a workaround with opacity set to 50% as default preview */
 .wp-block-modular-blocks-image-comparison.display-mode-fade .image-comparison-after {
     clip-path: none;
-    opacity: calc(var(--starting-position) / 100);
+    opacity: 0.5; /* Static preview in editor */
 }
 
 /* Backwards compatibility: default is slide */

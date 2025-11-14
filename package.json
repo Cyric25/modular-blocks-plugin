@@ -1,6 +1,6 @@
 {
     "name": "modular-blocks-plugin",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "description": "Ein modulares WordPress Plugin das dynamisch Gutenberg Blöcke aus Ordnern registriert - mit ChemViz Integration",
     "main": "index.js",
     "scripts": {
@@ -17,6 +17,9 @@
         "lint:pkg-json": "wp-scripts lint-pkg-json",
         "packages-update": "wp-scripts packages-update",
         "plugin-zip": "node create-zip.js",
+        "plugin-zip-empty": "node create-empty-plugin-zip.js",
+        "block-zips": "node create-block-zips.js",
+        "zip-all": "npm run build && npm run plugin-zip && npm run plugin-zip-empty && npm run block-zips",
         "test:e2e": "wp-scripts test-e2e",
         "test:unit": "wp-scripts test-unit-js",
         "download-3dmol": "curl -o assets/js/vendor/3Dmol-min.js https://3dmol.csb.pitt.edu/build/3Dmol-min.js",

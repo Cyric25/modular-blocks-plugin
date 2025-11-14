@@ -25,7 +25,7 @@ $height = $block_attributes['height'] ?? 400;
 $slider_color = $block_attributes['sliderColor'] ?? '#0073aa';
 $slider_width = $block_attributes['sliderWidth'] ?? 4;
 $handle_size = $block_attributes['handleSize'] ?? 48;
-$animation_speed = $block_attributes['animationSpeed'] ?? 4;
+$animation_speed = $block_attributes['animationSpeed'] ?? 12;
 $label_background = $block_attributes['labelBackground'] ?? 'rgba(0, 0, 0, 0.7)';
 $label_color = $block_attributes['labelColor'] ?? '#ffffff';
 
@@ -39,7 +39,7 @@ $height = max(200, min(800, intval($height)));
 $slider_color = sanitize_hex_color($slider_color) ?: '#0073aa';
 $slider_width = max(1, min(10, intval($slider_width)));
 $handle_size = max(24, min(72, intval($handle_size)));
-$animation_speed = max(0.5, min(5, floatval($animation_speed)));
+$animation_speed = max(2, min(15, floatval($animation_speed)));
 $label_background = sanitize_text_field($label_background);
 $label_color = sanitize_hex_color($label_color) ?: '#ffffff';
 

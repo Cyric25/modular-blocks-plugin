@@ -35,7 +35,7 @@
             // Clamp position between 0 and 100
             position = Math.max(0, Math.min(100, position));
 
-            // Update CSS custom property
+            // Update CSS custom property - this will automatically update the image via CSS
             element.style.setProperty('--starting-position', position + '%');
 
             // Update slider position
@@ -45,19 +45,15 @@
                 slider.style.left = position + '%';
             }
 
-            // Update effect based on display mode
+            // Handle display mode specific styles
             if (isFadeMode) {
-                // Fade mode: adjust opacity
+                // Fade mode: set opacity directly via JavaScript
                 afterImage.style.opacity = position / 100;
                 afterImage.style.clipPath = 'none';
             } else {
-                // Slide mode: adjust clip-path
-                afterImage.style.opacity = '1';
-                if (isVertical) {
-                    afterImage.style.clipPath = `polygon(0% ${position}%, 100% ${position}%, 100% 100%, 0% 100%)`;
-                } else {
-                    afterImage.style.clipPath = `polygon(${position}% 0%, 100% 0%, 100% 100%, ${position}% 100%)`;
-                }
+                // Slide mode: let CSS handle clip-path via CSS variable
+                afterImage.style.opacity = '';
+                afterImage.style.clipPath = '';
             }
         }
 
@@ -139,7 +135,8 @@
          * @param {KeyboardEvent} event - Keyboard event
          */
         function handleKeyDown(event) {
-            const currentPosition = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position')) || 50;
+            const value = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position'));
+            const currentPosition = isNaN(value) ? 50 : value;
             let newPosition = currentPosition;
             const step = 2; // 2% steps
 
@@ -191,7 +188,8 @@
 
         // Update aria-valuenow when position changes
         function updateAriaValue() {
-            const currentPosition = Math.round(parseFloat(getComputedStyle(element).getPropertyValue('--starting-position')) || 50);
+            const value = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position'));
+            const currentPosition = Math.round(isNaN(value) ? 50 : value);
             sliderButton.setAttribute('aria-valuenow', currentPosition);
         }
 
@@ -211,13 +209,15 @@
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 // Force update to recalculate positions
-                const currentPosition = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position')) || 50;
+                const value = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position'));
+                const currentPosition = isNaN(value) ? 50 : value;
                 updateSlider(currentPosition);
             }, 100);
         });
 
         // Initialize with current position
-        const initialPosition = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position')) || 50;
+        const value = parseFloat(getComputedStyle(element).getPropertyValue('--starting-position'));
+        const initialPosition = isNaN(value) ? 50 : value;
         updateSlider(initialPosition);
     }
 
