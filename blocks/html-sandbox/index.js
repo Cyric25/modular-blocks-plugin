@@ -38,17 +38,14 @@ registerBlockType('modular-blocks/html-sandbox', {
 			className: 'html-sandbox-editor',
 		});
 
-		// Check if current user can edit posts (as a proxy for checking capabilities)
+		// Check if current user can edit posts (Editors, Authors, Admins can use this block)
 		const canEdit = useSelect((select) => {
 			try {
 				const currentUser = select('core')?.getCurrentUser?.();
 				if (!currentUser) return null; // Still loading
-				// Check if user has unfiltered_html capability (usually admins and super-admins)
-				return (
-					currentUser.capabilities?.unfiltered_html ||
-					currentUser.capabilities?.manage_options ||
-					false
-				);
+				// Check if user has edit_posts capability (Editors, Authors, Admins)
+				// This matches the server-side check in render.php
+				return currentUser.capabilities?.edit_posts || false;
 			} catch (error) {
 				console.error('HTML Sandbox: Error checking user capabilities', error);
 				return true; // Allow on error to prevent blocking
@@ -68,7 +65,7 @@ registerBlockType('modular-blocks/html-sandbox', {
 							<strong>{__('Zugriff verweigert', 'modular-blocks-plugin')}</strong>
 							<p>
 								{__(
-									'Dieser Block erfordert erweiterte Berechtigungen. Nur Benutzer mit der Berechtigung "unfiltered_html" können diesen Block verwenden. Bitte kontaktieren Sie Ihren Administrator.',
+									'Dieser Block erfordert die Berechtigung "edit_posts" (Redakteure, Autoren, Administratoren). Bitte kontaktieren Sie Ihren Administrator.',
 									'modular-blocks-plugin'
 								)}
 							</p>

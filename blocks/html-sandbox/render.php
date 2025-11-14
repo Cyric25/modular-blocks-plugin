@@ -12,12 +12,15 @@ if (!defined('ABSPATH')) {
 }
 
 // SECURITY: This block allows execution of arbitrary HTML, CSS, and JavaScript
-// Only administrators should be able to use this block
-if (!current_user_can('unfiltered_html')) {
+// By default, users with 'edit_posts' capability can use it (Editors, Authors, Admins)
+// You can customize this with the filter: apply_filters('modular_blocks_html_sandbox_capability', 'edit_posts')
+$required_capability = apply_filters('modular_blocks_html_sandbox_capability', 'edit_posts');
+
+if (!current_user_can($required_capability)) {
 	return '<div class="wp-block-modular-blocks-html-sandbox">
 		<div class="html-sandbox-error" style="padding: 1em; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
 			<strong>' . esc_html__('Zugriff verweigert', 'modular-blocks-plugin') . '</strong>
-			<p>' . esc_html__('Dieser Block erfordert erweiterte Berechtigungen. Nur Benutzer mit der Berechtigung "unfiltered_html" können diesen Block verwenden.', 'modular-blocks-plugin') . '</p>
+			<p>' . esc_html__('Dieser Block erfordert die Berechtigung "' . esc_html($required_capability) . '". Bitte kontaktieren Sie Ihren Administrator.', 'modular-blocks-plugin') . '</p>
 		</div>
 	</div>';
 }
