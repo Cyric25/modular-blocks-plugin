@@ -809,11 +809,15 @@ if (!defined('ABSPATH')) {
 
         // Move to blocks directory
         $target_dir = MODULAR_BLOCKS_PLUGIN_PATH . 'blocks/' . $block_name;
+        $block_existed = file_exists($target_dir);
 
-        if (file_exists($target_dir)) {
-            $this->delete_directory($temp_dir);
-            wp_send_json_error(sprintf(__('Block "%s" existiert bereits.', 'modular-blocks-plugin'), $block_name));
-            return;
+        // If block already exists, delete it first (to allow updates)
+        if ($block_existed) {
+            if (!$this->delete_directory($target_dir)) {
+                $this->delete_directory($temp_dir);
+                wp_send_json_error(sprintf(__('Fehler beim Ersetzen des bestehenden Blocks "%s".', 'modular-blocks-plugin'), $block_name));
+                return;
+            }
         }
 
         if (!rename($block_dir_found, $target_dir)) {
@@ -825,9 +829,15 @@ if (!defined('ABSPATH')) {
         // Clean up temp directory
         $this->delete_directory($temp_dir);
 
+        // Different message depending on whether it was new or replaced
+        $message = $block_existed
+            ? sprintf(__('Block "%s" erfolgreich aktualisiert!', 'modular-blocks-plugin'), $block_name)
+            : sprintf(__('Block "%s" erfolgreich hochgeladen!', 'modular-blocks-plugin'), $block_name);
+
         wp_send_json_success([
-            'message' => sprintf(__('Block "%s" erfolgreich hochgeladen!', 'modular-blocks-plugin'), $block_name),
-            'block' => $block_name
+            'message' => $message,
+            'block' => $block_name,
+            'replaced' => $block_existed
         ]);
     }
 
