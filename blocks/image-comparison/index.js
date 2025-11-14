@@ -267,16 +267,13 @@ registerBlockType('modular-blocks/image-comparison', {
                             value={displayMode}
                             onChange={(value) => setAttributes({ displayMode: value })}
                             options={[
-                                { label: __('Slide (sofortiger Wechsel)', 'modular-blocks-plugin'), value: 'slide' },
+                                { label: __('Slide (mit Slider)', 'modular-blocks-plugin'), value: 'slide' },
                                 { label: __('Fade (Überblendung)', 'modular-blocks-plugin'), value: 'fade' },
-                                { label: __('Juxtaposition (gleitender Übergang)', 'modular-blocks-plugin'), value: 'juxtaposition' },
                             ]}
                             help={
                                 displayMode === 'slide'
-                                    ? __('Das Bild springt sofort zur neuen Position ohne Animation.', 'modular-blocks-plugin')
-                                    : displayMode === 'fade'
-                                    ? __('Das nachher-Bild wird übergeblendet basierend auf der Slider-Position.', 'modular-blocks-plugin')
-                                    : __('Das Bild gleitet smooth zur neuen Position mit Animation.', 'modular-blocks-plugin')
+                                    ? __('Das Bild wird mit einem Slider geteilt und kann verschoben werden.', 'modular-blocks-plugin')
+                                    : __('Das nachher-Bild wird übergeblendet basierend auf der Slider-Position.', 'modular-blocks-plugin')
                             }
                         />
 

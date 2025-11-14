@@ -44,7 +44,7 @@
         "displayMode": {
             "type": "string",
             "default": "slide",
-            "enum": ["slide", "fade", "juxtaposition"]
+            "enum": ["slide", "fade"]
         },
         "startingPosition": {
             "type": "number",
@@ -76,7 +76,7 @@
         },
         "animationSpeed": {
             "type": "number",
-            "default": 2
+            "default": 4
         },
         "labelBackground": {
             "type": "string",

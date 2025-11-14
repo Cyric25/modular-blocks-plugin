@@ -66,15 +66,6 @@
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
 }
 
-/* JUXTAPOSITION MODE - Same as slide in editor */
-.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition .image-comparison-after {
-    clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-}
-
-.wp-block-modular-blocks-image-comparison.display-mode-juxtaposition.orientation-vertical .image-comparison-after {
-    clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
-}
-
 /* FADE MODE - Opacity based */
 .wp-block-modular-blocks-image-comparison.display-mode-fade .image-comparison-after {
     clip-path: none;

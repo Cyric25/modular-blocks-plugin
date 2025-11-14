@@ -53,25 +53,14 @@
     user-select: none;
 }
 
-/* After image clipping - SLIDE MODE (instant, no transition) */
+/* After image clipping - SLIDE MODE */
 .display-mode-slide .image-comparison-after {
-    clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-    transition: none;
-    opacity: 1;
-}
-
-.display-mode-slide.orientation-vertical .image-comparison-after {
-    clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
-}
-
-/* JUXTAPOSITION MODE (smooth transition) - Original mode */
-.display-mode-juxtaposition .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
     transition: clip-path var(--transition-duration) ease;
     opacity: 1;
 }
 
-.display-mode-juxtaposition.orientation-vertical .image-comparison-after {
+.display-mode-slide.orientation-vertical .image-comparison-after {
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
 }
 
@@ -229,7 +218,7 @@
 
 /* Hover animation */
 .has-hover-animation .image-comparison-container:hover .image-comparison-after {
-    animation: comparison-reveal 2s ease-in-out infinite;
+    animation: comparison-reveal var(--animation-speed) ease-in-out infinite;
 }
 
 @keyframes comparison-reveal {
@@ -240,7 +229,7 @@
 }
 
 .orientation-vertical.has-hover-animation .image-comparison-container:hover .image-comparison-after {
-    animation: comparison-reveal-vertical 2s ease-in-out infinite;
+    animation: comparison-reveal-vertical var(--animation-speed) ease-in-out infinite;
 }
 
 @keyframes comparison-reveal-vertical {
