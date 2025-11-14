@@ -11,7 +11,7 @@ const archiver = require('archiver');
 
 // Configuration
 const PLUGIN_NAME = 'modular-blocks-plugin';
-const VERSION = '1.0.9';
+const VERSION = '1.1.0';
 const OUTPUT_DIR = path.join(__dirname, 'plugin-zips');
 const ZIP_NAME = `${PLUGIN_NAME}-empty-${VERSION}.zip`;
 const ZIP_PATH = path.join(OUTPUT_DIR, ZIP_NAME);

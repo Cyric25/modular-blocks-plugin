@@ -84,40 +84,42 @@
 </html>
 		`;
 
-		// Write content to iframe
-		const doc = iframe.contentDocument || iframe.contentWindow.document;
-		doc.open();
-		doc.write(fullHTML);
-		doc.close();
+		// Try to write content to iframe
+		// This may fail if sandbox doesn't have allow-same-origin
+		try {
+			const doc = iframe.contentDocument || iframe.contentWindow.document;
+			doc.open();
+			doc.write(fullHTML);
+			doc.close();
 
-		// Auto-height adjustment
-		if (autoHeight) {
-			const adjustHeight = () => {
-				try {
-					const body = iframe.contentDocument.body;
-					const html = iframe.contentDocument.documentElement;
-					const height = Math.max(
-						body.scrollHeight,
-						body.offsetHeight,
-						html.clientHeight,
-						html.scrollHeight,
-						html.offsetHeight
-					);
-					const adjustedHeight = Math.min(Math.max(height, minHeight), maxHeight);
-					iframe.style.height = adjustedHeight + 'px';
-				} catch (e) {
-					console.error('HTML Sandbox: Could not adjust iframe height', e);
-				}
-			};
+			// Auto-height adjustment (only works with allow-same-origin)
+			if (autoHeight) {
+				const adjustHeight = () => {
+					try {
+						const body = iframe.contentDocument.body;
+						const html = iframe.contentDocument.documentElement;
+						const height = Math.max(
+							body.scrollHeight,
+							body.offsetHeight,
+							html.clientHeight,
+							html.scrollHeight,
+							html.offsetHeight
+						);
+						const adjustedHeight = Math.min(Math.max(height, minHeight), maxHeight);
+						iframe.style.height = adjustedHeight + 'px';
+					} catch (e) {
+						// Can't access iframe content - use min height
+						iframe.style.height = minHeight + 'px';
+					}
+				};
 
-			// Adjust height after load
-			iframe.addEventListener('load', () => {
-				setTimeout(adjustHeight, 100);
-				setTimeout(adjustHeight, 500); // Retry for slow-loading content
-			});
+				// Adjust height after load
+				iframe.addEventListener('load', () => {
+					setTimeout(adjustHeight, 100);
+					setTimeout(adjustHeight, 500); // Retry for slow-loading content
+				});
 
-			// Watch for content changes
-			if (iframe.contentWindow) {
+				// Watch for content changes
 				try {
 					const observer = new MutationObserver(adjustHeight);
 					iframe.contentDocument.addEventListener('DOMContentLoaded', () => {
@@ -128,9 +130,15 @@
 						});
 					});
 				} catch (e) {
-					// Cross-origin restrictions may prevent observation
+					// Cross-origin restrictions prevent observation
 				}
 			}
+		} catch (error) {
+			// If we can't access contentDocument, use srcdoc instead
+			console.warn('HTML Sandbox: Cannot access iframe content. Using srcdoc fallback.', error);
+			iframe.setAttribute('srcdoc', fullHTML);
+			// Set static height since we can't measure content
+			iframe.style.height = (autoHeight ? maxHeight : minHeight) + 'px';
 		}
 	}
 
