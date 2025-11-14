@@ -1,6 +1,6 @@
 {
     "name": "modular-blocks-plugin",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Ein modulares WordPress Plugin das dynamisch Gutenberg Blöcke aus Ordnern registriert - mit ChemViz Integration",
     "main": "index.js",
     "scripts": {

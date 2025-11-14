@@ -20,7 +20,10 @@ if (!current_user_can($required_capability)) {
 	return '<div class="wp-block-modular-blocks-html-sandbox">
 		<div class="html-sandbox-error" style="padding: 1em; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
 			<strong>' . esc_html__('Zugriff verweigert', 'modular-blocks-plugin') . '</strong>
-			<p>' . esc_html__('Dieser Block erfordert die Berechtigung "' . esc_html($required_capability) . '". Bitte kontaktieren Sie Ihren Administrator.', 'modular-blocks-plugin') . '</p>
+			<p>' . sprintf(
+				esc_html__('Dieser Block erfordert die Berechtigung "%s". Bitte kontaktieren Sie Ihren Administrator.', 'modular-blocks-plugin'),
+				esc_html($required_capability)
+			) . '</p>
 		</div>
 	</div>';
 }
