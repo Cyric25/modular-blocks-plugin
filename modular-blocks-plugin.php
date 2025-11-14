@@ -3,7 +3,7 @@
  * Plugin Name: Modulare Blöcke Plugin
  * Plugin URI: https://example.com/modular-blocks-plugin
  * Description: Ein modulares WordPress Plugin das dynamisch Gutenberg Blöcke aus Ordnern registriert
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Ihr Name
  * Text Domain: modular-blocks-plugin
  * Domain Path: /languages
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('MODULAR_BLOCKS_PLUGIN_VERSION', '1.1.0');
+define('MODULAR_BLOCKS_PLUGIN_VERSION', '1.1.1');
 define('MODULAR_BLOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_BASENAME', plugin_basename(__FILE__));
