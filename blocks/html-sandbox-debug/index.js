@@ -19,7 +19,7 @@ import { code as icon } from '@wordpress/icons';
 import './editor.css';
 import './style.css';
 
-registerBlockType('modular-blocks/html-sandbox', {
+registerBlockType('modular-blocks/html-sandbox-debug', {
 	edit: ({ attributes, setAttributes }) => {
 		const {
 			htmlCode,
@@ -38,14 +38,25 @@ registerBlockType('modular-blocks/html-sandbox', {
 			className: 'html-sandbox-editor',
 		});
 
-		// Check if current user can edit posts (Editors, Authors, Admins can use this block)
+		// DEBUG VERSION: Log capabilities and always allow
 		const canEdit = useSelect((select) => {
 			try {
 				const currentUser = select('core')?.getCurrentUser?.();
 				if (!currentUser) return null; // Still loading
-				// Check if user has edit_posts capability (Editors, Authors, Admins)
-				// This matches the server-side check in render.php
-				return currentUser.capabilities?.edit_posts || false;
+
+				// DEBUG: Log all user info
+				console.log('HTML Sandbox DEBUG:', {
+					user: currentUser.name,
+					username: currentUser.username,
+					roles: currentUser.roles,
+					edit_posts: currentUser.capabilities?.edit_posts,
+					unfiltered_html: currentUser.capabilities?.unfiltered_html,
+					manage_options: currentUser.capabilities?.manage_options,
+					allCapabilities: currentUser.capabilities
+				});
+
+				// DEBUG: Always return true (no capability check)
+				return true;
 			} catch (error) {
 				console.error('HTML Sandbox: Error checking user capabilities', error);
 				return true; // Allow on error to prevent blocking

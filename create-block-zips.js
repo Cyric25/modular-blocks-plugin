@@ -150,17 +150,20 @@ blockDirs.forEach((blockName, index) => {
         archive.directory(blockBuildPath, false);
     }
 
-    // Add block.json and render.php from source if they exist
-    const blockJsonPath = path.join(blockSourcePath, 'block.json');
-    const renderPhpPath = path.join(blockSourcePath, 'render.php');
+    // Add source files that are not compiled (block.json, render.php, source CSS)
+    const sourceFiles = [
+        'block.json',
+        'render.php',
+        'editor.css',
+        'style.css'
+    ];
 
-    if (fs.existsSync(blockJsonPath)) {
-        archive.file(blockJsonPath, { name: 'block.json' });
-    }
-
-    if (fs.existsSync(renderPhpPath)) {
-        archive.file(renderPhpPath, { name: 'render.php' });
-    }
+    sourceFiles.forEach(fileName => {
+        const filePath = path.join(blockSourcePath, fileName);
+        if (fs.existsSync(filePath)) {
+            archive.file(filePath, { name: fileName });
+        }
+    });
 
     archive.finalize();
 });
