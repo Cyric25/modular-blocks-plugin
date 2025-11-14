@@ -3,7 +3,7 @@
  */
 
 .wp-block-modular-blocks-image-comparison {
-    /* --starting-position is set via inline style from React */
+    /* --starting-position set via inline style */
     --comparison-height: 400px;
     --slider-width: 4px;
     --slider-color: #0073aa;
@@ -13,20 +13,10 @@
     --label-color: #ffffff;
 }
 
-/* CRITICAL: Make block clickable in editor */
-.wp-block-modular-blocks-image-comparison {
-    margin: 1.5em 0;
-    position: relative;
-    user-select: none;
-    /* Ensure block wrapper itself is clickable */
-    pointer-events: auto !important;
-}
-
 .editor-styles-wrapper .wp-block-modular-blocks-image-comparison {
     margin: 1.5em 0;
     position: relative;
     user-select: none;
-    pointer-events: auto !important;
 }
 
 /* Editor-specific container */
@@ -39,8 +29,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border: 2px solid transparent;
     transition: border-color 0.2s ease;
-    /* IMPORTANT: Allow clicks in editor to select the block */
-    pointer-events: auto !important;
 }
 
 .wp-block-modular-blocks-image-comparison.is-selected .image-comparison-container {
@@ -57,8 +45,6 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    /* CRITICAL: These containers must not block clicks in editor */
-    pointer-events: none !important;
 }
 
 .wp-block-modular-blocks-image-comparison .image-comparison-before img,
@@ -67,37 +53,35 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    pointer-events: none !important;
+    pointer-events: none;
     user-select: none;
 }
 
-/* Static preview clipping in editor - SLIDE MODE (instant) */
+/* Static preview clipping in editor - SLIDE MODE */
 .wp-block-modular-blocks-image-comparison.display-mode-slide .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-    opacity: 1;
 }
 
 .wp-block-modular-blocks-image-comparison.display-mode-slide.orientation-vertical .image-comparison-after {
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
 }
 
-/* JUXTAPOSITION MODE - Smooth transition (original mode) */
+/* JUXTAPOSITION MODE - Same as slide in editor */
 .wp-block-modular-blocks-image-comparison.display-mode-juxtaposition .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
-    opacity: 1;
 }
 
 .wp-block-modular-blocks-image-comparison.display-mode-juxtaposition.orientation-vertical .image-comparison-after {
     clip-path: polygon(0% var(--starting-position), 100% var(--starting-position), 100% 100%, 0% 100%);
 }
 
-/* Static preview opacity in editor - FADE MODE */
+/* FADE MODE - Opacity based */
 .wp-block-modular-blocks-image-comparison.display-mode-fade .image-comparison-after {
     clip-path: none;
     opacity: calc(var(--starting-position) / 100);
 }
 
-/* Backwards compatibility: default behavior is slide */
+/* Backwards compatibility: default is slide */
 .wp-block-modular-blocks-image-comparison .image-comparison-after {
     clip-path: polygon(var(--starting-position) 0%, 100% 0%, 100% 100%, var(--starting-position) 100%);
 }
@@ -115,7 +99,7 @@
     height: 100%;
     transform: translateX(-50%);
     z-index: 10;
-    pointer-events: none !important;
+    pointer-events: none;
 }
 
 .wp-block-modular-blocks-image-comparison.orientation-vertical .image-comparison-slider {
@@ -154,7 +138,7 @@
     height: var(--slider-handle-size);
     transform: translate(-50%, -50%);
     z-index: 11;
-    pointer-events: none !important;
+    pointer-events: none;
 }
 
 .wp-block-modular-blocks-image-comparison .slider-button {
@@ -199,7 +183,7 @@
     font-weight: 600;
     border-radius: 4px;
     backdrop-filter: blur(4px);
-    pointer-events: none !important;
+    pointer-events: none;
 }
 
 .wp-block-modular-blocks-image-comparison .label-before {
@@ -235,7 +219,6 @@
     font-size: 12px;
     color: #646970;
     border-radius: 0 4px 4px 0;
-    pointer-events: none !important;
 }
 
 /* Placeholder in editor */
@@ -252,14 +235,17 @@
     margin: 1.5em 0;
 }
 
-/* Disable animations in editor */
-.wp-block-modular-blocks-image-comparison .image-comparison-after,
-.wp-block-modular-blocks-image-comparison .image-comparison-before,
-.wp-block-modular-blocks-image-comparison .image-comparison-slider,
-.wp-block-modular-blocks-image-comparison .slider-button,
-.wp-block-modular-blocks-image-comparison .image-comparison-label {
+/* IMPORTANT: Disable hover animations in editor */
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison.has-hover-animation .image-comparison-container:hover .image-comparison-after,
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison.has-hover-animation .image-comparison-after {
     animation: none !important;
-    transition: none !important;
+}
+
+/* Disable slider button hover effect in editor */
+.editor-styles-wrapper .wp-block-modular-blocks-image-comparison .slider-button:hover {
+    background-color: var(--slider-color);
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Inspector controls specific styles */
