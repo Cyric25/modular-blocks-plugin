@@ -3,7 +3,7 @@
  */
 
 .wp-block-modular-blocks-html-sandbox {
-	margin: 20px 0;
+	margin: 0;
 	position: relative;
 }
 
@@ -11,8 +11,6 @@
 .html-sandbox-container {
 	position: relative;
 	overflow: hidden;
-	border-radius: 4px;
-	background: #fff;
 }
 
 /* Loading state */
@@ -68,19 +66,7 @@
 	display: block;
 	width: 100%;
 	border: none;
-	background: #fff;
 	transition: height 0.3s ease;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-	.wp-block-modular-blocks-html-sandbox {
-		margin: 15px 0;
-	}
-
-	.html-sandbox-container {
-		border-radius: 2px;
-	}
 }
 
 /* Print styles */

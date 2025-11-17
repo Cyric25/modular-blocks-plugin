@@ -7,6 +7,27 @@
 	'use strict';
 
 	/**
+	 * Decode base64 string with UTF-8 support (handles German umlauts, etc.)
+	 */
+	function base64DecodeUnicode(str) {
+		if (!str) return '';
+		try {
+			// Decode base64 to binary string
+			const binary = atob(str);
+			// Convert binary string to byte array
+			const bytes = new Uint8Array(binary.length);
+			for (let i = 0; i < binary.length; i++) {
+				bytes[i] = binary.charCodeAt(i);
+			}
+			// Decode bytes as UTF-8
+			return new TextDecoder('utf-8').decode(bytes);
+		} catch (e) {
+			console.error('HTML Sandbox: Failed to decode base64:', e);
+			return '';
+		}
+	}
+
+	/**
 	 * Initialize all HTML Sandbox blocks on the page
 	 */
 	function initHtmlSandbox() {
@@ -37,10 +58,36 @@
 		const container = block.querySelector('.html-sandbox-container');
 		if (!container) return;
 
-		const htmlCode = container.dataset.html || '';
-		const cssCode = container.dataset.css || '';
-		const jsCode = container.dataset.js || '';
-		const externalScripts = container.dataset.externalScripts || '';
+		// Read code from JSON script tag (avoids data-attribute length limits)
+		const dataScript = container.querySelector('.html-sandbox-data');
+		let codeData = { html: '', css: '', js: '', externalScripts: '' };
+
+		if (dataScript) {
+			try {
+				console.log('HTML Sandbox: Found data script');
+				const encoded = JSON.parse(dataScript.textContent);
+				console.log('HTML Sandbox: Parsed JSON, keys:', Object.keys(encoded));
+
+				// Decode base64 encoded content with UTF-8 support
+				codeData = {
+					html: base64DecodeUnicode(encoded.html),
+					css: base64DecodeUnicode(encoded.css),
+					js: base64DecodeUnicode(encoded.js),
+					externalScripts: base64DecodeUnicode(encoded.externalScripts)
+				};
+
+				console.log('HTML Sandbox: Decoded lengths - html:', codeData.html.length, 'css:', codeData.css.length, 'js:', codeData.js.length);
+			} catch (e) {
+				console.error('HTML Sandbox: Failed to parse code data', e);
+			}
+		} else {
+			console.warn('HTML Sandbox: No data script found');
+		}
+
+		const htmlCode = codeData.html;
+		const cssCode = codeData.css;
+		const jsCode = codeData.js;
+		const externalScripts = codeData.externalScripts;
 		const sandboxAttr = container.dataset.sandbox || '';
 		const autoHeight = container.dataset.autoHeight === 'true';
 		const minHeight = parseInt(container.dataset.minHeight) || 200;
@@ -149,10 +196,29 @@
 		const container = block.querySelector('.html-sandbox-container');
 		if (!container) return;
 
-		const htmlCode = container.dataset.html || '';
-		const cssCode = container.dataset.css || '';
-		const jsCode = container.dataset.js || '';
-		const externalScripts = container.dataset.externalScripts || '';
+		// Read code from JSON script tag (avoids data-attribute length limits)
+		const dataScript = container.querySelector('.html-sandbox-data');
+		let codeData = { html: '', css: '', js: '', externalScripts: '' };
+
+		if (dataScript) {
+			try {
+				const encoded = JSON.parse(dataScript.textContent);
+				// Decode base64 encoded content with UTF-8 support
+				codeData = {
+					html: base64DecodeUnicode(encoded.html),
+					css: base64DecodeUnicode(encoded.css),
+					js: base64DecodeUnicode(encoded.js),
+					externalScripts: base64DecodeUnicode(encoded.externalScripts)
+				};
+			} catch (e) {
+				console.error('HTML Sandbox: Failed to parse code data', e);
+			}
+		}
+
+		const htmlCode = codeData.html;
+		const cssCode = codeData.css;
+		const jsCode = codeData.js;
+		const externalScripts = codeData.externalScripts;
 
 		// Create shadow root
 		const shadowHost = document.createElement('div');

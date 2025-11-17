@@ -11,7 +11,7 @@ const archiver = require('archiver');
 
 // Configuration
 const PLUGIN_NAME = 'modular-blocks-plugin';
-const VERSION = '1.1.1';
+const VERSION = '1.0.6';
 const OUTPUT_DIR = path.join(__dirname, 'plugin-zips');
 const ZIP_NAME = `${PLUGIN_NAME}-empty-${VERSION}.zip`;
 const ZIP_PATH = path.join(OUTPUT_DIR, ZIP_NAME);
@@ -117,6 +117,15 @@ dirsToCopy.forEach(dir => {
     }
 });
 
+// Merge compiled assets from build/assets/ into assets/
+if (fs.existsSync('build/assets')) {
+    console.log('Copying compiled assets from build/...');
+    const buildAssets = path.join('build', 'assets');
+    const destAssets = path.join(TEMP_DIR, 'assets');
+    mergeDirectory(buildAssets, destAssets);
+    console.log('  ✓ Merged build/assets/ into assets/');
+}
+
 // Create empty blocks directory
 fs.mkdirSync(path.join(TEMP_DIR, 'blocks'));
 console.log('  ✓ Created empty blocks/ directory');
@@ -177,6 +186,26 @@ function copyDirectory(src, dest) {
 
         if (entry.isDirectory()) {
             copyDirectory(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
+// Helper function to merge directories (overwrites files in dest if they exist)
+function mergeDirectory(src, dest) {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (let entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            mergeDirectory(srcPath, destPath);
         } else {
             fs.copyFileSync(srcPath, destPath);
         }

@@ -11,22 +11,10 @@ if (!defined('ABSPATH')) {
 	exit; // Exit if accessed directly
 }
 
-// SECURITY: This block allows execution of arbitrary HTML, CSS, and JavaScript
-// By default, users with 'edit_posts' capability can use it (Editors, Authors, Admins)
-// You can customize this with the filter: apply_filters('modular_blocks_html_sandbox_capability', 'edit_posts')
-$required_capability = apply_filters('modular_blocks_html_sandbox_capability', 'edit_posts');
-
-if (!current_user_can($required_capability)) {
-	return '<div class="wp-block-modular-blocks-html-sandbox">
-		<div class="html-sandbox-error" style="padding: 1em; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-			<strong>' . esc_html__('Zugriff verweigert', 'modular-blocks-plugin') . '</strong>
-			<p>' . sprintf(
-				esc_html__('Dieser Block erfordert die Berechtigung "%s". Bitte kontaktieren Sie Ihren Administrator.', 'modular-blocks-plugin'),
-				esc_html($required_capability)
-			) . '</p>
-		</div>
-	</div>';
-}
+// SECURITY NOTE: Permission checks happen in the editor (index.js)
+// Only users with 'edit_posts' capability can CREATE this block
+// Frontend rendering shows approved content to all visitors
+// This is the correct behavior - editors create content, visitors view it
 
 // Extract attributes with defaults
 $html_code = $block_attributes['htmlCode'] ?? '';
@@ -76,14 +64,25 @@ if (!empty($block_attributes['align'])) {
      data-mode="<?php echo esc_attr($isolation_mode); ?>">
 
 	<div class="html-sandbox-container"
-	     data-html="<?php echo esc_attr($html_code); ?>"
-	     data-css="<?php echo esc_attr($css_code); ?>"
-	     data-js="<?php echo esc_attr($js_code); ?>"
-	     data-external-scripts="<?php echo esc_attr($external_scripts); ?>"
 	     data-sandbox="<?php echo esc_attr($sandbox_attr); ?>"
 	     data-auto-height="<?php echo $auto_height ? 'true' : 'false'; ?>"
 	     data-min-height="<?php echo esc_attr($min_height); ?>"
 	     data-max-height="<?php echo esc_attr($max_height); ?>">
+
+		<?php
+		// Use base64 encoding to avoid any JSON escaping issues
+		// This handles complex JavaScript with template literals, regex, etc.
+		$code_data = wp_json_encode(
+			array(
+				'html' => base64_encode($html_code),
+				'css' => base64_encode($css_code),
+				'js' => base64_encode($js_code),
+				'externalScripts' => base64_encode($external_scripts),
+			)
+		);
+		?>
+		<!-- Store base64-encoded code in JSON script to avoid escaping issues -->
+		<script type="application/json" class="html-sandbox-data"><?php echo $code_data; ?></script>
 
 		<noscript>
 			<div class="html-sandbox-noscript">

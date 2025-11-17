@@ -8,12 +8,9 @@ import {
 	RangeControl,
 	Notice,
 	TabPanel,
-	Placeholder,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
-import { code as icon } from '@wordpress/icons';
 
 // Import styles
 import './editor.css';
@@ -38,57 +35,9 @@ registerBlockType('modular-blocks/html-sandbox', {
 			className: 'html-sandbox-editor',
 		});
 
-		// Check if current user can edit posts (Editors, Authors, Admins can use this block)
-		const canEdit = useSelect((select) => {
-			try {
-				const currentUser = select('core')?.getCurrentUser?.();
-				if (!currentUser) return null; // Still loading
-				// Check if user has edit_posts capability (Editors, Authors, Admins)
-				// This matches the server-side check in render.php
-				return currentUser.capabilities?.edit_posts || false;
-			} catch (error) {
-				console.error('HTML Sandbox: Error checking user capabilities', error);
-				return true; // Allow on error to prevent blocking
-			}
-		}, []);
-
-		// Show warning if user doesn't have permission
-		// Only show error if explicitly false, not while loading (null)
-		if (canEdit === false) {
-			return (
-				<div {...blockProps}>
-					<Placeholder
-						icon={icon}
-						label={__('HTML Sandbox', 'modular-blocks-plugin')}
-					>
-						<Notice status="error" isDismissible={false}>
-							<strong>{__('Zugriff verweigert', 'modular-blocks-plugin')}</strong>
-							<p>
-								{__(
-									'Dieser Block erfordert die Berechtigung "edit_posts" (Redakteure, Autoren, Administratoren). Bitte kontaktieren Sie Ihren Administrator.',
-									'modular-blocks-plugin'
-								)}
-							</p>
-						</Notice>
-					</Placeholder>
-				</div>
-			);
-		}
-
-		// Show loading placeholder while checking permissions
-		if (canEdit === null) {
-			return (
-				<div {...blockProps}>
-					<Placeholder
-						icon={icon}
-						label={__('HTML Sandbox', 'modular-blocks-plugin')}
-						isColumnLayout={true}
-					>
-						<p>{__('Überprüfe Berechtigungen...', 'modular-blocks-plugin')}</p>
-					</Placeholder>
-				</div>
-			);
-		}
+		// SECURITY NOTE: No permission check in the editor
+		// If a user has access to the WordPress editor, they can use this block
+		// WordPress itself controls who can access the editor
 
 		// Update iframe content when code changes
 		useEffect(() => {

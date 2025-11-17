@@ -83,3 +83,16 @@ temp/
 # Lock files (keep package-lock.json, remove others)
 yarn.lock
 pnpm-lock.yaml
+
+# WordPress build artifacts
+*.asset.php
+blocks/**/index.css
+blocks/**/style-index.css
+
+# Debug and testing
+debug-*.php
+temp-extract/
+plugin-zips/
+
+# Block-specific debug folders
+blocks/**/*-debug/
