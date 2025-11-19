@@ -33,8 +33,8 @@ npm run lint:css
 npm run test:unit
 npm run test:e2e
 
-# Create plugin ZIP for distribution
-npm run plugin-zip
+# Create individual block ZIPs for distribution (RECOMMENDED)
+npm run block-zips
 
 # ChemViz: Download vendor libraries (3Dmol.js, Plotly.js)
 npm run download-libs
@@ -42,6 +42,30 @@ npm run download-libs
 npm run download-3dmol
 npm run download-plotly
 ```
+
+## Plugin Distribution Strategy
+
+**IMPORTANT:** This plugin uses a **modular distribution approach**:
+
+1. **Empty Plugin Base** (`modular-blocks-plugin-empty-1.0.6.zip`)
+   - Minimal plugin shell installed once on WordPress
+   - Contains only core files: plugin main file, Block Manager, Admin Manager
+   - Never needs to be updated unless core functionality changes
+
+2. **Individual Block ZIPs** (uploaded separately)
+   - Each block is packaged as a standalone ZIP file
+   - Upload via WordPress Admin → Einstellungen → Modulare Blöcke → Block hochladen
+   - Only updated blocks need to be re-uploaded
+   - Allows granular control over which blocks are installed
+
+**After making changes to a block:**
+```bash
+npm run build           # Build JavaScript
+npm run block-zips      # Create individual block ZIPs
+# Upload only the changed block ZIP(s) to WordPress
+```
+
+**DO NOT use `npm run plugin-zip`** - Full plugin ZIPs are no longer used for distribution.
 
 ## Architecture
 
