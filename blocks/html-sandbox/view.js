@@ -275,9 +275,25 @@
 		if (!code.trim()) return;
 
 		try {
-			// Create a function to execute the code with shadowRoot context
-			const func = new Function('shadowRoot', code);
-			func(shadowRoot);
+			// Create a document proxy that redirects common DOM methods to shadowRoot
+			// This allows user code to use document.querySelector() etc. and have it work in Shadow DOM
+			const documentProxy = {
+				querySelector: (selector) => shadowRoot.querySelector(selector),
+				querySelectorAll: (selector) => shadowRoot.querySelectorAll(selector),
+				getElementById: (id) => shadowRoot.getElementById(id),
+				getElementsByClassName: (className) => shadowRoot.getElementsByClassName(className),
+				getElementsByTagName: (tagName) => shadowRoot.getElementsByTagName(tagName),
+				body: shadowRoot.host.parentElement, // Fallback to shadow host's parent
+				// Passthrough for other document properties that don't need redirection
+				createElement: document.createElement.bind(document),
+				createTextNode: document.createTextNode.bind(document),
+				createDocumentFragment: document.createDocumentFragment.bind(document),
+			};
+
+			// Execute code with both shadowRoot and document proxy
+			// This allows both shadowRoot.querySelector() AND document.querySelector() to work
+			const func = new Function('shadowRoot', 'document', code);
+			func(shadowRoot, documentProxy);
 		} catch (e) {
 			console.error('HTML Sandbox: Error executing inline script', e);
 		}
