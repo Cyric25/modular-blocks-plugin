@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "modular-blocks/block-reference",
+	"version": "1.0.0",
+	"title": "Block-Referenz",
+	"category": "modulare-bloecke",
+	"icon": "admin-links",
+	"description": "Erstelle einen Link zu einem anderen Container-Block (CDB) auf dieser oder einer anderen Seite.",
+	"keywords": ["referenz", "link", "container", "cdb", "verweis"],
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"align": ["wide", "full"]
+	},
+	"attributes": {
+		"targetBlockId": {
+			"type": "string",
+			"default": ""
+		},
+		"targetPostId": {
+			"type": "number",
+			"default": 0
+		},
+		"targetBlockTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"targetPostTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"linkText": {
+			"type": "string",
+			"default": ""
+		},
+		"showIcon": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"textdomain": "modular-blocks",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style.css",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,143 @@
+/**
+ * Block-Referenz Frontend Styles
+ */
+
+.block-reference-wrapper {
+	margin: 1.5em 0;
+}
+
+.block-reference-link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.3s ease;
+}
+
+.block-reference-link:hover {
+	transform: translateX(5px);
+}
+
+.block-reference-content {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	padding: 1em 1.5em;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+
+.block-reference-link:hover .block-reference-content {
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+	transform: translateY(-2px);
+}
+
+.block-reference-icon {
+	font-size: 24px;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.block-reference-text {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25em;
+}
+
+.block-reference-label {
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.block-reference-page {
+	font-size: 13px;
+	opacity: 0.9;
+	font-weight: 400;
+}
+
+.block-reference-arrow {
+	font-size: 24px;
+	font-weight: bold;
+	line-height: 1;
+	flex-shrink: 0;
+	transition: transform 0.3s ease;
+}
+
+.block-reference-link:hover .block-reference-arrow {
+	transform: translateX(5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.block-reference-content {
+		padding: 0.875em 1.25em;
+		gap: 0.75em;
+	}
+
+	.block-reference-icon {
+		font-size: 20px;
+	}
+
+	.block-reference-label {
+		font-size: 15px;
+	}
+
+	.block-reference-page {
+		font-size: 12px;
+	}
+
+	.block-reference-arrow {
+		font-size: 20px;
+	}
+}
+
+/* Alternative compact style (can be added as a block style variation) */
+.is-style-compact .block-reference-content {
+	padding: 0.75em 1em;
+	background: #f0f0f1;
+	color: #1e1e1e;
+	border: 2px solid #ddd;
+}
+
+.is-style-compact .block-reference-link:hover .block-reference-content {
+	background: #e0e0e1;
+	border-color: #007cba;
+}
+
+.is-style-compact .block-reference-icon {
+	font-size: 18px;
+}
+
+.is-style-compact .block-reference-label {
+	font-size: 14px;
+	font-weight: 500;
+	color: #007cba;
+}
+
+.is-style-compact .block-reference-arrow {
+	color: #007cba;
+}
+
+/* Highlight animation for referenced blocks */
+@keyframes blockHighlight {
+	0%, 100% {
+		box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+	}
+	50% {
+		box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.4);
+	}
+}
+
+.block-reference-highlight {
+	animation: blockHighlight 2s ease-in-out;
+	scroll-margin-top: 100px; /* Offset for fixed headers */
+}
+
+/* Ensure referenced blocks have smooth scroll margin */
+[id] {
+	scroll-margin-top: 80px;
+}

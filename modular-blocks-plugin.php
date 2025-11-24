@@ -3,7 +3,7 @@
  * Plugin Name: Modulare Blöcke Plugin
  * Plugin URI: https://example.com/modular-blocks-plugin
  * Description: Ein modulares WordPress Plugin das dynamisch Gutenberg Blöcke aus Ordnern registriert
- * Version: 1.1.8
+ * Version: 1.2.0
  * Author: Ihr Name
  * Text Domain: modular-blocks-plugin
  * Domain Path: /languages
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('MODULAR_BLOCKS_PLUGIN_VERSION', '1.1.8');
+define('MODULAR_BLOCKS_PLUGIN_VERSION', '1.2.0');
 define('MODULAR_BLOCKS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('MODULAR_BLOCKS_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -82,6 +82,7 @@ class ModularBlocksPlugin {
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-block-manager.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-admin-manager.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-diagnostics.php';
+        require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-cbd-blocks-api.php';
 
         // ChemViz integration
         if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-enqueue.php')) {
@@ -93,6 +94,10 @@ class ModularBlocksPlugin {
 
         $this->block_manager = new ModularBlocks_Block_Manager();
         $this->admin_manager = new ModularBlocks_Admin_Manager();
+
+        // Initialize CBD Blocks REST API
+        $cbd_blocks_api = new ModularBlocks_CBD_Blocks_API();
+        $cbd_blocks_api->init();
     }
 
     public function init() {
