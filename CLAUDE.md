@@ -13,6 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+**CRITICAL: Always run syntax check before creating ZIPs!**
+
 ```bash
 # Install dependencies
 npm install
@@ -34,7 +36,8 @@ npm run test:unit
 npm run test:e2e
 
 # Create individual block ZIPs for distribution (RECOMMENDED)
-npm run block-zips
+# IMPORTANT: Always run syntax check first!
+for file in *.php includes/*.php; do php -l "$file" || exit 1; done && npm run build && npm run block-zips
 
 # ChemViz: Download vendor libraries (3Dmol.js, Plotly.js)
 npm run download-libs
@@ -42,6 +45,48 @@ npm run download-libs
 npm run download-3dmol
 npm run download-plotly
 ```
+
+### Syntax Check (MANDATORY before ZIP creation)
+
+**Always run before creating block ZIPs:**
+
+```bash
+# Check all PHP files for syntax errors
+for file in *.php includes/*.php; do echo "Checking $file..."; php -l "$file" || exit 1; done
+```
+
+**Complete workflow (recommended):**
+
+```bash
+# 1. Syntax check all PHP files
+for file in *.php includes/*.php; do php -l "$file" || exit 1; done
+
+# 2. If no errors: Build and create block ZIPs
+npm run build
+npm run block-zips
+
+# 3. Commit and push
+git add .
+git commit -m "Your commit message"
+git push origin main
+```
+
+**Why this matters:**
+- Prevents distributing broken PHP code
+- Catches syntax errors in plugin main file and includes
+- Ensures WordPress won't show fatal errors
+- Required before every ZIP creation
+
+**What gets checked:**
+- Plugin main file: `modular-blocks-plugin.php`
+- All files in `includes/` directory
+- Syntax validation via `php -l`
+- Exit immediately on first error (`|| exit 1`)
+
+**If syntax error found:**
+- Fix the error
+- Re-run syntax check
+- Only then create ZIPs
 
 ## Plugin Distribution Strategy
 
