@@ -3,8 +3,9 @@
  */
 
 .wp-block-modular-blocks-image-comparison {
-    /* --starting-position set via inline style from render.php */
+    /* CSS variables set via inline style from render.php */
     --comparison-height: 400px; /* Fallback for old browsers */
+    --comparison-aspect-ratio: 16 / 9; /* Dynamic, based on actual image dimensions */
     --slider-width: 4px;
     --slider-color: #0073aa;
     --slider-handle-size: 48px;
@@ -21,15 +22,15 @@
 .image-comparison-container {
     position: relative;
     width: 100%;
-    max-width: var(--comparison-max-width); /* Limits width to maintain aspect-ratio with desired height */
+    max-width: var(--comparison-max-width); /* Limits width based on height and image aspect-ratio */
     margin: 0 auto; /* Center if constrained by max-width */
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     cursor: ew-resize;
 
-    /* Aspect-ratio determines the height automatically based on width */
-    aspect-ratio: 16 / 9;
+    /* Use dynamic aspect-ratio from actual image dimensions */
+    aspect-ratio: var(--comparison-aspect-ratio);
     height: auto;
 }
 
@@ -277,8 +278,7 @@
     }
 
     .image-comparison-container {
-        /* Slightly taller aspect ratio for tablets */
-        aspect-ratio: 4 / 3;
+        /* Keep image aspect-ratio, but limit max-width for portrait images */
         max-width: var(--comparison-max-width-tablet);
     }
 
@@ -312,8 +312,7 @@
     }
 
     .image-comparison-container {
-        /* Square aspect ratio for phones */
-        aspect-ratio: 1 / 1;
+        /* Keep image aspect-ratio, but limit to square for very portrait images */
         max-width: var(--comparison-max-width-mobile);
     }
 
@@ -337,7 +336,7 @@
     width: 100%;
     max-width: var(--comparison-max-width);
     margin: 0 auto;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--comparison-aspect-ratio);
     background-color: #f6f7f7;
     border: 2px dashed #c3c4c7;
     border-radius: 8px;

@@ -48,6 +48,30 @@ if (empty($before_image['url']) || empty($after_image['url'])) {
     return '<div class="image-comparison-placeholder"><p>' . __('Bitte laden Sie beide Bilder hoch, um den Vergleich zu sehen.', 'modular-blocks-plugin') . '</p></div>';
 }
 
+// Get image dimensions from WordPress media library
+$aspect_ratio = '16 / 9'; // Default fallback
+$before_image_id = $before_image['id'] ?? null;
+$after_image_id = $after_image['id'] ?? null;
+
+// Try to get dimensions from before image first
+if ($before_image_id) {
+    $image_meta = wp_get_attachment_metadata($before_image_id);
+    if (!empty($image_meta['width']) && !empty($image_meta['height'])) {
+        $width = $image_meta['width'];
+        $height_img = $image_meta['height'];
+        $aspect_ratio = "$width / $height_img";
+    }
+}
+// Fallback to after image if before image has no dimensions
+elseif ($after_image_id) {
+    $image_meta = wp_get_attachment_metadata($after_image_id);
+    if (!empty($image_meta['width']) && !empty($image_meta['height'])) {
+        $width = $image_meta['width'];
+        $height_img = $image_meta['height'];
+        $aspect_ratio = "$width / $height_img";
+    }
+}
+
 // Generate unique ID for this block instance
 $block_id = 'image-comparison-' . wp_unique_id();
 
@@ -63,19 +87,34 @@ $css_classes = [
 $css_classes = array_filter($css_classes);
 $css_class = implode(' ', $css_classes);
 
-// Calculate max-width based on height and aspect-ratio (16:9)
-// This ensures the container respects the height setting while maintaining aspect-ratio
-$max_width_16_9 = round($height * (16 / 9));
-$max_width_4_3 = round($height * (4 / 3)); // For tablets
-$max_width_1_1 = $height; // For mobile (square)
+// Calculate max-width based on height and actual image aspect-ratio
+// Parse aspect-ratio string "width / height" to get ratio value
+$ratio_parts = explode(' / ', $aspect_ratio);
+if (count($ratio_parts) === 2) {
+    $ratio_value = floatval($ratio_parts[0]) / floatval($ratio_parts[1]);
+} else {
+    $ratio_value = 16 / 9; // Fallback
+}
+
+// Calculate max-width for different screen sizes
+// Desktop: Use actual image aspect-ratio
+$max_width_desktop = round($height * $ratio_value);
+
+// Tablet: Adjust aspect-ratio slightly for portrait images (limit to 4:3 max)
+$ratio_tablet = min($ratio_value, 4 / 3);
+$max_width_tablet = round($height * $ratio_tablet);
+
+// Mobile: Square aspect-ratio for better mobile experience
+$max_width_mobile = $height;
 
 // Build inline styles
 $inline_styles = [
     '--starting-position: ' . $starting_position . '%;',
     '--comparison-height: ' . $height . 'px;',
-    '--comparison-max-width: ' . $max_width_16_9 . 'px;',
-    '--comparison-max-width-tablet: ' . $max_width_4_3 . 'px;',
-    '--comparison-max-width-mobile: ' . $max_width_1_1 . 'px;',
+    '--comparison-aspect-ratio: ' . $aspect_ratio . ';',
+    '--comparison-max-width: ' . $max_width_desktop . 'px;',
+    '--comparison-max-width-tablet: ' . $max_width_tablet . 'px;',
+    '--comparison-max-width-mobile: ' . $max_width_mobile . 'px;',
     '--slider-color: ' . $slider_color . ';',
     '--slider-width: ' . $slider_width . 'px;',
     '--slider-handle-size: ' . $handle_size . 'px;',
