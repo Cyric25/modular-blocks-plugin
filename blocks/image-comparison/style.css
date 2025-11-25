@@ -21,15 +21,24 @@
 .image-comparison-container {
     position: relative;
     width: 100%;
-    /* Responsive height - maintains aspect ratio */
-    max-height: var(--comparison-height);
+    max-width: var(--comparison-max-width); /* Limits width to maintain aspect-ratio with desired height */
+    margin: 0 auto; /* Center if constrained by max-width */
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     cursor: ew-resize;
 
-    /* Modern aspect-ratio approach (16:9 default) */
+    /* Aspect-ratio determines the height automatically based on width */
     aspect-ratio: 16 / 9;
+    height: auto;
+}
+
+/* Fallback for browsers that don't support aspect-ratio */
+@supports not (aspect-ratio: 16 / 9) {
+    .image-comparison-container {
+        height: var(--comparison-height);
+        max-width: 100%;
+    }
 }
 
 .orientation-vertical .image-comparison-container {
@@ -265,12 +274,12 @@
     .wp-block-modular-blocks-image-comparison {
         --slider-handle-size: 40px;
         --slider-button-size: 28px;
-        --comparison-height: 300px; /* Max height fallback */
     }
 
     .image-comparison-container {
         /* Slightly taller aspect ratio for tablets */
         aspect-ratio: 4 / 3;
+        max-width: var(--comparison-max-width-tablet);
     }
 
     .image-comparison-label {
@@ -298,7 +307,6 @@
 
 @media (max-width: 480px) {
     .wp-block-modular-blocks-image-comparison {
-        --comparison-height: 250px; /* Max height fallback */
         --slider-handle-size: 36px;
         --slider-button-size: 24px;
     }
@@ -306,6 +314,7 @@
     .image-comparison-container {
         /* Square aspect ratio for phones */
         aspect-ratio: 1 / 1;
+        max-width: var(--comparison-max-width-mobile);
     }
 
     .slider-button svg {
@@ -325,7 +334,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: var(--comparison-height);
+    width: 100%;
+    max-width: var(--comparison-max-width);
+    margin: 0 auto;
     aspect-ratio: 16 / 9;
     background-color: #f6f7f7;
     border: 2px dashed #c3c4c7;

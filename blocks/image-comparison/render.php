@@ -63,10 +63,19 @@ $css_classes = [
 $css_classes = array_filter($css_classes);
 $css_class = implode(' ', $css_classes);
 
+// Calculate max-width based on height and aspect-ratio (16:9)
+// This ensures the container respects the height setting while maintaining aspect-ratio
+$max_width_16_9 = round($height * (16 / 9));
+$max_width_4_3 = round($height * (4 / 3)); // For tablets
+$max_width_1_1 = $height; // For mobile (square)
+
 // Build inline styles
 $inline_styles = [
     '--starting-position: ' . $starting_position . '%;',
     '--comparison-height: ' . $height . 'px;',
+    '--comparison-max-width: ' . $max_width_16_9 . 'px;',
+    '--comparison-max-width-tablet: ' . $max_width_4_3 . 'px;',
+    '--comparison-max-width-mobile: ' . $max_width_1_1 . 'px;',
     '--slider-color: ' . $slider_color . ';',
     '--slider-width: ' . $slider_width . 'px;',
     '--slider-handle-size: ' . $handle_size . 'px;',
