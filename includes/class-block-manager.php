@@ -173,6 +173,23 @@ class ModularBlocks_Block_Manager {
                     };
                 }
 
+                // For chart blocks, register viewScript with Plotly dependency
+                $chart_blocks = ['chart-block', 'interactive-data-chart'];
+                if (in_array($block_name, $chart_blocks)) {
+                    $view_js = $block_dir . '/view.js';
+                    if (file_exists($view_js)) {
+                        $handle = 'modular-blocks-' . $block_name . '-view-script';
+                        wp_register_script(
+                            $handle,
+                            MODULAR_BLOCKS_PLUGIN_URL . 'blocks/' . $block_name . '/view.js',
+                            ['chemviz-plotly'],
+                            filemtime($view_js),
+                            true
+                        );
+                        $args['view_script'] = $handle;
+                    }
+                }
+
                 // Register block - WordPress will automatically load block.json and assets
                 $result = register_block_type($block_dir, $args);
             }
@@ -201,6 +218,12 @@ class ModularBlocks_Block_Manager {
                 $handle = 'modular-blocks-' . $block_slug . '-view-script';
                 $asset_file = str_replace('.js', '.asset.php', $build_view);
                 $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_view)];
+
+                // Add Plotly dependency for chart blocks
+                $chart_blocks = ['chart-block', 'interactive-data-chart'];
+                if (in_array($block_slug, $chart_blocks)) {
+                    $asset_data['dependencies'][] = 'chemviz-plotly';
+                }
 
                 wp_register_script(
                     $handle,
