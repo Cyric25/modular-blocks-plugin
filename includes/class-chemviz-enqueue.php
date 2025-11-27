@@ -34,14 +34,15 @@ class ModularBlocks_ChemViz_Enqueue {
 
         $has_molecule_viewer = has_block('modular-blocks/molecule-viewer', $post);
         $has_chart_block = has_block('modular-blocks/chart-block', $post);
+        $has_interactive_data_chart = has_block('modular-blocks/interactive-data-chart', $post);
 
         // Enqueue 3Dmol.js for molecule viewer
         if ($has_molecule_viewer) {
             $this->enqueue_3dmol();
         }
 
-        // Enqueue Plotly.js for chart block
-        if ($has_chart_block) {
+        // Enqueue Plotly.js for chart blocks
+        if ($has_chart_block || $has_interactive_data_chart) {
             $this->enqueue_plotly();
         }
     }

@@ -1,0 +1,174 @@
+/**
+ * Editor styles for Interactive Data Chart Block
+ */
+
+.wp-block-modular-blocks-interactive-data-chart-editor {
+    padding: 20px;
+    background: #f8f9fa;
+    border: 2px dashed #c3c4c7;
+    border-radius: 8px;
+}
+
+.chart-editor-preview {
+    background: #ffffff;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #0073aa;
+}
+
+.preview-header .dashicons {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+    color: #0073aa;
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.preview-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f6fc;
+    border-left: 4px solid #0073aa;
+    border-radius: 4px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-item strong {
+    font-size: 12px;
+    font-weight: 600;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    font-size: 14px;
+    color: #1e1e1e;
+}
+
+.preview-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: #dff0d8;
+    border: 1px solid #d6e9c6;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.preview-notice .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: #3c763d;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.preview-notice p {
+    margin: 0;
+    font-size: 14px;
+    color: #3c763d;
+    line-height: 1.5;
+}
+
+.preview-table {
+    margin-top: 20px;
+}
+
+.preview-table table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.preview-table thead th {
+    background: #0073aa;
+    color: #ffffff;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.preview-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.preview-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.preview-table tbody td {
+    padding: 8px;
+}
+
+.preview-table input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 2px solid #dcdcde;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #f8f9fa;
+    color: #646970;
+}
+
+.preview-more {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #646970;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Inspector Controls customization */
+.components-panel__body .components-base-control {
+    margin-bottom: 16px;
+}
+
+.components-panel__body .components-base-control__label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.components-panel__body .components-base-control__help {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .preview-info {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-table {
+        overflow-x: auto;
+    }
+}

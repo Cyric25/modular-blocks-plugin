@@ -1,0 +1,241 @@
+/**
+ * Frontend styles for Interactive Data Chart Block
+ */
+
+.wp-block-modular-blocks-interactive-data-chart {
+    margin: 2em 0;
+    padding: 1.5em;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wp-block-modular-blocks-interactive-data-chart .chart-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.wp-block-modular-blocks-interactive-data-chart .chart-title {
+    margin: 0 0 1.5em 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e1e1e;
+    text-align: center;
+}
+
+/* Data Table Styles */
+.data-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 1.5em;
+}
+
+.data-input-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f9fa;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.data-input-table thead th {
+    background: #0073aa;
+    color: #ffffff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.data-input-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-input-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.data-input-table tbody td {
+    padding: 8px;
+}
+
+.data-input-table .data-cell {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.data-input-table .data-cell:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.data-input-table .data-cell::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Chart Controls */
+.chart-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 1.5em;
+}
+
+.generate-chart-btn,
+.clear-chart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.generate-chart-btn {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.generate-chart-btn:hover {
+    background: #005177;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+.clear-chart-btn {
+    background: #dc3545;
+    color: #ffffff;
+}
+
+.clear-chart-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.generate-chart-btn .dashicons,
+.clear-chart-btn .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+}
+
+/* Chart Display */
+.chart-display {
+    min-height: 400px;
+    background: #ffffff;
+    border-radius: 4px;
+    padding: 1em;
+}
+
+.chart-display.active {
+    display: block !important;
+}
+
+/* Message Display */
+.chart-message {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-top: 1em;
+    font-size: 14px;
+}
+
+.chart-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.chart-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.chart-message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Hide table option */
+.wp-block-modular-blocks-interactive-data-chart.hide-table .data-table-wrapper {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-interactive-data-chart {
+        padding: 1em;
+    }
+
+    .wp-block-modular-blocks-interactive-data-chart .chart-title {
+        font-size: 20px;
+    }
+
+    .data-input-table thead th {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .data-input-table .data-cell {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    .generate-chart-btn,
+    .clear-chart-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .chart-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generate-chart-btn,
+    .clear-chart-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .data-input-table {
+        font-size: 12px;
+    }
+
+    .data-input-table thead th {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .data-input-table .data-cell {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .chart-controls,
+    .data-table-wrapper {
+        display: none;
+    }
+
+    .chart-display {
+        display: block !important;
+    }
+}
