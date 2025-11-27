@@ -345,7 +345,16 @@
 
             // Create chart
             try {
-                Plotly.newPlot(chartDisplay, plotlyData, layout, config);
+                // Debug: Log plotlyData to verify regression line is included
+                console.log('Creating chart with data:', {
+                    chartType: chartType,
+                    showRegression: showRegression,
+                    tracesCount: plotlyData.length,
+                    traces: plotlyData.map(t => ({ type: t.type, mode: t.mode, name: t.name }))
+                });
+
+                // Use Plotly.react instead of newPlot for better updating
+                Plotly.react(chartDisplay, plotlyData, layout, config);
                 chartDisplay.style.display = 'block';
                 chartDisplay.classList.add('active');
                 clearBtn.style.display = 'inline-flex';
@@ -355,6 +364,7 @@
                     const rSquaredPercent = (regressionInfo.rSquared * 100).toFixed(2);
                     const infoMessage = `Regressionsgleichung: ${regressionInfo.equation} | R² = ${regressionInfo.rSquared.toFixed(4)} (${rSquaredPercent}%)`;
                     showMessage(infoMessage, 'success');
+                    console.log('Regression info:', regressionInfo);
                 } else {
                     showMessage('Diagramm erfolgreich erstellt!', 'success');
                 }
