@@ -279,14 +279,27 @@
                         name: 'Datenpunkte'
                     }];
 
+                    // Calculate axis ranges to keep them fixed
+                    const xMin = Math.min(...data.x);
+                    const xMax = Math.max(...data.x);
+                    const yMin = Math.min(...data.y);
+                    const yMax = Math.max(...data.y);
+
+                    // Add 10% padding to ranges
+                    const xPadding = (xMax - xMin) * 0.1;
+                    const yPadding = (yMax - yMin) * 0.1;
+
+                    layout.xaxis.range = [xMin - xPadding, xMax + xPadding];
+                    layout.yaxis.range = [yMin - yPadding, yMax + yPadding];
+                    layout.xaxis.autorange = false;
+                    layout.yaxis.autorange = false;
+
                     // Add regression line if enabled
                     if (showRegression && data.x.length >= 2) {
                         const regression = calculateLinearRegression(data.x, data.y);
 
                         // Calculate regression line points
-                        const xMin = Math.min(...data.x);
-                        const xMax = Math.max(...data.x);
-                        const xRange = [xMin, xMax];
+                        const xRange = [xMin - xPadding, xMax + xPadding];
                         const yRange = xRange.map(x => regression.slope * x + regression.intercept);
 
                         // Add regression line to plot
@@ -310,6 +323,29 @@
                             slope: regression.slope,
                             intercept: regression.intercept
                         };
+
+                        // Add regression equation as annotation in chart
+                        if (showRegressionEquation) {
+                            const rSquaredPercent = (regression.rSquared * 100).toFixed(2);
+                            layout.annotations = [{
+                                text: `${regressionInfo.equation}<br>R² = ${regression.rSquared.toFixed(4)} (${rSquaredPercent}%)`,
+                                x: 0.02,
+                                y: 0.98,
+                                xref: 'paper',
+                                yref: 'paper',
+                                xanchor: 'left',
+                                yanchor: 'top',
+                                showarrow: false,
+                                bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                bordercolor: '#e74c3c',
+                                borderwidth: 2,
+                                borderpad: 8,
+                                font: {
+                                    size: 12,
+                                    color: '#333'
+                                }
+                            }];
+                        }
                     }
                     break;
 
