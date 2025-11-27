@@ -24,7 +24,9 @@ registerBlockType('modular-blocks/interactive-data-chart', {
             tableRows,
             tableColumns,
             showTable,
-            columnHeaders
+            columnHeaders,
+            showRegression,
+            showRegressionEquation
         } = attributes;
 
         const blockProps = useBlockProps({
@@ -88,6 +90,29 @@ registerBlockType('modular-blocks/interactive-data-chart', {
                             </>
                         )}
                     </PanelBody>
+
+                    {chartType === 'scatter' && (
+                        <PanelBody
+                            title={__('Regressions-Einstellungen', 'modular-blocks-plugin')}
+                            initialOpen={true}
+                        >
+                            <ToggleControl
+                                label={__('Regressionsgerade anzeigen', 'modular-blocks-plugin')}
+                                checked={showRegression}
+                                onChange={(value) => setAttributes({ showRegression: value })}
+                                help={__('Berechnet und zeigt eine lineare Regressionsgerade', 'modular-blocks-plugin')}
+                            />
+
+                            {showRegression && (
+                                <ToggleControl
+                                    label={__('Regressionsgleichung anzeigen', 'modular-blocks-plugin')}
+                                    checked={showRegressionEquation}
+                                    onChange={(value) => setAttributes({ showRegressionEquation: value })}
+                                    help={__('Zeigt die Gleichung und R² unter dem Diagramm an', 'modular-blocks-plugin')}
+                                />
+                            )}
+                        </PanelBody>
+                    )}
 
                     <PanelBody
                         title={__('Tabellen-Einstellungen', 'modular-blocks-plugin')}
@@ -169,6 +194,13 @@ registerBlockType('modular-blocks/interactive-data-chart', {
                                         <span>{yAxisLabel}</span>
                                     </div>
                                 </>
+                            )}
+
+                            {chartType === 'scatter' && showRegression && (
+                                <div className="info-item">
+                                    <strong>{__('Regression:', 'modular-blocks-plugin')}</strong>
+                                    <span>✓ {__('Lineare Regressionsgerade aktiv', 'modular-blocks-plugin')}</span>
+                                </div>
                             )}
                         </div>
 

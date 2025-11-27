@@ -45,6 +45,14 @@
         "columnHeaders": {
             "type": "array",
             "default": ["Kategorie", "Wert"]
+        },
+        "showRegression": {
+            "type": "boolean",
+            "default": false
+        },
+        "showRegressionEquation": {
+            "type": "boolean",
+            "default": true
         }
     },
     "supports": {

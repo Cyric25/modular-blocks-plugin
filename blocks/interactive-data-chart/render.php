@@ -20,6 +20,8 @@ $table_rows = $block_attributes['tableRows'] ?? 5;
 $table_columns = $block_attributes['tableColumns'] ?? 2;
 $show_table = $block_attributes['showTable'] ?? true;
 $column_headers = $block_attributes['columnHeaders'] ?? ['Kategorie', 'Wert'];
+$show_regression = $block_attributes['showRegression'] ?? false;
+$show_regression_equation = $block_attributes['showRegressionEquation'] ?? true;
 
 // Sanitize attributes
 $chart_type = in_array($chart_type, ['bar', 'line', 'scatter', 'pie']) ? $chart_type : 'bar';
@@ -28,6 +30,19 @@ $x_axis_label = esc_html($x_axis_label);
 $y_axis_label = esc_html($y_axis_label);
 $table_rows = max(2, min(20, intval($table_rows)));
 $table_columns = max(2, min(10, intval($table_columns)));
+
+// Adjust column headers based on chart type
+if ($chart_type === 'scatter') {
+    $column_headers = [$x_axis_label ?: 'X-Wert', $y_axis_label ?: 'Y-Wert'];
+    $table_columns = 2; // Force 2 columns for scatter
+} elseif ($chart_type === 'pie') {
+    $column_headers = ['Kategorie', 'Wert'];
+    $table_columns = 2; // Force 2 columns for pie
+} else {
+    // bar, line
+    $column_headers = ['Beschriftung', 'Wert'];
+    $table_columns = 2; // Force 2 columns
+}
 
 // Generate unique ID for this block instance
 $block_id = 'interactive-data-chart-' . wp_unique_id();
@@ -46,7 +61,9 @@ $css_class = implode(' ', array_filter($css_classes));
      data-chart-type="<?php echo esc_attr($chart_type); ?>"
      data-chart-title="<?php echo esc_attr($chart_title); ?>"
      data-x-axis-label="<?php echo esc_attr($x_axis_label); ?>"
-     data-y-axis-label="<?php echo esc_attr($y_axis_label); ?>">
+     data-y-axis-label="<?php echo esc_attr($y_axis_label); ?>"
+     data-show-regression="<?php echo $show_regression ? '1' : '0'; ?>"
+     data-show-regression-equation="<?php echo $show_regression_equation ? '1' : '0'; ?>">
 
     <div class="chart-container">
         <h3 class="chart-title"><?php echo $chart_title; ?></h3>
@@ -66,14 +83,21 @@ $css_class = implode(' ', array_filter($css_classes));
                 <tbody>
                     <?php for ($row = 0; $row < $table_rows; $row++): ?>
                         <tr>
-                            <?php for ($col = 0; $col < $table_columns; $col++): ?>
+                            <?php for ($col = 0; $col < $table_columns; $col++):
+                                // Dynamic placeholder based on chart type
+                                if ($chart_type === 'scatter') {
+                                    $placeholder = $col === 0 ? 'X-Wert' : 'Y-Wert';
+                                } else {
+                                    $placeholder = $col === 0 ? 'Beschriftung' : 'Wert';
+                                }
+                            ?>
                                 <td>
                                     <input
                                         type="text"
                                         class="data-cell"
                                         data-row="<?php echo $row; ?>"
                                         data-col="<?php echo $col; ?>"
-                                        placeholder="<?php echo $col === 0 ? 'Beschriftung' : 'Wert'; ?>"
+                                        placeholder="<?php echo esc_attr($placeholder); ?>"
                                         value=""
                                     />
                                 </td>
