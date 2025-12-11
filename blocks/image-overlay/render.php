@@ -20,9 +20,12 @@ $height = $block_attributes['height'] ?? 400;
 $show_labels = $block_attributes['showLabels'] ?? true;
 $show_descriptions = $block_attributes['showDescriptions'] ?? true;
 $allow_multiple_visible = $block_attributes['allowMultipleVisible'] ?? true;
+$display_mode = $block_attributes['displayMode'] ?? 'overlay';
 $transition_duration = $block_attributes['transitionDuration'] ?? 300;
 $button_style = $block_attributes['buttonStyle'] ?? 'tabs';
 $button_position = $block_attributes['buttonPosition'] ?? 'top';
+$button_size = $block_attributes['buttonSize'] ?? 'medium';
+$responsive_height = $block_attributes['responsiveHeight'] ?? true;
 
 // Sanitize attributes
 $title = wp_kses_post($title);
@@ -31,6 +34,8 @@ $height = max(200, min(800, intval($height)));
 $transition_duration = max(0, min(2000, intval($transition_duration)));
 $button_style = sanitize_text_field($button_style);
 $button_position = sanitize_text_field($button_position);
+$button_size = sanitize_text_field($button_size);
+$responsive_height = filter_var($responsive_height, FILTER_VALIDATE_BOOLEAN);
 
 // Check if base image is available
 if (empty($base_image['url'])) {
@@ -54,6 +59,9 @@ $css_classes = [
     'wp-block-modular-blocks-image-overlay',
     'button-style-' . $button_style,
     'button-position-' . $button_position,
+    'button-size-' . $button_size,
+    'display-mode-' . $display_mode,
+    $responsive_height ? 'responsive-height' : 'fixed-height',
     $show_labels ? 'has-labels' : '',
     $show_descriptions ? 'has-descriptions' : '',
     $allow_multiple_visible ? 'multiple-visible' : 'single-visible'
@@ -64,14 +72,20 @@ $css_class = implode(' ', $css_classes);
 
 // Build inline styles
 $inline_styles = [
-    '--overlay-height: ' . $height . 'px;',
     '--transition-duration: ' . $transition_duration . 'ms;'
 ];
+
+// Only set fixed height if responsive height is disabled
+if (!$responsive_height) {
+    $inline_styles[] = '--overlay-height: ' . $height . 'px;';
+}
+
 $inline_style = implode(' ', $inline_styles);
 
 // Prepare data for JavaScript
 $overlay_data = [
     'allowMultipleVisible' => $allow_multiple_visible,
+    'displayMode' => $display_mode,
     'transitionDuration' => $transition_duration,
     'layers' => array_values($valid_layers),
     'strings' => [

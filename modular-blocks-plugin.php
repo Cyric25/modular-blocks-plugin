@@ -45,6 +45,7 @@ class ModularBlocksPlugin {
     private static $instance = null;
     private $block_manager;
     private $admin_manager;
+    private $webapp_manager;
 
     public static function get_instance() {
         if (self::$instance === null) {
@@ -82,6 +83,7 @@ class ModularBlocksPlugin {
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-block-manager.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-admin-manager.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-diagnostics.php';
+        require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-webapp-manager.php';
 
         // ChemViz integration
         if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-enqueue.php')) {
@@ -93,6 +95,7 @@ class ModularBlocksPlugin {
 
         $this->block_manager = new ModularBlocks_Block_Manager();
         $this->admin_manager = new ModularBlocks_Admin_Manager();
+        $this->webapp_manager = new ModularBlocks_WebApp_Manager();
     }
 
     public function init() {
@@ -101,6 +104,11 @@ class ModularBlocksPlugin {
         $this->debug_log('Block manager initialized');
         $this->admin_manager->init();
         $this->debug_log('Admin manager initialized');
+
+        // Initialize WebApp Manager
+        $this->webapp_manager->init_webapps_directory();
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_webapp_data']);
+        $this->debug_log('WebApp manager initialized');
 
         // Initialize ChemViz features
         if (class_exists('ModularBlocks_ChemViz_Enqueue')) {
@@ -113,6 +121,28 @@ class ModularBlocksPlugin {
             $chemviz_shortcodes->init();
         }
         $this->debug_log('init() completed');
+    }
+
+    public function enqueue_webapp_data() {
+        // Only load in block editor
+        if (!is_admin()) {
+            return;
+        }
+
+        $screen = get_current_screen();
+        if (!$screen || !$screen->is_block_editor) {
+            return;
+        }
+
+        // Get list of web-apps
+        $webapps = $this->webapp_manager->list_webapps();
+
+        // Pass to JavaScript
+        wp_localize_script(
+            'wp-blocks',
+            'modularBlocksWebApps',
+            $webapps
+        );
     }
 
     public function activate() {

@@ -1,8 +1,9 @@
 /**
  * Frontend JavaScript for Image Overlay Block
  *
- * Provides simple interactive layer switching functionality
- * Click buttons to toggle overlay layers on/off - perfect for educational content
+ * Provides interactive layer switching functionality with two modes:
+ * - overlay: Multiple layers can be visible simultaneously (for transparencies)
+ * - toggle: Only one layer visible at a time (image switcher)
  */
 
 (function() {
@@ -15,7 +16,10 @@
     function initImageOverlay(element) {
         if (!element) return;
 
+        // Parse configuration data
         const overlayData = JSON.parse(element.dataset.overlay || '{}');
+
+        // Get DOM elements
         const container = element.querySelector('.image-overlay-container');
         const layerButtons = element.querySelectorAll('.layer-button');
         const overlayLayers = element.querySelectorAll('.overlay-layer');
@@ -25,49 +29,28 @@
         const infoTitle = element.querySelector('.info-title');
         const infoDescription = element.querySelector('.info-description');
 
-        if (!container || layerButtons.length === 0) return;
-
-        const layers = overlayData.layers || [];
-        const allowMultiple = overlayData.allowMultipleVisible !== false;
-        const transitionDuration = overlayData.transitionDuration || 300;
-
-        /**
-         * Update layer visibility based on current state
-         * @param {number} layerIndex - Index of the layer to toggle
-         * @param {boolean} forceState - Optional forced visibility state
-         */
-        function toggleLayer(layerIndex, forceState) {
-            if (layerIndex < 0 || layerIndex >= layers.length) return;
-
-            const button = layerButtons[layerIndex];
-            const layer = overlayLayers[layerIndex];
-            const layerData = layers[layerIndex];
-
-            if (!button || !layer || !layerData) return;
-
-            const isCurrentlyVisible = button.classList.contains('active');
-            const shouldBeVisible = forceState !== undefined ? forceState : !isCurrentlyVisible;
-
-            // Handle single visibility mode
-            if (!allowMultiple && shouldBeVisible) {
-                // Hide all other layers first
-                layerButtons.forEach((btn, index) => {
-                    if (index !== layerIndex) {
-                        hideLayer(index);
-                    }
-                });
-            }
-
-            // Update the target layer
-            if (shouldBeVisible) {
-                showLayer(layerIndex);
-            } else {
-                hideLayer(layerIndex);
-            }
-
-            // Update info panel if descriptions are enabled
-            updateInfoPanel(shouldBeVisible ? layerIndex : -1);
+        // Validate required elements
+        if (!container || layerButtons.length === 0 || overlayLayers.length === 0) {
+            console.warn('Image Overlay: Missing required elements', {
+                container: !!container,
+                buttons: layerButtons.length,
+                layers: overlayLayers.length
+            });
+            return;
         }
+
+        // Configuration
+        const layers = overlayData.layers || [];
+        const displayMode = overlayData.displayMode || 'overlay';
+        const transitionDuration = overlayData.transitionDuration || 300;
+        const strings = overlayData.strings || {};
+
+        console.log('Image Overlay initialized', {
+            blockId: element.id,
+            displayMode,
+            layerCount: layers.length,
+            buttonCount: layerButtons.length
+        });
 
         /**
          * Show a specific layer
@@ -78,26 +61,29 @@
             const layer = overlayLayers[layerIndex];
             const layerData = layers[layerIndex];
 
-            if (!button || !layer || !layerData) return;
+            if (!button || !layer || !layerData) {
+                console.warn('Show layer: Invalid index', layerIndex);
+                return;
+            }
+
+            console.log('Showing layer', layerIndex, layerData.label);
 
             // Update button state
             button.classList.add('active');
             button.setAttribute('aria-pressed', 'true');
-            button.title = overlayData.strings.hideLayer + ': ' + layerData.label;
+            button.title = (strings.hideLayer || 'Ausblenden') + ': ' + layerData.label;
 
-            // Update layer visibility with opacity
+            // Update layer visibility
             layer.classList.remove('hidden');
             layer.classList.add('visible');
 
             const targetOpacity = (layerData.opacity || 100) / 100;
             layer.style.opacity = targetOpacity;
 
-            // Add visual feedback
+            // Visual feedback
             button.style.transform = 'translateY(-2px)';
             setTimeout(() => {
-                if (button.classList.contains('active')) {
-                    button.style.transform = '';
-                }
+                button.style.transform = '';
             }, 150);
         }
 
@@ -110,12 +96,17 @@
             const layer = overlayLayers[layerIndex];
             const layerData = layers[layerIndex];
 
-            if (!button || !layer || !layerData) return;
+            if (!button || !layer || !layerData) {
+                console.warn('Hide layer: Invalid index', layerIndex);
+                return;
+            }
+
+            console.log('Hiding layer', layerIndex, layerData.label);
 
             // Update button state
             button.classList.remove('active');
             button.setAttribute('aria-pressed', 'false');
-            button.title = overlayData.strings.showLayer + ': ' + layerData.label;
+            button.title = (strings.showLayer || 'Anzeigen') + ': ' + layerData.label;
 
             // Update layer visibility
             layer.classList.remove('visible');
@@ -124,21 +115,58 @@
         }
 
         /**
-         * Show all layers
+         * Toggle a specific layer
+         * @param {number} layerIndex - Index of the layer to toggle
+         */
+        function toggleLayer(layerIndex) {
+            if (layerIndex < 0 || layerIndex >= layers.length) {
+                console.warn('Toggle layer: Index out of bounds', layerIndex);
+                return;
+            }
+
+            const button = layerButtons[layerIndex];
+            const isCurrentlyVisible = button.classList.contains('active');
+
+            console.log('Toggling layer', layerIndex, 'currently visible:', isCurrentlyVisible, 'mode:', displayMode);
+
+            // TOGGLE MODE: Only one layer visible at a time
+            if (displayMode === 'toggle') {
+                if (isCurrentlyVisible) {
+                    // Hide the current layer
+                    hideLayer(layerIndex);
+                } else {
+                    // Hide all layers first, then show the selected one
+                    layerButtons.forEach((_, index) => hideLayer(index));
+                    showLayer(layerIndex);
+                }
+            }
+            // OVERLAY MODE: Multiple layers can be visible
+            else {
+                if (isCurrentlyVisible) {
+                    hideLayer(layerIndex);
+                } else {
+                    showLayer(layerIndex);
+                }
+            }
+
+            // Update info panel
+            updateInfoPanel(isCurrentlyVisible ? -1 : layerIndex);
+        }
+
+        /**
+         * Show all layers (overlay mode only)
          */
         function showAllLayers() {
-            layerButtons.forEach((button, index) => {
-                showLayer(index);
-            });
+            console.log('Showing all layers');
+            layerButtons.forEach((_, index) => showLayer(index));
         }
 
         /**
          * Hide all layers
          */
         function hideAllLayers() {
-            layerButtons.forEach((button, index) => {
-                hideLayer(index);
-            });
+            console.log('Hiding all layers');
+            layerButtons.forEach((_, index) => hideLayer(index));
             updateInfoPanel(-1);
         }
 
@@ -147,7 +175,7 @@
          * @param {number} layerIndex - Index of active layer, -1 to hide
          */
         function updateInfoPanel(layerIndex) {
-            if (!layerInfo || !overlayData.showDescriptions) return;
+            if (!layerInfo) return;
 
             if (layerIndex >= 0 && layerIndex < layers.length) {
                 const layerData = layers[layerIndex];
@@ -195,7 +223,7 @@
                     toggleLayer(currentIndex);
                     return;
                 default:
-                    return; // Don't prevent default for other keys
+                    return;
             }
 
             event.preventDefault();
@@ -205,53 +233,43 @@
         }
 
         /**
-         * Handle button click to update info panel
-         * @param {number} layerIndex - Index of clicked layer
-         */
-        function handleButtonClick(layerIndex) {
-            if (!overlayData.showDescriptions || !layerInfo) return;
-
-            // Update info panel to show clicked layer's info
-            const layerData = layers[layerIndex];
-            const button = layerButtons[layerIndex];
-
-            if (button && button.classList.contains('active')) {
-                if (infoTitle) infoTitle.textContent = layerData.label || '';
-                if (infoDescription) infoDescription.textContent = layerData.description || '';
-                layerInfo.style.display = 'block';
-                layerInfo.classList.add('active');
-            }
-        }
-
-        /**
          * Initialize layer states from attributes
          */
         function initializeLayerStates() {
+            console.log('Initializing layer states');
+
             layers.forEach((layerData, index) => {
+                // Set custom color if defined
+                if (layerData.color && layerButtons[index]) {
+                    layerButtons[index].style.setProperty('--layer-color', layerData.color);
+                }
+
+                // Set initial visibility
                 if (layerData.visible) {
                     showLayer(index);
                 } else {
                     hideLayer(index);
                 }
-
-                // Set custom color if defined
-                if (layerData.color && layerButtons[index]) {
-                    layerButtons[index].style.setProperty('--layer-color', layerData.color);
-                }
             });
+
+            // Set initial info panel state
+            const initialActiveIndex = Array.from(layerButtons).findIndex(btn => btn.classList.contains('active'));
+            if (initialActiveIndex >= 0) {
+                updateInfoPanel(initialActiveIndex);
+            }
         }
 
-        // Event listeners
+        // Event listeners for layer buttons
         layerButtons.forEach((button, index) => {
             button.addEventListener('click', (event) => {
                 event.preventDefault();
+                console.log('Button clicked:', index);
                 toggleLayer(index);
-                handleButtonClick(index);
             });
 
             button.addEventListener('keydown', handleKeyDown);
 
-            // Make buttons focusable
+            // Accessibility attributes
             button.setAttribute('tabindex', '0');
             button.setAttribute('role', 'switch');
         });
@@ -271,14 +289,8 @@
             });
         }
 
-        // Initialize
+        // Initialize layer states
         initializeLayerStates();
-
-        // Set initial info panel state
-        const initialActiveIndex = Array.from(layerButtons).findIndex(btn => btn.classList.contains('active'));
-        if (initialActiveIndex >= 0) {
-            updateInfoPanel(initialActiveIndex);
-        }
     }
 
     /**
@@ -286,6 +298,7 @@
      */
     function initAllImageOverlays() {
         const blocks = document.querySelectorAll('.wp-block-modular-blocks-image-overlay');
+        console.log('Found image overlay blocks:', blocks.length);
         blocks.forEach(initImageOverlay);
     }
 

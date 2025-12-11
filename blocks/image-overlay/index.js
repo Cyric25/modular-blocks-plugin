@@ -49,6 +49,8 @@ registerBlockType('modular-blocks/image-overlay', {
             transitionDuration,
             buttonStyle,
             buttonPosition,
+            buttonSize,
+            responsiveHeight,
         } = attributes;
 
         const onSelectBaseImage = (media) => {
@@ -138,6 +140,8 @@ registerBlockType('modular-blocks/image-overlay', {
             'editor-view',
             `button-style-${buttonStyle}`,
             `button-position-${buttonPosition}`,
+            `button-size-${buttonSize}`,
+            responsiveHeight ? 'responsive-height' : 'fixed-height',
             showLabels ? 'has-labels' : '',
             showDescriptions ? 'has-descriptions' : '',
             allowMultipleVisible ? 'multiple-visible' : 'single-visible',
@@ -332,14 +336,26 @@ registerBlockType('modular-blocks/image-overlay', {
                     </PanelBody>
 
                     <PanelBody title={__('Darstellungs-Einstellungen', 'modular-blocks-plugin')}>
-                        <RangeControl
-                            label={__('Höhe (px)', 'modular-blocks-plugin')}
-                            value={height}
-                            onChange={(value) => setAttributes({ height: value })}
-                            min={200}
-                            max={800}
-                            step={10}
+                        <ToggleControl
+                            label={__('Responsive Höhe', 'modular-blocks-plugin')}
+                            checked={responsiveHeight}
+                            onChange={(value) => setAttributes({ responsiveHeight: value })}
+                            help={responsiveHeight ?
+                                __('Höhe passt sich automatisch an die Bildgröße an.', 'modular-blocks-plugin') :
+                                __('Feste Höhe verwenden.', 'modular-blocks-plugin')
+                            }
                         />
+
+                        {!responsiveHeight && (
+                            <RangeControl
+                                label={__('Höhe (px)', 'modular-blocks-plugin')}
+                                value={height}
+                                onChange={(value) => setAttributes({ height: value })}
+                                min={200}
+                                max={800}
+                                step={10}
+                            />
+                        )}
 
                         <SelectControl
                             label={__('Button-Stil', 'modular-blocks-plugin')}
@@ -349,6 +365,17 @@ registerBlockType('modular-blocks/image-overlay', {
                                 { label: __('Tabs', 'modular-blocks-plugin'), value: 'tabs' },
                                 { label: __('Buttons', 'modular-blocks-plugin'), value: 'buttons' },
                                 { label: __('Pills', 'modular-blocks-plugin'), value: 'pills' },
+                            ]}
+                        />
+
+                        <SelectControl
+                            label={__('Button-Größe', 'modular-blocks-plugin')}
+                            value={buttonSize}
+                            onChange={(value) => setAttributes({ buttonSize: value })}
+                            options={[
+                                { label: __('Klein', 'modular-blocks-plugin'), value: 'small' },
+                                { label: __('Mittel', 'modular-blocks-plugin'), value: 'medium' },
+                                { label: __('Groß', 'modular-blocks-plugin'), value: 'large' },
                             ]}
                         />
 
@@ -375,6 +402,31 @@ registerBlockType('modular-blocks/image-overlay', {
                     </PanelBody>
 
                     <PanelBody title={__('Verhalten', 'modular-blocks-plugin')}>
+                        <SelectControl
+                            label={__('Anzeigemodus', 'modular-blocks-plugin')}
+                            value={attributes.displayMode || 'overlay'}
+                            onChange={(value) => {
+                                setAttributes({
+                                    displayMode: value,
+                                    allowMultipleVisible: value === 'overlay'
+                                });
+                            }}
+                            options={[
+                                {
+                                    label: __('Übereinander (Overlay)', 'modular-blocks-plugin'),
+                                    value: 'overlay'
+                                },
+                                {
+                                    label: __('Abwechselnd (Toggle)', 'modular-blocks-plugin'),
+                                    value: 'toggle'
+                                },
+                            ]}
+                            help={attributes.displayMode === 'overlay' ?
+                                __('Mehrere Ebenen können gleichzeitig sichtbar sein (für Überlagerungen mit Transparenz).', 'modular-blocks-plugin') :
+                                __('Nur eine Ebene ist zur Zeit sichtbar (zum Umschalten zwischen Bildern).', 'modular-blocks-plugin')
+                            }
+                        />
+
                         <ToggleControl
                             label={__('Ebenen-Namen anzeigen', 'modular-blocks-plugin')}
                             checked={showLabels}
@@ -385,16 +437,6 @@ registerBlockType('modular-blocks/image-overlay', {
                             label={__('Beschreibungen anzeigen', 'modular-blocks-plugin')}
                             checked={showDescriptions}
                             onChange={(value) => setAttributes({ showDescriptions: value })}
-                        />
-
-                        <ToggleControl
-                            label={__('Mehrere Ebenen gleichzeitig', 'modular-blocks-plugin')}
-                            checked={allowMultipleVisible}
-                            onChange={(value) => setAttributes({ allowMultipleVisible: value })}
-                            help={allowMultipleVisible ?
-                                __('Benutzer können mehrere Ebenen gleichzeitig anzeigen.', 'modular-blocks-plugin') :
-                                __('Nur eine Ebene kann gleichzeitig sichtbar sein.', 'modular-blocks-plugin')
-                            }
                         />
                     </PanelBody>
                 </InspectorControls>

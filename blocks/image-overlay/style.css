@@ -3,20 +3,31 @@
  */
 
 .wp-block-modular-blocks-image-overlay {
-    --overlay-height: 400px;
+    --overlay-height: auto;
     --transition-duration: 300ms;
-    --primary-color: #0073aa;
-    --success-color: #00a32a;
-    --border-color: #dcdcde;
-    --text-color: #1e1e1e;
+
+    /* Theme-inherited colors (use CSS custom properties from theme if available) */
+    --primary-color: var(--color-ui-surface, var(--wp--preset--color--primary, #e24614));
+    --primary-color-dark: var(--color-ui-surface-dark, var(--wp--preset--color--primary-dark, #c93d12));
+    --primary-color-light: var(--color-ui-surface-light, var(--wp--preset--color--primary-light, #f5ede9));
+    --text-color: var(--color-special-text, var(--wp--preset--color--contrast, #71230a));
     --text-light: #646970;
+    --border-color: var(--color-sidebar-border, #dcdcde);
     --bg-light: #f6f7f7;
     --border-radius: 6px;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
 
+    /* Button size variables */
+    --button-padding: 12px 16px;
+    --button-font-size: 14px;
+    --button-min-height: 44px;
+    --button-gap: 12px;
+
     margin: 1.5em 0;
     font-family: inherit;
+    max-width: 100%;
+    color: inherit;
 }
 
 .image-overlay-container {
@@ -38,7 +49,7 @@
     margin: 0 0 12px 0;
     font-size: 20px;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-color) !important;
     line-height: 1.3;
 }
 
@@ -87,7 +98,7 @@
 
 .control-buttons {
     display: flex;
-    gap: 12px;
+    gap: var(--button-gap);
     flex-wrap: wrap;
 }
 
@@ -109,38 +120,93 @@
     background: #ffffff;
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 12px 16px;
+    padding: var(--button-padding);
     cursor: pointer;
     transition: all var(--transition-duration) ease;
     display: flex;
     align-items: center;
     gap: 10px;
-    min-height: 44px;
-    font-size: 14px;
+    min-height: var(--button-min-height);
+    font-size: var(--button-font-size);
     font-weight: 500;
     color: var(--text-color);
     position: relative;
     overflow: hidden;
 }
 
+/* Button Size: Small */
+.button-size-small {
+    --button-padding: 8px 12px;
+    --button-font-size: 12px;
+    --button-min-height: 36px;
+    --button-gap: 8px;
+}
+
+.button-size-small .control-buttons {
+    gap: 8px;
+}
+
+.button-size-small .layer-controls {
+    padding: 12px;
+}
+
+.button-size-small .button-indicator {
+    width: 14px;
+    height: 14px;
+}
+
+/* Button Size: Medium (default) */
+.button-size-medium {
+    --button-padding: 12px 16px;
+    --button-font-size: 14px;
+    --button-min-height: 44px;
+    --button-gap: 12px;
+}
+
+/* Button Size: Large */
+.button-size-large {
+    --button-padding: 16px 24px;
+    --button-font-size: 16px;
+    --button-min-height: 52px;
+    --button-gap: 16px;
+}
+
+.button-size-large .control-buttons {
+    gap: 16px;
+}
+
+.button-size-large .layer-controls {
+    padding: 20px;
+}
+
+.button-size-large .button-indicator {
+    width: 20px;
+    height: 20px;
+}
+
+.button-size-large .button-indicator::after {
+    width: 10px;
+    height: 10px;
+}
+
 .layer-button:hover {
-    border-color: var(--layer-color);
-    background: rgba(0, 115, 170, 0.05);
+    border-color: var(--primary-color);
+    background: var(--primary-color-light);
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
 }
 
 .layer-button.active {
-    border-color: var(--layer-color);
-    background: var(--layer-color);
+    border-color: var(--primary-color);
+    background: var(--primary-color);
     color: white;
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
 }
 
 .layer-button.active:hover {
-    background: var(--layer-color);
-    opacity: 0.9;
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
 }
 
 .button-indicator {
@@ -252,10 +318,35 @@
     flex: 1;
 }
 
+/* Responsive height - images scale naturally */
+.responsive-height .image-stack {
+    height: auto;
+}
+
+/* Fixed height - container has fixed height */
+.fixed-height .image-stack {
+    height: var(--overlay-height, 400px);
+}
+
 .base-layer {
     position: relative;
     width: 100%;
     height: auto;
+    line-height: 0;
+}
+
+/* Responsive mode - base layer defines height */
+.responsive-height .base-layer {
+    position: relative;
+}
+
+/* Fixed mode - base layer fills container */
+.fixed-height .base-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .overlay-layer {
@@ -269,27 +360,42 @@
 .base-image,
 .overlay-image {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     user-select: none;
     pointer-events: none;
 }
 
-.overlay-image {
+/* Responsive mode - preserve aspect ratio */
+.responsive-height .base-image {
+    height: auto;
+    object-fit: contain;
+}
+
+.responsive-height .overlay-image {
+    object-fit: contain;
+}
+
+/* Fixed mode - fill container */
+.fixed-height .base-image,
+.fixed-height .overlay-image {
     object-fit: cover;
-    height: 100%;
 }
 
 .overlay-layer {
     transition: opacity var(--transition-duration) ease;
+    pointer-events: none; /* Prevent interaction with hidden layers */
 }
 
 .overlay-layer.hidden {
     opacity: 0;
+    z-index: 1; /* Lower z-index for hidden layers */
 }
 
 .overlay-layer.visible {
     opacity: 1;
+    z-index: 5; /* Higher z-index for visible layers */
+    pointer-events: auto; /* Allow interaction with visible layers */
 }
 
 /* Layer Info Panel */
@@ -351,7 +457,25 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .wp-block-modular-blocks-image-overlay {
-        --overlay-height: 300px;
+        /* Scale down button sizes on mobile */
+        --button-padding: 10px 12px;
+        --button-font-size: 13px;
+        --button-min-height: 40px;
+        --button-gap: 10px;
+    }
+
+    .button-size-small {
+        --button-padding: 6px 10px;
+        --button-font-size: 11px;
+        --button-min-height: 32px;
+        --button-gap: 6px;
+    }
+
+    .button-size-large {
+        --button-padding: 12px 16px;
+        --button-font-size: 14px;
+        --button-min-height: 44px;
+        --button-gap: 12px;
     }
 
     .overlay-header {
@@ -364,17 +488,6 @@
 
     .layer-controls {
         padding: 12px;
-        gap: 12px;
-    }
-
-    .layer-button {
-        padding: 10px 12px;
-        font-size: 13px;
-        min-height: 40px;
-    }
-
-    .control-buttons {
-        gap: 8px;
     }
 
     .global-controls {
@@ -415,7 +528,25 @@
 
 @media (max-width: 480px) {
     .wp-block-modular-blocks-image-overlay {
-        --overlay-height: 250px;
+        /* Further scale down on small screens */
+        --button-padding: 8px 10px;
+        --button-font-size: 12px;
+        --button-min-height: 36px;
+        --button-gap: 8px;
+    }
+
+    .button-size-small {
+        --button-padding: 6px 8px;
+        --button-font-size: 11px;
+        --button-min-height: 30px;
+        --button-gap: 6px;
+    }
+
+    .button-size-large {
+        --button-padding: 10px 14px;
+        --button-font-size: 13px;
+        --button-min-height: 40px;
+        --button-gap: 10px;
     }
 
     .overlay-header {
@@ -428,13 +559,6 @@
 
     .layer-controls {
         padding: 10px;
-        gap: 10px;
-    }
-
-    .layer-button {
-        padding: 8px 10px;
-        font-size: 12px;
-        min-height: 36px;
     }
 
     .button-label {

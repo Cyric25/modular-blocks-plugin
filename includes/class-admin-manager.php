@@ -62,6 +62,16 @@ class ModularBlocks_Admin_Manager {
             'modular-blocks-diagnostics',
             [$this, 'diagnostics_page_callback']
         );
+
+        // Web-Apps submenu
+        add_submenu_page(
+            'modular-blocks',
+            __('Web-Apps', 'modular-blocks-plugin'),
+            __('Web-Apps', 'modular-blocks-plugin'),
+            'manage_options',
+            'modular-blocks-webapps',
+            [$this, 'webapps_page_callback']
+        );
     }
 
     /**
@@ -851,6 +861,13 @@ if (!defined('ABSPATH')) {
 
         $diagnostics = new ModularBlocks_Diagnostics();
         $diagnostics->render_diagnostics_page();
+    }
+
+    /**
+     * Web-Apps page callback
+     */
+    public function webapps_page_callback() {
+        require_once MODULAR_BLOCKS_PLUGIN_PATH . 'admin/web-apps-manager.php';
     }
 
     /**

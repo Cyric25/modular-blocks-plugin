@@ -1,0 +1,120 @@
+/**
+ * Web-App Embed Block - Editor Styles
+ */
+
+.wp-block-modular-blocks-web-app-embed-editor {
+    background: #f8f9fa;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.webapp-embed-editor-preview {
+    padding: 0;
+}
+
+/* Preview Header */
+.preview-header {
+    background: #fff;
+    border-bottom: 1px solid #dcdcde;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.preview-header .dashicons {
+    color: #2271b1;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+/* Placeholder State */
+.preview-placeholder {
+    padding: 60px 20px;
+    text-align: center;
+    color: #757575;
+}
+
+.preview-placeholder .dashicons {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.preview-placeholder p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Preview Info */
+.preview-info {
+    padding: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    margin-bottom: 10px;
+    border-radius: 3px;
+}
+
+.info-item strong {
+    color: #1e1e1e;
+    font-weight: 600;
+}
+
+.info-item span {
+    color: #757575;
+}
+
+/* Preview iframe container */
+.preview-iframe-container {
+    margin-top: 15px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.preview-iframe-container iframe {
+    display: block;
+    width: 100%;
+    border: none;
+}
+
+.preview-loading {
+    padding: 40px;
+    text-align: center;
+    color: #757575;
+    font-style: italic;
+}
+
+/* Inspector Controls */
+.components-panel__body .components-button.is-link {
+    color: #2271b1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.components-panel__body .components-button.is-link:hover {
+    color: #135e96;
+    text-decoration: underline;
+}

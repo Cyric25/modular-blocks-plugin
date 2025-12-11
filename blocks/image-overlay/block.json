@@ -74,6 +74,11 @@
             "type": "boolean",
             "default": true
         },
+        "displayMode": {
+            "type": "string",
+            "default": "overlay",
+            "enum": ["overlay", "toggle"]
+        },
         "transitionDuration": {
             "type": "number",
             "default": 300
@@ -85,6 +90,14 @@
         "buttonPosition": {
             "type": "string",
             "default": "top"
+        },
+        "buttonSize": {
+            "type": "string",
+            "default": "medium"
+        },
+        "responsiveHeight": {
+            "type": "boolean",
+            "default": true
         }
     },
     "supports": {
