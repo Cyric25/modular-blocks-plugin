@@ -16,6 +16,13 @@
     function initImageOverlay(element) {
         if (!element) return;
 
+        // Prevent double initialization
+        if (element.dataset.initialized === 'true') {
+            console.log('Image Overlay already initialized, skipping');
+            return;
+        }
+        element.dataset.initialized = 'true';
+
         // Parse configuration data
         const overlayData = JSON.parse(element.dataset.overlay || '{}');
 
