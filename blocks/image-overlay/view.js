@@ -132,25 +132,27 @@
             // TOGGLE MODE: Only one layer visible at a time
             if (displayMode === 'toggle') {
                 if (isCurrentlyVisible) {
-                    // Hide the current layer
-                    hideLayer(layerIndex);
+                    // In toggle mode, clicking an active button does nothing
+                    // User must click a different button to switch
+                    console.log('Layer already active, ignoring click');
+                    return;
                 } else {
                     // Hide all layers first, then show the selected one
                     layerButtons.forEach((_, index) => hideLayer(index));
                     showLayer(layerIndex);
+                    updateInfoPanel(layerIndex);
                 }
             }
             // OVERLAY MODE: Multiple layers can be visible
             else {
                 if (isCurrentlyVisible) {
                     hideLayer(layerIndex);
+                    updateInfoPanel(-1);
                 } else {
                     showLayer(layerIndex);
+                    updateInfoPanel(layerIndex);
                 }
             }
-
-            // Update info panel
-            updateInfoPanel(isCurrentlyVisible ? -1 : layerIndex);
         }
 
         /**
@@ -263,6 +265,7 @@
         layerButtons.forEach((button, index) => {
             button.addEventListener('click', (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 console.log('Button clicked:', index);
                 toggleLayer(index);
             });
@@ -278,6 +281,7 @@
         if (showAllButton) {
             showAllButton.addEventListener('click', (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 showAllLayers();
             });
         }
@@ -285,6 +289,7 @@
         if (hideAllButton) {
             hideAllButton.addEventListener('click', (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 hideAllLayers();
             });
         }
