@@ -5,12 +5,18 @@
 .wp-block-modular-blocks-image-overlay.editor-view {
     --overlay-height: auto;
     --transition-duration: 300ms;
-    --primary-color: #0073aa;
-    --border-color: #dcdcde;
-    --text-color: #1e1e1e;
+
+    /* Theme-inherited colors (fallback to defaults in editor) */
+    --primary-color: #e24614;
+    --primary-color-dark: #c93d12;
+    --primary-color-light: #f5ede9;
+    --text-color: #71230a;
     --text-light: #646970;
+    --border-color: #dcdcde;
     --bg-light: #f6f7f7;
     --border-radius: 6px;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
 
     /* Button size variables */
     --button-padding: 12px 16px;
@@ -20,6 +26,7 @@
 
     margin: 1.5em 0;
     max-width: 100%;
+    color: inherit;
 }
 
 .editor-styles-wrapper .wp-block-modular-blocks-image-overlay.editor-view {
@@ -170,10 +177,10 @@
 
 /* Layer Buttons in Editor */
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button {
-    --layer-color: #0073aa;
+    --layer-color: var(--primary-color);
 
     background: #ffffff;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--primary-color);
     border-radius: var(--border-radius);
     padding: var(--button-padding);
     cursor: pointer;
@@ -184,19 +191,28 @@
     min-height: var(--button-min-height);
     font-size: var(--button-font-size);
     font-weight: 500;
-    color: #000000;
+    color: var(--text-color);
     position: relative;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button:hover {
-    border-color: var(--layer-color);
-    background: rgba(0, 115, 170, 0.05);
+    border-color: var(--primary-color);
+    background: var(--primary-color-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active {
-    border-color: var(--layer-color);
-    background: var(--layer-color);
+    border-color: var(--primary-color);
+    background: var(--primary-color);
     color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.wp-block-modular-blocks-image-overlay.editor-view .layer-button.active:hover {
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .button-indicator {
