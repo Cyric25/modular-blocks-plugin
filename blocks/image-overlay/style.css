@@ -271,6 +271,11 @@
     margin-left: auto;
 }
 
+/* Hide global controls in toggle mode (only one layer visible at a time) */
+.display-mode-toggle .global-controls {
+    display: none;
+}
+
 .control-button {
     width: 36px;
     height: 36px;
