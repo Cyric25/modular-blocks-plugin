@@ -7,10 +7,10 @@
     --transition-duration: 300ms;
 
     /* Theme-inherited colors (fallback to defaults in editor) */
-    --primary-color: #e24614;
-    --primary-color-dark: #c93d12;
-    --primary-color-light: #f5ede9;
-    --text-color: #71230a;
+    --primary-color: #e24614 !important;
+    --primary-color-dark: #c93d12 !important;
+    --primary-color-light: #f5ede9 !important;
+    --text-color: #71230a !important;
     --text-light: #646970;
     --border-color: #dcdcde;
     --bg-light: #f6f7f7;
@@ -118,6 +118,8 @@
     align-items: center;
     gap: 16px;
     padding: 16px;
+    background: transparent !important;
+    border: none !important;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .layer-controls.controls-top {
@@ -142,9 +144,11 @@
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .control-buttons {
-    display: flex;
+    display: flex !important;
+    visibility: visible !important;
     gap: 12px;
     flex-wrap: wrap;
+    background: transparent !important;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .controls-left .control-buttons,
@@ -175,64 +179,66 @@
     --button-gap: 16px;
 }
 
-/* Layer Buttons in Editor */
+/* Layer Buttons in Editor - Force visibility with high specificity */
+.editor-styles-wrapper .wp-block-modular-blocks-image-overlay.editor-view .layer-button,
+.block-editor-block-list__layout .wp-block-modular-blocks-image-overlay.editor-view .layer-button,
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button {
-    --layer-color: var(--primary-color);
-
-    background: #ffffff;
-    border: 2px solid var(--primary-color);
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    border: 2px solid var(--primary-color) !important;
     border-radius: var(--border-radius);
     padding: var(--button-padding);
     cursor: pointer;
     transition: all 0.2s ease;
-    display: flex;
+    display: flex !important;
+    visibility: visible !important;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     min-height: var(--button-min-height);
     font-size: var(--button-font-size);
-    font-weight: 500;
-    color: var(--text-color);
+    font-weight: 600;
+    color: #ffffff !important;
     position: relative;
+    opacity: 0.7 !important;
+    box-shadow: var(--shadow) !important;
 }
 
+.editor-styles-wrapper .wp-block-modular-blocks-image-overlay.editor-view .layer-button:hover,
+.block-editor-block-list__layout .wp-block-modular-blocks-image-overlay.editor-view .layer-button:hover,
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button:hover {
-    border-color: var(--primary-color);
-    background: var(--primary-color-light);
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    opacity: 0.8 !important;
     transform: translateY(-1px);
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-hover) !important;
 }
 
+.editor-styles-wrapper .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active,
+.block-editor-block-list__layout .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active,
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active {
-    border-color: var(--primary-color);
-    background: var(--primary-color);
-    color: #ffffff;
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    opacity: 1 !important;
     transform: translateY(-1px);
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-hover) !important;
 }
 
+.editor-styles-wrapper .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active:hover,
+.block-editor-block-list__layout .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active:hover,
 .wp-block-modular-blocks-image-overlay.editor-view .layer-button.active:hover {
-    background: var(--primary-color-dark);
-    border-color: var(--primary-color-dark);
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    opacity: 1 !important;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .button-indicator {
-    width: 16px;
-    height: 16px;
-    border: 2px solid currentColor;
-    border-radius: 50%;
-    background: transparent;
-    transition: all 0.2s ease;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.wp-block-modular-blocks-image-overlay.editor-view .layer-button.active .button-indicator {
-    background: currentColor;
+    display: none !important;
 }
 
 .wp-block-modular-blocks-image-overlay.editor-view .button-label {
     flex: 1;
-    text-align: left;
+    text-align: center;
     line-height: 1.3;
 }
 

@@ -11,6 +11,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Ensure styles are enqueued
+$style_path = plugin_dir_path(__FILE__) . 'style.css';
+$style_url = plugins_url('style.css', __FILE__);
+
+if (file_exists($style_path)) {
+    wp_enqueue_style(
+        'modular-blocks-image-overlay-frontend',
+        $style_url,
+        array(),
+        filemtime($style_path)
+    );
+}
+
 // Extract attributes with defaults
 $base_image = $block_attributes['baseImage'] ?? ['url' => '', 'alt' => 'Basis-Bild', 'id' => null];
 $layers = $block_attributes['layers'] ?? [];
@@ -122,7 +135,7 @@ $overlay_data = [
                         <?php
                         $layer_label = esc_html($layer['label'] ?? 'Ebene ' . ($index + 1));
                         $layer_description = esc_html($layer['description'] ?? '');
-                        $layer_color = sanitize_hex_color($layer['color'] ?? '#0073aa');
+                        $layer_color = sanitize_hex_color($layer['color'] ?? '#e24614');
                         $layer_visible = $layer['visible'] ?? false;
                         $layer_opacity = max(0, min(100, intval($layer['opacity'] ?? 100)));
                         ?>
@@ -130,9 +143,10 @@ $overlay_data = [
                             type="button"
                             class="layer-button <?php echo $layer_visible ? 'active' : ''; ?>"
                             data-layer="<?php echo esc_attr($index); ?>"
-                            style="--layer-color: <?php echo $layer_color; ?>;"
                             aria-pressed="<?php echo $layer_visible ? 'true' : 'false'; ?>"
                             title="<?php echo $show_descriptions && $layer_description ? $layer_description : $layer_label; ?>"
+                            tabindex="0"
+                            role="switch"
                         >
                             <span class="button-indicator"></span>
                             <?php if ($show_labels): ?>
@@ -171,16 +185,17 @@ $overlay_data = [
                             <?php
                             $layer_label = esc_html($layer['label'] ?? 'Ebene ' . ($index + 1));
                             $layer_description = esc_html($layer['description'] ?? '');
-                            $layer_color = sanitize_hex_color($layer['color'] ?? '#0073aa');
+                            $layer_color = sanitize_hex_color($layer['color'] ?? '#e24614');
                             $layer_visible = $layer['visible'] ?? false;
                             ?>
                             <button
                                 type="button"
                                 class="layer-button <?php echo $layer_visible ? 'active' : ''; ?>"
                                 data-layer="<?php echo esc_attr($index); ?>"
-                                style="--layer-color: <?php echo $layer_color; ?>;"
                                 aria-pressed="<?php echo $layer_visible ? 'true' : 'false'; ?>"
                                 title="<?php echo $show_descriptions && $layer_description ? $layer_description : $layer_label; ?>"
+                                tabindex="0"
+                                role="switch"
                             >
                                 <span class="button-indicator"></span>
                                 <?php if ($show_labels): ?>

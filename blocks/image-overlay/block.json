@@ -1,7 +1,7 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/image-overlay",
-    "version": "1.0.0",
+    "version": "2.4.0",
     "title": "Bild-Überlagerung",
     "category": "modular-blocks",
     "icon": "images-alt2",
@@ -9,8 +9,8 @@
     "keywords": ["overlay", "ebenen", "bilder", "anatomie", "schichten", "didaktik", "molekül", "beschriftung"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
-    "editorStyle": "file:./index.css",
-    "style": "file:./style-index.css",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
     "viewScript": "file:./view.js",
     "attributes": {
         "baseImage": {
@@ -34,7 +34,7 @@
                     "description": "Erste Überlagerungs-Ebene",
                     "opacity": 100,
                     "visible": true,
-                    "color": "#0073aa"
+                    "color": "#e24614"
                 },
                 {
                     "image": {
@@ -46,7 +46,7 @@
                     "description": "Zweite Überlagerungs-Ebene",
                     "opacity": 100,
                     "visible": false,
-                    "color": "#d63638"
+                    "color": "#e24614"
                 }
             ]
         },
