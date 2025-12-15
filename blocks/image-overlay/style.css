@@ -303,21 +303,24 @@
 .control-button {
     width: 36px;
     height: 36px;
-    background: var(--bg-light);
-    border: 1px solid var(--border-color);
+    background: var(--bg-light, #f6f7f7) !important;
+    background-color: var(--bg-light, #f6f7f7) !important;
+    border: 1px solid var(--border-color, #dcdcde) !important;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    color: var(--text-light);
+    color: var(--text-light, #646970) !important;
+    padding: 0 !important;
 }
 
 .control-button:hover {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
+    background: var(--primary-color, #e24614) !important;
+    background-color: var(--primary-color, #e24614) !important;
+    border-color: var(--primary-color, #e24614) !important;
+    color: white !important;
 }
 
 .control-button svg {
