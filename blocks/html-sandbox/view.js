@@ -28,6 +28,104 @@
 	}
 
 	/**
+	 * Smart HTML Parser - Detects and extracts content from full HTML documents
+	 *
+	 * If user pastes a complete HTML document (with <!DOCTYPE>, <html>, <head>, <body>),
+	 * this function extracts the separate components:
+	 * - CSS from <style> tags
+	 * - External scripts from <script src="...">
+	 * - Inline scripts from <script> tags
+	 * - Body content
+	 *
+	 * @param {object} codeData - Original code data {html, css, js, externalScripts}
+	 * @returns {object} Processed code data with extracted components
+	 */
+	function parseFullHTMLDocument(codeData) {
+		const htmlCode = codeData.html || '';
+
+		// Check if this is a full HTML document
+		const isFullDocument = htmlCode.includes('<!DOCTYPE') ||
+		                       htmlCode.includes('<html') ||
+		                       htmlCode.includes('<HTML');
+
+		if (!isFullDocument) {
+			// Not a full document, return as-is
+			return codeData;
+		}
+
+		console.log('HTML Sandbox: Detected full HTML document, extracting components...');
+
+		// Create a temporary DOM parser
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(htmlCode, 'text/html');
+
+		// Extract CSS from <style> tags in <head>
+		let extractedCSS = codeData.css || '';
+		const styleTags = doc.querySelectorAll('head style, style');
+		styleTags.forEach(styleTag => {
+			if (extractedCSS) extractedCSS += '\n\n';
+			extractedCSS += '/* Extracted from <style> tag */\n';
+			extractedCSS += styleTag.textContent;
+		});
+
+		// Extract external scripts from <script src="...">
+		let extractedScripts = codeData.externalScripts || '';
+		const externalScriptTags = doc.querySelectorAll('script[src]');
+		externalScriptTags.forEach(scriptTag => {
+			const src = scriptTag.getAttribute('src');
+			if (src) {
+				if (extractedScripts) extractedScripts += '\n';
+				extractedScripts += src;
+			}
+		});
+
+		// Extract inline scripts from <script> tags (without src)
+		let extractedJS = codeData.js || '';
+		const inlineScriptTags = doc.querySelectorAll('script:not([src])');
+		inlineScriptTags.forEach(scriptTag => {
+			// Skip JSON scripts
+			const type = scriptTag.getAttribute('type');
+			if (type && type.includes('json')) return;
+
+			if (extractedJS) extractedJS += '\n\n';
+			extractedJS += '// Extracted from <script> tag\n';
+			extractedJS += scriptTag.textContent;
+		});
+
+		// Extract body content
+		let extractedHTML = '';
+		const bodyElement = doc.querySelector('body');
+		if (bodyElement) {
+			// Clone body and remove all script tags
+			const bodyClone = bodyElement.cloneNode(true);
+			bodyClone.querySelectorAll('script').forEach(script => script.remove());
+			extractedHTML = bodyClone.innerHTML;
+		} else {
+			// Fallback: use original HTML but remove DOCTYPE, html, head, body tags
+			extractedHTML = htmlCode
+				.replace(/<!DOCTYPE[^>]*>/gi, '')
+				.replace(/<\/?html[^>]*>/gi, '')
+				.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+				.replace(/<\/?body[^>]*>/gi, '')
+				.trim();
+		}
+
+		console.log('HTML Sandbox: Extraction complete', {
+			cssLength: extractedCSS.length,
+			jsLength: extractedJS.length,
+			htmlLength: extractedHTML.length,
+			scriptsCount: externalScriptTags.length
+		});
+
+		return {
+			html: extractedHTML,
+			css: extractedCSS,
+			js: extractedJS,
+			externalScripts: extractedScripts
+		};
+	}
+
+	/**
 	 * Initialize all HTML Sandbox blocks on the page
 	 */
 	function initHtmlSandbox() {
@@ -78,6 +176,10 @@
 					};
 
 					console.log('HTML Sandbox: Decoded lengths - html:', codeData.html.length, 'css:', codeData.css.length, 'js:', codeData.js.length);
+
+					// Smart Parser: Extract components from full HTML documents
+					codeData = parseFullHTMLDocument(codeData);
+
 				} catch (e) {
 					console.error('HTML Sandbox: Failed to parse code data', e);
 					// Show error message to user instead of breaking the page
@@ -224,6 +326,10 @@
 						js: base64DecodeUnicode(encoded.js),
 						externalScripts: base64DecodeUnicode(encoded.externalScripts)
 					};
+
+					// Smart Parser: Extract components from full HTML documents
+					codeData = parseFullHTMLDocument(codeData);
+
 				} catch (e) {
 					console.error('HTML Sandbox: Failed to parse code data', e);
 					// Show error message to user instead of breaking the page
