@@ -55,34 +55,39 @@
 	 * Initialize iframe-based sandbox
 	 */
 	function initIframeMode(block) {
-		const container = block.querySelector('.html-sandbox-container');
-		if (!container) return;
+		try {
+			const container = block.querySelector('.html-sandbox-container');
+			if (!container) return;
 
-		// Read code from JSON script tag (avoids data-attribute length limits)
-		const dataScript = container.querySelector('.html-sandbox-data');
-		let codeData = { html: '', css: '', js: '', externalScripts: '' };
+			// Read code from JSON script tag (avoids data-attribute length limits)
+			const dataScript = container.querySelector('.html-sandbox-data');
+			let codeData = { html: '', css: '', js: '', externalScripts: '' };
 
-		if (dataScript) {
-			try {
-				console.log('HTML Sandbox: Found data script');
-				const encoded = JSON.parse(dataScript.textContent);
-				console.log('HTML Sandbox: Parsed JSON, keys:', Object.keys(encoded));
+			if (dataScript) {
+				try {
+					console.log('HTML Sandbox: Found data script');
+					const encoded = JSON.parse(dataScript.textContent || '{}');
+					console.log('HTML Sandbox: Parsed JSON, keys:', Object.keys(encoded));
 
-				// Decode base64 encoded content with UTF-8 support
-				codeData = {
-					html: base64DecodeUnicode(encoded.html),
-					css: base64DecodeUnicode(encoded.css),
-					js: base64DecodeUnicode(encoded.js),
-					externalScripts: base64DecodeUnicode(encoded.externalScripts)
-				};
+					// Decode base64 encoded content with UTF-8 support
+					codeData = {
+						html: base64DecodeUnicode(encoded.html),
+						css: base64DecodeUnicode(encoded.css),
+						js: base64DecodeUnicode(encoded.js),
+						externalScripts: base64DecodeUnicode(encoded.externalScripts)
+					};
 
-				console.log('HTML Sandbox: Decoded lengths - html:', codeData.html.length, 'css:', codeData.css.length, 'js:', codeData.js.length);
-			} catch (e) {
-				console.error('HTML Sandbox: Failed to parse code data', e);
+					console.log('HTML Sandbox: Decoded lengths - html:', codeData.html.length, 'css:', codeData.css.length, 'js:', codeData.js.length);
+				} catch (e) {
+					console.error('HTML Sandbox: Failed to parse code data', e);
+					// Show error message to user instead of breaking the page
+					container.innerHTML = '<div style="padding:20px;background:#fee;border:1px solid #c00;color:#c00;">Fehler beim Laden des HTML-Sandboxes: Ungültige Daten</div>';
+					return;
+				}
+			} else {
+				console.warn('HTML Sandbox: No data script found');
+				return;
 			}
-		} else {
-			console.warn('HTML Sandbox: No data script found');
-		}
 
 		const htmlCode = codeData.html;
 		const cssCode = codeData.css;
@@ -187,33 +192,48 @@
 			// Set static height since we can't measure content
 			iframe.style.height = (autoHeight ? maxHeight : minHeight) + 'px';
 		}
+		} catch (globalError) {
+			// Catch any unexpected errors to prevent breaking subsequent CDB blocks
+			console.error('HTML Sandbox: Critical initialization error', globalError);
+			const container = block.querySelector('.html-sandbox-container');
+			if (container) {
+				container.innerHTML = '<div style="padding:20px;background:#fee;border:1px solid #c00;color:#c00;">Fehler beim Laden des HTML-Sandboxes</div>';
+			}
+		}
 	}
 
 	/**
 	 * Initialize Shadow DOM-based sandbox
 	 */
 	function initShadowDomMode(block) {
-		const container = block.querySelector('.html-sandbox-container');
-		if (!container) return;
+		try {
+			const container = block.querySelector('.html-sandbox-container');
+			if (!container) return;
 
-		// Read code from JSON script tag (avoids data-attribute length limits)
-		const dataScript = container.querySelector('.html-sandbox-data');
-		let codeData = { html: '', css: '', js: '', externalScripts: '' };
+			// Read code from JSON script tag (avoids data-attribute length limits)
+			const dataScript = container.querySelector('.html-sandbox-data');
+			let codeData = { html: '', css: '', js: '', externalScripts: '' };
 
-		if (dataScript) {
-			try {
-				const encoded = JSON.parse(dataScript.textContent);
-				// Decode base64 encoded content with UTF-8 support
-				codeData = {
-					html: base64DecodeUnicode(encoded.html),
-					css: base64DecodeUnicode(encoded.css),
-					js: base64DecodeUnicode(encoded.js),
-					externalScripts: base64DecodeUnicode(encoded.externalScripts)
-				};
-			} catch (e) {
-				console.error('HTML Sandbox: Failed to parse code data', e);
+			if (dataScript) {
+				try {
+					const encoded = JSON.parse(dataScript.textContent || '{}');
+					// Decode base64 encoded content with UTF-8 support
+					codeData = {
+						html: base64DecodeUnicode(encoded.html),
+						css: base64DecodeUnicode(encoded.css),
+						js: base64DecodeUnicode(encoded.js),
+						externalScripts: base64DecodeUnicode(encoded.externalScripts)
+					};
+				} catch (e) {
+					console.error('HTML Sandbox: Failed to parse code data', e);
+					// Show error message to user instead of breaking the page
+					container.innerHTML = '<div style="padding:20px;background:#fee;border:1px solid #c00;color:#c00;">Fehler beim Laden des HTML-Sandboxes: Ungültige Daten</div>';
+					return;
+				}
+			} else {
+				console.warn('HTML Sandbox: No data script found');
+				return;
 			}
-		}
 
 		const htmlCode = codeData.html;
 		const cssCode = codeData.css;
@@ -252,6 +272,14 @@
 			loadScriptsSequentially();
 		} else {
 			executeInlineScript(jsCode, shadowRoot);
+		}
+		} catch (globalError) {
+			// Catch any unexpected errors to prevent breaking subsequent CDB blocks
+			console.error('HTML Sandbox: Critical initialization error (Shadow DOM)', globalError);
+			const container = block.querySelector('.html-sandbox-container');
+			if (container) {
+				container.innerHTML = '<div style="padding:20px;background:#fee;border:1px solid #c00;color:#c00;">Fehler beim Laden des HTML-Sandboxes</div>';
+			}
 		}
 	}
 
@@ -316,6 +344,7 @@
 	}
 
 	// Re-initialize on dynamic content load (for AJAX-loaded content)
+	// Only observe direct children to avoid performance issues with CDB blocks
 	if (typeof MutationObserver !== 'undefined') {
 		const observer = new MutationObserver((mutations) => {
 			let shouldInit = false;
@@ -337,7 +366,7 @@
 
 		observer.observe(document.body, {
 			childList: true,
-			subtree: true,
+			subtree: false, // Only direct children - prevents interference with CDB blocks
 		});
 	}
 })();
