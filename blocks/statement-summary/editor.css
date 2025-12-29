@@ -1,23 +1,28 @@
 /**
  * Editor Styles for Statement Summary Block
- * Styles specific to the WordPress block editor
- * Using high-specificity selectors to prevent override by other plugins (e.g., CDB)
+ * Maximum specificity to work even nested in CDB containers
+ * Multiple selector variations for different nesting contexts
  */
 
 /* Editor container */
-.wp-block-modular-blocks-statement-summary .statement-summary-editor {
+.wp-block-modular-blocks-statement-summary .statement-summary-editor,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-summary-editor,
+.block-editor-block-list__block .wp-block-modular-blocks-statement-summary .statement-summary-editor {
     padding: 1.5rem !important;
     background: #fff !important;
     border: 1px solid #ddd !important;
     border-radius: 4px !important;
+    box-sizing: border-box !important;
 }
 
 /* Title and instruction */
-.wp-block-modular-blocks-statement-summary .statement-summary-title {
+.wp-block-modular-blocks-statement-summary .statement-summary-title,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-summary-title {
     margin: 0 0 1rem 0 !important;
     font-size: 1.5rem !important;
     font-weight: 600 !important;
     color: #1e1e1e !important;
+    line-height: 1.4 !important;
 }
 
 .wp-block-modular-blocks-statement-summary .statement-summary-title:focus {
@@ -25,7 +30,8 @@
     outline-offset: 2px !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-summary-instruction {
+.wp-block-modular-blocks-statement-summary .statement-summary-instruction,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-summary-instruction {
     margin: 0 0 1.5rem 0 !important;
     font-size: 1rem !important;
     color: #1e1e1e !important;
@@ -38,71 +44,88 @@
 }
 
 /* Statements editor section */
-.wp-block-modular-blocks-statement-summary .statements-editor {
+.wp-block-modular-blocks-statement-summary .statements-editor,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statements-editor {
     margin-top: 2rem !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statements-editor h4 {
+.wp-block-modular-blocks-statement-summary .statements-editor h4,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statements-editor h4 {
     margin: 0 0 0.5rem 0 !important;
     font-size: 1.125rem !important;
     font-weight: 600 !important;
     color: #1e1e1e !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statements-editor .help-text {
+.wp-block-modular-blocks-statement-summary .statements-editor .help-text,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statements-editor .help-text {
     margin: 0 0 1rem 0 !important;
     font-size: 0.875rem !important;
     color: #757575 !important;
     font-style: italic !important;
 }
 
-/* Statement card */
-.wp-block-modular-blocks-statement-summary .statement-card {
+/* Statement card - critical for visibility */
+.wp-block-modular-blocks-statement-summary .statement-card,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-card,
+.block-editor-block-list__block .wp-block-modular-blocks-statement-summary .statement-card {
     margin-bottom: 1rem !important;
     border: 1px solid #ddd !important;
+    border-radius: 2px !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     pointer-events: auto !important;
+    background: #fff !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-card * {
+.wp-block-modular-blocks-statement-summary .statement-card *,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-card * {
     pointer-events: auto !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-card .components-card__header {
+.wp-block-modular-blocks-statement-summary .statement-card .components-card__header,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-card .components-card__header {
     padding: 0.75rem 1rem !important;
     background: #f6f7f7 !important;
     border-bottom: 1px solid #ddd !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-card .components-card__body {
+.wp-block-modular-blocks-statement-summary .statement-card .components-card__body,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-card .components-card__body {
     padding: 1rem !important;
+    background: #fff !important;
 }
 
 /* Statement header */
-.wp-block-modular-blocks-statement-summary .statement-header {
+.wp-block-modular-blocks-statement-summary .statement-header,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-header {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     width: 100% !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-header strong {
+.wp-block-modular-blocks-statement-summary .statement-header strong,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-header strong {
     font-size: 0.875rem !important;
     color: #1e1e1e !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-actions {
+.wp-block-modular-blocks-statement-summary .statement-actions,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-actions {
     display: flex !important;
     gap: 0.25rem !important;
 }
 
-.wp-block-modular-blocks-statement-summary .statement-actions button {
+.wp-block-modular-blocks-statement-summary .statement-actions button,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-actions button {
     min-width: 32px !important;
     height: 32px !important;
+    pointer-events: auto !important;
 }
 
 /* Statement actions group */
-.wp-block-modular-blocks-statement-summary .statement-actions-group {
+.wp-block-modular-blocks-statement-summary .statement-actions-group,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-actions-group {
     display: flex !important;
     gap: 0.75rem !important;
     margin-top: 1rem !important;
@@ -110,7 +133,9 @@
 }
 
 .wp-block-modular-blocks-statement-summary .add-statement-button,
-.wp-block-modular-blocks-statement-summary .csv-import-button {
+.wp-block-modular-blocks-statement-summary .csv-import-button,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .add-statement-button,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .csv-import-button {
     flex: 1 !important;
     min-width: 200px !important;
     justify-content: center !important;
@@ -119,20 +144,27 @@
 }
 
 /* Ensure all buttons are clickable */
-.wp-block-modular-blocks-statement-summary button {
+.wp-block-modular-blocks-statement-summary button,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary button,
+.block-editor-block-list__block .wp-block-modular-blocks-statement-summary button {
     pointer-events: auto !important;
     cursor: pointer !important;
 }
 
-.wp-block-modular-blocks-statement-summary button:disabled {
+.wp-block-modular-blocks-statement-summary button:disabled,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary button:disabled {
     pointer-events: none !important;
     cursor: not-allowed !important;
+    opacity: 0.6 !important;
 }
 
 /* Ensure all inputs are interactive */
 .wp-block-modular-blocks-statement-summary input,
 .wp-block-modular-blocks-statement-summary textarea,
-.wp-block-modular-blocks-statement-summary select {
+.wp-block-modular-blocks-statement-summary select,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary input,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary textarea,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary select {
     pointer-events: auto !important;
     cursor: auto !important;
 }
@@ -140,6 +172,7 @@
 /* CSV Import Modal */
 .csv-import-modal {
     max-width: 700px !important;
+    z-index: 999999 !important;
 }
 
 .csv-import-modal .csv-import-content {
@@ -174,7 +207,8 @@
 }
 
 /* Editor preview section */
-.wp-block-modular-blocks-statement-summary .editor-preview {
+.wp-block-modular-blocks-statement-summary .editor-preview,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .editor-preview {
     margin-top: 2rem !important;
     padding: 1rem !important;
     background: #f6f7f7 !important;
@@ -182,97 +216,119 @@
     border-radius: 4px !important;
 }
 
-.wp-block-modular-blocks-statement-summary .preview-label {
+.wp-block-modular-blocks-statement-summary .preview-label,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .preview-label {
     margin: 0 0 0.5rem 0 !important;
     font-size: 0.875rem !important;
     font-weight: 600 !important;
     color: #1e1e1e !important;
 }
 
-.wp-block-modular-blocks-statement-summary .preview-info {
+.wp-block-modular-blocks-statement-summary .preview-info,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .preview-info {
     font-size: 0.875rem !important;
     color: #1e1e1e !important;
 }
 
-.wp-block-modular-blocks-statement-summary .preview-info p {
+.wp-block-modular-blocks-statement-summary .preview-info p,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .preview-info p {
     margin: 0.25rem 0 !important;
 }
 
-.wp-block-modular-blocks-statement-summary .preview-info .warning {
+.wp-block-modular-blocks-statement-summary .preview-info .warning,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .preview-info .warning {
     color: #cc1818 !important;
     font-weight: 500 !important;
 }
 
-/* Sidebar controls - scoped to this block only in sidebar */
-.block-editor-block-inspector .wp-block-modular-blocks-statement-summary .components-panel__body {
-    border-top: 1px solid #ddd !important;
-}
-
-.block-editor-block-inspector .wp-block-modular-blocks-statement-summary .components-panel__body-title {
-    font-weight: 600 !important;
-}
-
 /* Form controls spacing - scoped to this block */
-.wp-block-modular-blocks-statement-summary .components-base-control {
+.wp-block-modular-blocks-statement-summary .components-base-control,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-base-control {
     margin-bottom: 1.5rem !important;
 }
 
-.wp-block-modular-blocks-statement-summary .components-base-control:last-child {
+.wp-block-modular-blocks-statement-summary .components-base-control:last-child,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-base-control:last-child {
     margin-bottom: 0 !important;
 }
 
-/* Toggle control */
-.wp-block-modular-blocks-statement-summary .components-toggle-control {
+/* Toggle control - critical for interaction */
+.wp-block-modular-blocks-statement-summary .components-toggle-control,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-toggle-control {
     display: flex !important;
     align-items: center !important;
     pointer-events: auto !important;
     cursor: pointer !important;
 }
 
-.wp-block-modular-blocks-statement-summary .components-toggle-control * {
+.wp-block-modular-blocks-statement-summary .components-toggle-control *,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-toggle-control * {
     pointer-events: auto !important;
 }
 
-.wp-block-modular-blocks-statement-summary .components-form-toggle {
+.wp-block-modular-blocks-statement-summary .components-form-toggle,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-form-toggle {
     pointer-events: auto !important;
     cursor: pointer !important;
 }
 
-.wp-block-modular-blocks-statement-summary .components-form-toggle__input {
+.wp-block-modular-blocks-statement-summary .components-form-toggle__input,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-form-toggle__input {
     pointer-events: auto !important;
     cursor: pointer !important;
 }
 
 /* Range control */
-.wp-block-modular-blocks-statement-summary .components-range-control {
+.wp-block-modular-blocks-statement-summary .components-range-control,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-range-control {
     margin-bottom: 1.5rem !important;
 }
 
-.wp-block-modular-blocks-statement-summary .components-range-control__help {
+.wp-block-modular-blocks-statement-summary .components-range-control__help,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-range-control__help {
     font-size: 0.875rem !important;
     color: #757575 !important;
     margin-top: 0.25rem !important;
 }
 
 /* Textarea styling */
-.wp-block-modular-blocks-statement-summary .components-textarea-control__input {
+.wp-block-modular-blocks-statement-summary .components-textarea-control__input,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-textarea-control__input {
     min-height: 80px !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
+    background: #fff !important;
+    border: 1px solid #757575 !important;
+    border-radius: 2px !important;
+    padding: 6px 8px !important;
+    width: 100% !important;
+}
+
+/* Text controls */
+.wp-block-modular-blocks-statement-summary .components-text-control__input,
+div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .components-text-control__input {
+    background: #fff !important;
+    border: 1px solid #757575 !important;
+    border-radius: 2px !important;
+    padding: 6px 8px !important;
+    width: 100% !important;
 }
 
 /* Responsive adjustments for editor */
 @media (max-width: 782px) {
-    .wp-block-modular-blocks-statement-summary .statement-summary-editor {
+    .wp-block-modular-blocks-statement-summary .statement-summary-editor,
+    div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-summary-editor {
         padding: 1rem !important;
     }
 
-    .wp-block-modular-blocks-statement-summary .statement-header {
+    .wp-block-modular-blocks-statement-summary .statement-header,
+    div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-header {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 0.5rem !important;
     }
 
-    .wp-block-modular-blocks-statement-summary .statement-actions {
+    .wp-block-modular-blocks-statement-summary .statement-actions,
+    div[class*="wp-block"] .wp-block-modular-blocks-statement-summary .statement-actions {
         width: 100% !important;
         justify-content: flex-end !important;
     }
