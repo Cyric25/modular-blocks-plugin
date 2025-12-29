@@ -1,0 +1,245 @@
+/**
+ * Editor Styles for Statement Summary Block
+ * Styles specific to the WordPress block editor
+ */
+
+/* Editor container */
+.statement-summary-editor {
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Title and instruction */
+.statement-summary-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.statement-summary-title:focus {
+    outline: 1px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.statement-summary-instruction {
+    margin: 0 0 1.5rem 0;
+    font-size: 1rem;
+    color: #1e1e1e;
+    line-height: 1.6;
+}
+
+.statement-summary-instruction:focus {
+    outline: 1px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* Statements editor section */
+.statements-editor {
+    margin-top: 2rem;
+}
+
+.statements-editor h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.statements-editor .help-text {
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    color: #757575;
+    font-style: italic;
+}
+
+/* Statement card */
+.statement-card {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.statement-card .components-card__header {
+    padding: 0.75rem 1rem;
+    background: #f6f7f7;
+    border-bottom: 1px solid #ddd;
+}
+
+.statement-card .components-card__body {
+    padding: 1rem;
+}
+
+/* Statement header */
+.statement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.statement-header strong {
+    font-size: 0.875rem;
+    color: #1e1e1e;
+}
+
+.statement-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.statement-actions button {
+    min-width: 32px;
+    height: 32px;
+}
+
+/* Statement actions group */
+.statement-actions-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.add-statement-button,
+.csv-import-button {
+    flex: 1;
+    min-width: 200px;
+    justify-content: center;
+}
+
+/* CSV Import Modal */
+.csv-import-modal {
+    max-width: 700px;
+}
+
+.csv-import-content {
+    padding: 1rem 0;
+}
+
+.csv-format-example {
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 0.5rem 0 1rem 0;
+    font-size: 0.875rem;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+}
+
+.csv-help-text {
+    background: #e7f5fe;
+    border-left: 4px solid #2271b1;
+    padding: 0.75rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.csv-import-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+}
+
+/* Editor preview section */
+.editor-preview {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.preview-label {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.preview-info {
+    font-size: 0.875rem;
+    color: #1e1e1e;
+}
+
+.preview-info p {
+    margin: 0.25rem 0;
+}
+
+.preview-info .warning {
+    color: #cc1818;
+    font-weight: 500;
+}
+
+/* Sidebar controls */
+.components-panel__body {
+    border-top: 1px solid #ddd;
+}
+
+.components-panel__body-title {
+    font-weight: 600;
+}
+
+/* Form controls spacing */
+.components-base-control {
+    margin-bottom: 1.5rem;
+}
+
+.components-base-control:last-child {
+    margin-bottom: 0;
+}
+
+/* Toggle control */
+.components-toggle-control {
+    display: flex;
+    align-items: center;
+}
+
+/* Range control */
+.components-range-control {
+    margin-bottom: 1.5rem;
+}
+
+.components-range-control__help {
+    font-size: 0.875rem;
+    color: #757575;
+    margin-top: 0.25rem;
+}
+
+/* Textarea styling */
+.components-textarea-control__input {
+    min-height: 80px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
+
+/* Responsive adjustments for editor */
+@media (max-width: 782px) {
+    .statement-summary-editor {
+        padding: 1rem;
+    }
+
+    .statement-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .statement-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* Block alignment support */
+.wp-block-modular-blocks-statement-summary.alignwide {
+    max-width: 1280px;
+}
+
+.wp-block-modular-blocks-statement-summary.alignfull {
+    max-width: none;
+}

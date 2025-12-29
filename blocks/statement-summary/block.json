@@ -1,0 +1,135 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/statement-summary",
+    "version": "1.0.0",
+    "title": "Aussagen-Zusammenfassung",
+    "category": "modular-blocks",
+    "icon": "editor-ol",
+    "description": "Interaktive Zusammenfassung: Lernende wählen richtige Aussagen aus, die sich zu einem zusammenhängenden Text verbinden.",
+    "keywords": ["summary", "zusammenfassung", "aussagen", "statements", "quiz", "learning", "text"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Wählen Sie die wichtigsten Aussagen aus"
+        },
+        "instruction": {
+            "type": "string",
+            "default": "Wählen Sie alle Aussagen aus, die zu diesem Thema gehören. Klicken Sie dann auf 'Überprüfen'."
+        },
+        "statements": {
+            "type": "array",
+            "default": [
+                {
+                    "text": "Dies ist eine richtige Aussage, die zur Zusammenfassung gehört.",
+                    "isCorrect": true,
+                    "order": 1
+                },
+                {
+                    "text": "Dies ist eine weitere richtige Aussage.",
+                    "isCorrect": true,
+                    "order": 2
+                },
+                {
+                    "text": "Dies ist eine dritte richtige Aussage.",
+                    "isCorrect": true,
+                    "order": 3
+                },
+                {
+                    "text": "Dies ist eine falsche Aussage, die nicht ausgewählt werden sollte.",
+                    "isCorrect": false,
+                    "order": 0
+                },
+                {
+                    "text": "Auch dies ist eine falsche Aussage.",
+                    "isCorrect": false,
+                    "order": 0
+                }
+            ]
+        },
+        "randomizeStatements": {
+            "type": "boolean",
+            "default": true
+        },
+        "showRetry": {
+            "type": "boolean",
+            "default": true
+        },
+        "showSolution": {
+            "type": "boolean",
+            "default": true
+        },
+        "successText": {
+            "type": "string",
+            "default": "Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden. Hier ist die Zusammenfassung:"
+        },
+        "errorText": {
+            "type": "string",
+            "default": "Nicht alle Aussagen sind korrekt. Versuchen Sie es erneut!"
+        },
+        "partialText": {
+            "type": "string",
+            "default": "Sie haben @correct von @total richtigen Aussagen gefunden. Versuchen Sie es erneut!"
+        },
+        "summaryTitle": {
+            "type": "string",
+            "default": "Zusammenfassung:"
+        },
+        "buttonCheckText": {
+            "type": "string",
+            "default": "Überprüfen"
+        },
+        "buttonRetryText": {
+            "type": "string",
+            "default": "Erneut versuchen"
+        },
+        "buttonSolutionText": {
+            "type": "string",
+            "default": "Lösung anzeigen"
+        }
+    },
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "title": "Die wichtigsten Eigenschaften von Wasser",
+            "statements": [
+                {
+                    "text": "Wasser hat eine hohe Wärmekapazität und kann daher viel Energie speichern.",
+                    "isCorrect": true,
+                    "order": 1
+                },
+                {
+                    "text": "Bei 4°C hat Wasser seine höchste Dichte, weshalb Eis auf Wasser schwimmt.",
+                    "isCorrect": true,
+                    "order": 2
+                },
+                {
+                    "text": "Wasser ist ein hervorragendes Lösungsmittel für viele Stoffe.",
+                    "isCorrect": true,
+                    "order": 3
+                },
+                {
+                    "text": "Wasser ist immer flüssig und kann niemals gefrieren.",
+                    "isCorrect": false,
+                    "order": 0
+                },
+                {
+                    "text": "Wasser besteht hauptsächlich aus Sauerstoff und Stickstoff.",
+                    "isCorrect": false,
+                    "order": 0
+                }
+            ]
+        }
+    }
+}

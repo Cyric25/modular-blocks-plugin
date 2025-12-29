@@ -1,0 +1,333 @@
+/**
+ * Frontend Styles for Statement Summary Block
+ * Uses theme color variables for consistency
+ */
+
+/* Theme color variables (fallback values) */
+:root {
+    --color-special-text: #71230a;
+    --color-ui-surface: #e24614;
+    --color-ui-surface-dark: #c93d12;
+    --color-ui-surface-light: #f5ede9;
+    --color-sidebar-border: #e0e0e0;
+    --color-primary-text: #333333;
+    --color-background: #ffffff;
+    --color-light-background: #f8f9fa;
+}
+
+/* Block container */
+.wp-block-modular-blocks-statement-summary {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--color-background);
+    border: 1px solid var(--color-sidebar-border);
+    border-radius: 8px;
+}
+
+/* Header section */
+.summary-header {
+    margin-bottom: 1.5rem;
+}
+
+.summary-title {
+    margin: 0 0 0.75rem 0;
+    color: var(--color-special-text);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.summary-instruction {
+    margin: 0;
+    color: var(--color-primary-text);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Statements container */
+.summary-statements {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Individual statement option */
+.statement-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--color-light-background);
+    border: 2px solid var(--color-sidebar-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.statement-option:hover {
+    background: var(--color-ui-surface-light);
+    border-color: var(--color-ui-surface);
+}
+
+.statement-option.selected,
+.statement-option:has(.statement-checkbox:checked) {
+    background: var(--color-ui-surface-light);
+    border-color: var(--color-ui-surface);
+    box-shadow: 0 2px 4px rgba(226, 70, 20, 0.1);
+}
+
+/* Checkbox styling */
+.statement-checkbox {
+    margin: 0.25rem 1rem 0 0;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--color-ui-surface);
+}
+
+.statement-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Statement text */
+.statement-text {
+    flex: 1;
+    color: var(--color-primary-text);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Visual feedback states */
+.statement-option.is-correct {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.statement-option.is-incorrect {
+    background: #ffebee;
+    border-color: #f44336;
+    animation: shake 0.5s ease;
+}
+
+.statement-option.is-solution {
+    background: #e3f2fd;
+    border-color: #2196f3;
+}
+
+.statement-option.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Shake animation for incorrect selections */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+/* Actions section */
+.summary-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Button styles */
+.summary-actions button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.summary-check,
+.button-primary {
+    background: var(--color-ui-surface);
+    color: #ffffff;
+}
+
+.summary-check:hover,
+.button-primary:hover {
+    background: var(--color-ui-surface-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.summary-check:disabled,
+.button-primary:disabled {
+    background: var(--color-sidebar-border);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.summary-retry,
+.button-secondary {
+    background: var(--color-light-background);
+    color: var(--color-primary-text);
+    border: 2px solid var(--color-sidebar-border);
+}
+
+.summary-retry:hover,
+.button-secondary:hover {
+    background: var(--color-ui-surface-light);
+    border-color: var(--color-ui-surface);
+}
+
+.summary-solution,
+.button-tertiary {
+    background: transparent;
+    color: var(--color-special-text);
+    border: 2px solid var(--color-special-text);
+}
+
+.summary-solution:hover,
+.button-tertiary:hover {
+    background: var(--color-special-text);
+    color: #ffffff;
+}
+
+/* Feedback section */
+.summary-feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.summary-feedback.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+.summary-feedback.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #66bb6a;
+}
+
+.summary-feedback.info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #42a5f5;
+}
+
+/* Result section */
+.summary-result {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--color-ui-surface-light);
+    border: 2px solid var(--color-ui-surface);
+    border-radius: 8px;
+}
+
+.result-title {
+    margin: 0 0 1rem 0;
+    color: var(--color-special-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.result-text {
+    margin-bottom: 1.5rem;
+}
+
+.summary-statement {
+    margin: 0 0 0.75rem 0;
+    padding: 0.75rem;
+    background: var(--color-background);
+    border-left: 4px solid var(--color-ui-surface);
+    color: var(--color-primary-text);
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.summary-statement:last-child {
+    margin-bottom: 0;
+}
+
+.result-feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.result-feedback.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.result-feedback.info {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-statement-summary {
+        padding: 1.5rem;
+    }
+
+    .summary-title {
+        font-size: 1.25rem;
+    }
+
+    .summary-instruction {
+        font-size: 0.95rem;
+    }
+
+    .statement-option {
+        padding: 0.75rem;
+    }
+
+    .statement-text {
+        font-size: 0.95rem;
+    }
+
+    .summary-actions {
+        flex-direction: column;
+    }
+
+    .summary-actions button {
+        width: 100%;
+    }
+}
+
+/* Accessibility improvements */
+.statement-checkbox:focus {
+    outline: 2px solid var(--color-ui-surface);
+    outline-offset: 2px;
+}
+
+.summary-actions button:focus {
+    outline: 2px solid var(--color-ui-surface);
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .summary-actions {
+        display: none;
+    }
+
+    .summary-feedback {
+        display: none;
+    }
+
+    .wp-block-modular-blocks-statement-summary {
+        border: 1px solid #000;
+    }
+}
