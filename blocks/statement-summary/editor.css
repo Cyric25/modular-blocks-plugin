@@ -61,6 +61,11 @@
     margin-bottom: 1rem !important;
     border: 1px solid #ddd !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    pointer-events: auto !important;
+}
+
+.wp-block-modular-blocks-statement-summary .statement-card * {
+    pointer-events: auto !important;
 }
 
 .wp-block-modular-blocks-statement-summary .statement-card .components-card__header {
@@ -109,6 +114,27 @@
     flex: 1 !important;
     min-width: 200px !important;
     justify-content: center !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Ensure all buttons are clickable */
+.wp-block-modular-blocks-statement-summary button {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.wp-block-modular-blocks-statement-summary button:disabled {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
+/* Ensure all inputs are interactive */
+.wp-block-modular-blocks-statement-summary input,
+.wp-block-modular-blocks-statement-summary textarea,
+.wp-block-modular-blocks-statement-summary select {
+    pointer-events: auto !important;
+    cursor: auto !important;
 }
 
 /* CSV Import Modal */
@@ -199,6 +225,22 @@
 .wp-block-modular-blocks-statement-summary .components-toggle-control {
     display: flex !important;
     align-items: center !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.wp-block-modular-blocks-statement-summary .components-toggle-control * {
+    pointer-events: auto !important;
+}
+
+.wp-block-modular-blocks-statement-summary .components-form-toggle {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.wp-block-modular-blocks-statement-summary .components-form-toggle__input {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 /* Range control */
