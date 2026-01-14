@@ -294,46 +294,54 @@
 /* ============================================
    Popup Base Styles
    ============================================ */
-.poi-popup {
+.wp-block-modular-blocks-point-of-interest .poi-popup {
     position: absolute;
     z-index: 100;
     min-width: 200px;
     max-width: 320px;
-    background: #fff;
+    background: var(--color-background, #ffffff);
+    background-color: var(--color-background, #ffffff);
     border-radius: var(--poi-border-radius);
     box-shadow: var(--poi-shadow-hover);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    color: var(--color-primary-text, #333333);
 }
 
-.poi-popup.active {
+.wp-block-modular-blocks-point-of-interest .poi-popup.active {
     opacity: 1;
     visibility: visible;
 }
 
-.popup-content {
+.wp-block-modular-blocks-point-of-interest .popup-content {
     padding: 0;
+    background: var(--color-background, #ffffff);
 }
 
-.popup-header {
+.wp-block-modular-blocks-point-of-interest .popup-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--poi-border-color);
-    background: var(--poi-bg-light);
+    border-bottom: 1px solid var(--color-sidebar-border, #e0e0e0);
+    background: var(--color-light-background, #f8f9fa);
+    background-color: var(--color-light-background, #f8f9fa);
     border-radius: var(--poi-border-radius) var(--poi-border-radius) 0 0;
 }
 
-.popup-title {
+.wp-block-modular-blocks-point-of-interest .popup-title,
+.wp-block-modular-blocks-point-of-interest .popup-header h4 {
     margin: 0;
+    padding: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: var(--poi-text-color);
+    color: var(--color-special-text, #71230a);
+    background: transparent;
+    border: none;
 }
 
-.popup-close {
+.wp-block-modular-blocks-point-of-interest .popup-close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -344,25 +352,31 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    color: var(--poi-text-light);
+    color: var(--color-primary-text, #333333);
     transition: var(--poi-transition);
 }
 
-.popup-close:hover {
+.wp-block-modular-blocks-point-of-interest .popup-close:hover {
     background: rgba(0, 0, 0, 0.08);
-    color: var(--poi-text-color);
+    color: var(--color-special-text, #71230a);
 }
 
-.popup-close:focus {
-    outline: 2px solid var(--poi-primary-color);
+.wp-block-modular-blocks-point-of-interest .popup-close:focus {
+    outline: 2px solid var(--color-ui-surface, #e24614);
     outline-offset: 2px;
 }
 
-.popup-body {
+.wp-block-modular-blocks-point-of-interest .popup-body {
     padding: 16px;
     font-size: 0.9rem;
     line-height: 1.6;
-    color: var(--poi-text-color);
+    color: var(--color-primary-text, #333333);
+    background: var(--color-background, #ffffff);
+}
+
+.wp-block-modular-blocks-point-of-interest .popup-body,
+.wp-block-modular-blocks-point-of-interest .popup-body p {
+    color: var(--color-primary-text, #333333);
 }
 
 .popup-body p {

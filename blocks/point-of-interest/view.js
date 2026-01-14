@@ -343,29 +343,52 @@
 
         // Event listeners
         hotspots.forEach((hotspot, index) => {
-            hotspot.addEventListener('click', (event) => {
-                handleHotspotActivation(event, hotspot);
-            });
+            const trigger = hotspot.dataset.trigger || 'click';
 
-            hotspot.addEventListener('keydown', handleKeyDown);
-
-            // Hover events for tooltip-style popups
-            if (poiData.popupStyle === 'tooltip') {
-                hotspot.addEventListener('mouseenter', () => {
-                    setTimeout(() => showPopup(index, hotspot), 300);
-                });
-
-                hotspot.addEventListener('mouseleave', () => {
-                    if (poiData.autoClose) {
-                        setTimeout(() => {
-                            const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
-                            if (popup && !popup.matches(':hover')) {
-                                hidePopup(popup);
-                            }
-                        }, 200);
+            // Click events - only for click trigger
+            if (trigger === 'click') {
+                hotspot.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const hotspotIndex = parseInt(hotspot.dataset.hotspot);
+                    const popup = element.querySelector(`[data-hotspot="${hotspotIndex}"].poi-popup`);
+                    if (popup && popup.classList.contains('active')) {
+                        hidePopup(popup);
+                    } else {
+                        showPopup(hotspotIndex, hotspot);
                     }
                 });
             }
+
+            // Hover events - only for hover trigger
+            if (trigger === 'hover') {
+                hotspot.addEventListener('mouseenter', () => {
+                    showPopup(index, hotspot);
+                });
+
+                hotspot.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
+                        if (popup && !popup.matches(':hover')) {
+                            hidePopup(popup);
+                        }
+                    }, 200);
+                });
+
+                // Also close when leaving popup
+                const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
+                if (popup) {
+                    popup.addEventListener('mouseleave', () => {
+                        setTimeout(() => {
+                            if (!hotspot.matches(':hover')) {
+                                hidePopup(popup);
+                            }
+                        }, 200);
+                    });
+                }
+            }
+
+            hotspot.addEventListener('keydown', handleKeyDown);
         });
 
         // Popup close buttons
