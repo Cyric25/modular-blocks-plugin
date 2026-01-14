@@ -1,4 +1,806 @@
 /* Point of Interest Block - Frontend Styles */
+
+/* ============================================
+   CSS Variables
+   ============================================ */
 .wp-block-modular-blocks-point-of-interest {
+    --poi-primary-color: var(--color-ui-surface, #0073aa);
+    --poi-primary-dark: var(--color-ui-surface-dark, #005177);
+    --poi-text-color: var(--color-special-text, #1e1e1e);
+    --poi-text-light: #646970;
+    --poi-bg-light: #f6f7f7;
+    --poi-border-color: #dcdcde;
+    --poi-border-radius: 8px;
+    --poi-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --poi-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.2);
+    --poi-transition: all 0.3s ease;
+    --poi-height: 400px;
+    --zoom-level: 1.5;
+
     position: relative;
+    margin: 1.5em 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* ============================================
+   Container Structure
+   ============================================ */
+.poi-container {
+    background: #fff;
+    border-radius: var(--poi-border-radius);
+    box-shadow: var(--poi-shadow);
+    overflow: hidden;
+}
+
+.poi-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--poi-border-color);
+    background: var(--poi-bg-light);
+}
+
+.poi-title {
+    margin: 0 0 4px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--poi-text-color);
+}
+
+.poi-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--poi-text-light);
+    line-height: 1.5;
+}
+
+/* ============================================
+   Interactive Area
+   ============================================ */
+.poi-interactive-area {
+    position: relative;
+}
+
+.poi-image-container {
+    position: relative;
+    width: 100%;
+    min-height: var(--poi-height);
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.poi-background-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+    user-select: none;
+}
+
+.zoom-enabled .poi-image-container {
+    cursor: grab;
+}
+
+.zoom-enabled .poi-image-container:active {
+    cursor: grabbing;
+}
+
+/* ============================================
+   Hotspots Container
+   ============================================ */
+.poi-hotspots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ============================================
+   Hotspot Base Styles
+   ============================================ */
+.poi-hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 10;
+    outline: none;
+}
+
+.poi-hotspot:focus {
+    z-index: 20;
+}
+
+.poi-hotspot:focus .hotspot-marker {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 0 5px var(--hotspot-color, var(--poi-primary-color));
+}
+
+.hotspot-marker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hotspot-color, var(--poi-primary-color));
+    color: #fff;
+    transition: var(--poi-transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hotspot-marker:hover {
+    transform: scale(1.1);
+    box-shadow: var(--poi-shadow-hover);
+}
+
+.hotspot-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hotspot-icon svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.hotspot-number {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: #fff;
+    color: var(--hotspot-color, var(--poi-primary-color));
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   Hotspot Sizes
+   ============================================ */
+.hotspot-small .hotspot-marker {
+    width: 28px;
+    height: 28px;
+}
+
+.hotspot-small .hotspot-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.hotspot-medium .hotspot-marker {
+    width: 36px;
+    height: 36px;
+}
+
+.hotspot-medium .hotspot-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.hotspot-large .hotspot-marker {
+    width: 48px;
+    height: 48px;
+}
+
+.hotspot-large .hotspot-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ============================================
+   Hotspot Styles
+   ============================================ */
+/* Circle Style (Default) */
+.hotspot-style-circle .hotspot-marker {
+    border-radius: 50%;
+}
+
+/* Square Style */
+.hotspot-style-square .hotspot-marker {
+    border-radius: 6px;
+}
+
+/* Pin Style */
+.hotspot-style-pin .hotspot-marker {
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+}
+
+.hotspot-style-pin .hotspot-icon {
+    transform: rotate(45deg);
+}
+
+.hotspot-style-pin .hotspot-number {
+    transform: rotate(45deg);
+    top: -12px;
+    right: -12px;
+}
+
+/* ============================================
+   Hotspot Animations
+   ============================================ */
+@keyframes poi-pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.08);
+    }
+}
+
+@keyframes poi-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    40% {
+        transform: translate(-50%, -50%) translateY(-8px);
+    }
+    60% {
+        transform: translate(-50%, -50%) translateY(-4px);
+    }
+}
+
+@keyframes poi-ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.animation-pulse {
+    animation: poi-pulse 2s ease-in-out infinite;
+}
+
+.animation-bounce {
+    animation: poi-bounce 2s ease-in-out infinite;
+}
+
+.animation-none {
+    animation: none;
+}
+
+/* Ripple Effect */
+.hotspot-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--hotspot-color, var(--poi-primary-color));
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.poi-hotspot:not(.animation-none) .hotspot-ripple {
+    animation: poi-ripple 2s ease-out infinite;
+}
+
+/* ============================================
+   Popup Base Styles
+   ============================================ */
+.poi-popup {
+    position: absolute;
+    z-index: 100;
+    min-width: 200px;
+    max-width: 320px;
+    background: #fff;
+    border-radius: var(--poi-border-radius);
+    box-shadow: var(--poi-shadow-hover);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.poi-popup.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-content {
+    padding: 0;
+}
+
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--poi-border-color);
+    background: var(--poi-bg-light);
+    border-radius: var(--poi-border-radius) var(--poi-border-radius) 0 0;
+}
+
+.popup-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--poi-text-color);
+}
+
+.popup-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--poi-text-light);
+    transition: var(--poi-transition);
+}
+
+.popup-close:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--poi-text-color);
+}
+
+.popup-close:focus {
+    outline: 2px solid var(--poi-primary-color);
+    outline-offset: 2px;
+}
+
+.popup-body {
+    padding: 16px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--poi-text-color);
+}
+
+.popup-body p {
+    margin: 0 0 0.5em;
+}
+
+.popup-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   Popup Styles
+   ============================================ */
+/* Tooltip Style */
+.popup-style-tooltip .poi-popup {
+    font-size: 0.85rem;
+}
+
+.popup-style-tooltip .popup-header {
+    padding: 8px 12px;
+}
+
+.popup-style-tooltip .popup-body {
+    padding: 12px;
+}
+
+.popup-style-tooltip .popup-arrow {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Arrow positions */
+.popup-position-top .popup-arrow,
+.popup-style-tooltip .poi-popup[style*="bottom"] .popup-arrow {
+    bottom: -6px;
+    left: 50%;
+    margin-left: -6px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.popup-position-bottom .popup-arrow,
+.popup-style-tooltip .poi-popup[style*="top"] .popup-arrow {
+    top: -6px;
+    left: 50%;
+    margin-left: -6px;
+}
+
+.popup-position-left .popup-arrow {
+    right: -6px;
+    top: 50%;
+    margin-top: -6px;
+    box-shadow: 2px -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.popup-position-right .popup-arrow {
+    left: -6px;
+    top: 50%;
+    margin-top: -6px;
+    box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Modal Style */
+.popup-style-modal .poi-popup {
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) scale(0.9);
+    min-width: 300px;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.popup-style-modal .poi-popup.active {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.popup-style-modal::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 99;
+}
+
+.popup-style-modal .poi-popup.active ~ .modal-backdrop,
+.popup-style-modal:has(.poi-popup.active)::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar Style */
+.popup-style-sidebar .poi-popup {
+    position: fixed;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: 0;
+    width: 350px;
+    max-width: 90vw;
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    transform: translateX(100%);
+    overflow-y: auto;
+}
+
+.popup-style-sidebar .poi-popup.active {
+    transform: translateX(0);
+}
+
+.popup-style-sidebar .popup-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-radius: 0;
+}
+
+/* ============================================
+   Zoom Controls
+   ============================================ */
+.zoom-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.zoom-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: #fff;
+    border: 1px solid var(--poi-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--poi-text-color);
+    transition: var(--poi-transition);
+}
+
+.zoom-button:hover:not(:disabled) {
+    background: var(--poi-bg-light);
+    border-color: var(--poi-primary-color);
+    color: var(--poi-primary-color);
+}
+
+.zoom-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.zoom-button:focus {
+    outline: 2px solid var(--poi-primary-color);
+    outline-offset: 2px;
+}
+
+.zoom-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ============================================
+   Legend
+   ============================================ */
+.poi-legend {
+    padding: 16px 20px;
+    border-top: 1px solid var(--poi-border-color);
+    background: var(--poi-bg-light);
+}
+
+.legend-title {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--poi-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid var(--poi-border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--poi-transition);
+}
+
+.legend-item:hover {
+    border-color: var(--hotspot-color, var(--poi-primary-color));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.legend-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--hotspot-color, var(--poi-primary-color));
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.legend-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.legend-label {
+    font-size: 0.85rem;
+    color: var(--poi-text-color);
+}
+
+/* ============================================
+   Error State
+   ============================================ */
+.poi-error {
+    padding: 40px 20px;
+    text-align: center;
+    background: #fcf0f1;
+    border: 1px dashed #d63638;
+    border-radius: var(--poi-border-radius);
+    color: #d63638;
+}
+
+.poi-error p {
+    margin: 0;
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+@media (max-width: 768px) {
+    .wp-block-modular-blocks-point-of-interest {
+        --poi-height: 300px;
+    }
+
+    .poi-header {
+        padding: 12px 16px;
+    }
+
+    .poi-title {
+        font-size: 1.1rem;
+    }
+
+    .poi-popup {
+        min-width: 180px;
+        max-width: 280px;
+    }
+
+    .popup-style-modal .poi-popup {
+        width: 90vw;
+        max-width: none;
+    }
+
+    .popup-style-sidebar .poi-popup {
+        width: 100vw;
+    }
+
+    .zoom-controls {
+        top: 8px;
+        right: 8px;
+    }
+
+    .zoom-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Larger touch targets for hotspots */
+    .hotspot-small .hotspot-marker {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hotspot-medium .hotspot-marker {
+        width: 44px;
+        height: 44px;
+    }
+
+    .hotspot-large .hotspot-marker {
+        width: 56px;
+        height: 56px;
+    }
+
+    .poi-legend {
+        padding: 12px 16px;
+    }
+
+    .legend-items {
+        gap: 8px;
+    }
+
+    .legend-item {
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .popup-header {
+        padding: 10px 12px;
+    }
+
+    .popup-body {
+        padding: 12px;
+    }
+
+    .legend-item {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 120px;
+    }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .wp-block-modular-blocks-point-of-interest *,
+    .wp-block-modular-blocks-point-of-interest *::before,
+    .wp-block-modular-blocks-point-of-interest *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .poi-popup {
+        transition: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .wp-block-modular-blocks-point-of-interest {
+        --poi-border-color: #000;
+    }
+
+    .poi-container {
+        border: 2px solid #000;
+    }
+
+    .hotspot-marker {
+        border: 2px solid #fff;
+    }
+
+    .poi-popup {
+        border: 2px solid #000;
+    }
+
+    .zoom-button {
+        border-width: 2px;
+    }
+}
+
+/* Screen Reader Only */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+    .wp-block-modular-blocks-point-of-interest {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .poi-container {
+        box-shadow: none;
+    }
+
+    .poi-hotspot {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .hotspot-marker {
+        box-shadow: none;
+        border: 2px solid currentColor;
+    }
+
+    .poi-popup {
+        display: none !important;
+    }
+
+    .zoom-controls {
+        display: none;
+    }
+
+    .hotspot-ripple {
+        display: none;
+    }
+
+    .animation-pulse,
+    .animation-bounce {
+        animation: none;
+    }
 }
