@@ -367,23 +367,19 @@
                 });
 
                 hotspot.addEventListener('mouseleave', () => {
-                    setTimeout(() => {
-                        const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
-                        if (popup && !popup.matches(':hover')) {
-                            hidePopup(popup);
-                        }
-                    }, 200);
+                    const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
+                    if (popup && !popup.matches(':hover')) {
+                        hidePopup(popup);
+                    }
                 });
 
                 // Also close when leaving popup
                 const popup = element.querySelector(`[data-hotspot="${index}"].poi-popup`);
                 if (popup) {
                     popup.addEventListener('mouseleave', () => {
-                        setTimeout(() => {
-                            if (!hotspot.matches(':hover')) {
-                                hidePopup(popup);
-                            }
-                        }, 200);
+                        if (!hotspot.matches(':hover')) {
+                            hidePopup(popup);
+                        }
                     });
                 }
             }
