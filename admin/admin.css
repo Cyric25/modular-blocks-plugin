@@ -448,3 +448,148 @@ input:checked + .slider:before {
         justify-content: center;
     }
 }
+
+/* ==========================================
+   Iframe Whitelist Admin Styles
+   ========================================== */
+
+.iframe-whitelist-admin {
+    max-width: 1200px;
+}
+
+/* Whitelist Table */
+.whitelist-table-container {
+    margin: 20px 0;
+}
+
+.whitelist-table {
+    background: #fff;
+}
+
+.whitelist-table th {
+    font-weight: 600;
+}
+
+.whitelist-table .column-name {
+    width: 20%;
+}
+
+.whitelist-table .column-url {
+    width: 35%;
+}
+
+.whitelist-table .column-type {
+    width: 15%;
+}
+
+.whitelist-table .column-description {
+    width: 20%;
+}
+
+.whitelist-table .column-actions {
+    width: 10%;
+    text-align: center;
+}
+
+.whitelist-table code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+/* Type badges */
+.whitelist-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.whitelist-type-domain {
+    background: #e7f5ea;
+    color: #00a32a;
+}
+
+.whitelist-type-exact {
+    background: #f0f6fc;
+    color: #0073aa;
+}
+
+/* Action buttons in table */
+.whitelist-table .column-actions .button {
+    margin: 0 2px;
+    padding: 0 6px;
+    min-height: 28px;
+    line-height: 26px;
+}
+
+.whitelist-table .column-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+
+.whitelist-table .button-link-delete {
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.whitelist-table .button-link-delete:hover {
+    background: #d63638;
+    color: #fff;
+    border-color: #d63638;
+}
+
+/* Usage info styling */
+.iframe-whitelist-admin .plugin-info code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Responsive for whitelist table */
+@media (max-width: 992px) {
+    .whitelist-table .column-description {
+        display: none;
+    }
+
+    .whitelist-table .column-name {
+        width: 25%;
+    }
+
+    .whitelist-table .column-url {
+        width: 40%;
+    }
+
+    .whitelist-table .column-type {
+        width: 20%;
+    }
+
+    .whitelist-table .column-actions {
+        width: 15%;
+    }
+}
+
+@media (max-width: 768px) {
+    .whitelist-table .column-type {
+        display: none;
+    }
+
+    .whitelist-table .column-name {
+        width: 30%;
+    }
+
+    .whitelist-table .column-url {
+        width: 50%;
+    }
+
+    .whitelist-table .column-actions {
+        width: 20%;
+    }
+}

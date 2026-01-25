@@ -72,6 +72,27 @@ class ModularBlocks_Admin_Manager {
             'modular-blocks-webapps',
             [$this, 'webapps_page_callback']
         );
+
+        // Iframe Whitelist submenu (unter Modulare Blöcke)
+        add_submenu_page(
+            'modular-blocks',
+            __('Iframe Whitelist', 'modular-blocks-plugin'),
+            __('Iframe Whitelist', 'modular-blocks-plugin'),
+            'manage_options',
+            'modular-blocks-iframe-whitelist',
+            [$this, 'iframe_whitelist_page_callback']
+        );
+
+        // Iframe Whitelist als eigener Top-Level Menüpunkt für bessere Sichtbarkeit
+        add_menu_page(
+            __('Iframe Whitelist', 'modular-blocks-plugin'),
+            __('Iframe Whitelist', 'modular-blocks-plugin'),
+            'manage_options',
+            'iframe-whitelist',
+            [$this, 'iframe_whitelist_page_callback'],
+            'dashicons-shield-alt',
+            31
+        );
     }
 
     /**
@@ -104,8 +125,11 @@ class ModularBlocks_Admin_Manager {
      */
     public function enqueue_admin_scripts($hook) {
         // Check if we're on one of our plugin pages
-        // Hook can be 'toplevel_page_modular-blocks' or 'modulare-blocke_page_modular-blocks-diagnostics'
-        if (strpos($hook, 'modular-blocks') === false) {
+        // Hook can be 'toplevel_page_modular-blocks', 'toplevel_page_iframe-whitelist', etc.
+        $is_plugin_page = (strpos($hook, 'modular-blocks') !== false) ||
+                          (strpos($hook, 'iframe-whitelist') !== false);
+
+        if (!$is_plugin_page) {
             return;
         }
 
@@ -868,6 +892,164 @@ if (!defined('ABSPATH')) {
      */
     public function webapps_page_callback() {
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'admin/web-apps-manager.php';
+    }
+
+    /**
+     * Iframe Whitelist page callback
+     */
+    public function iframe_whitelist_page_callback() {
+        if (!class_exists('ModularBlocks_Iframe_Whitelist_Manager')) {
+            require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-iframe-whitelist-manager.php';
+        }
+
+        $whitelist_manager = new ModularBlocks_Iframe_Whitelist_Manager();
+        $whitelist = $whitelist_manager->get_whitelist();
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+
+            <div class="modular-blocks-admin iframe-whitelist-admin">
+                <!-- Description -->
+                <div class="notice notice-info inline" style="margin: 15px 0;">
+                    <p>
+                        <strong><?php _e('Iframe Whitelist', 'modular-blocks-plugin'); ?></strong>:
+                        <?php _e('Hier können Sie URLs festlegen, die im "Iframe Whitelist"-Block verwendet werden dürfen. Nur URLs, die mit einem Eintrag übereinstimmen, werden akzeptiert.', 'modular-blocks-plugin'); ?>
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="admin-actions">
+                    <button type="button" class="button button-primary" id="add-whitelist-entry">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <?php _e('Eintrag hinzufügen', 'modular-blocks-plugin'); ?>
+                    </button>
+                </div>
+
+                <!-- Whitelist Table -->
+                <div class="whitelist-table-container">
+                    <?php if (empty($whitelist)): ?>
+                        <div class="notice notice-warning">
+                            <p><?php _e('Die Whitelist ist leer. Fügen Sie URLs hinzu, um den Iframe Whitelist-Block verwenden zu können.', 'modular-blocks-plugin'); ?></p>
+                        </div>
+                    <?php else: ?>
+                        <table class="wp-list-table widefat fixed striped whitelist-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="column-name"><?php _e('Name', 'modular-blocks-plugin'); ?></th>
+                                    <th scope="col" class="column-url"><?php _e('URL / Domain', 'modular-blocks-plugin'); ?></th>
+                                    <th scope="col" class="column-type"><?php _e('Typ', 'modular-blocks-plugin'); ?></th>
+                                    <th scope="col" class="column-description"><?php _e('Beschreibung', 'modular-blocks-plugin'); ?></th>
+                                    <th scope="col" class="column-actions"><?php _e('Aktionen', 'modular-blocks-plugin'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody id="whitelist-entries">
+                                <?php foreach ($whitelist as $entry): ?>
+                                    <tr data-id="<?php echo esc_attr($entry['id']); ?>">
+                                        <td class="column-name">
+                                            <strong><?php echo esc_html($entry['name']); ?></strong>
+                                        </td>
+                                        <td class="column-url">
+                                            <code><?php echo esc_html($entry['value']); ?></code>
+                                        </td>
+                                        <td class="column-type">
+                                            <span class="whitelist-type-badge whitelist-type-<?php echo esc_attr($entry['type']); ?>">
+                                                <?php echo $entry['type'] === 'domain' ? __('Domain-Prefix', 'modular-blocks-plugin') : __('Exakte URL', 'modular-blocks-plugin'); ?>
+                                            </span>
+                                        </td>
+                                        <td class="column-description">
+                                            <?php echo esc_html($entry['description'] ?? ''); ?>
+                                        </td>
+                                        <td class="column-actions">
+                                            <button type="button" class="button button-small edit-whitelist-entry"
+                                                    data-id="<?php echo esc_attr($entry['id']); ?>"
+                                                    data-name="<?php echo esc_attr($entry['name']); ?>"
+                                                    data-value="<?php echo esc_attr($entry['value']); ?>"
+                                                    data-type="<?php echo esc_attr($entry['type']); ?>"
+                                                    data-description="<?php echo esc_attr($entry['description'] ?? ''); ?>">
+                                                <span class="dashicons dashicons-edit"></span>
+                                            </button>
+                                            <button type="button" class="button button-small button-link-delete delete-whitelist-entry"
+                                                    data-id="<?php echo esc_attr($entry['id']); ?>">
+                                                <span class="dashicons dashicons-trash"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Usage Info -->
+                <div class="plugin-info" style="margin-top: 30px;">
+                    <h3><?php _e('Verwendung', 'modular-blocks-plugin'); ?></h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong><?php _e('Domain-Prefix:', 'modular-blocks-plugin'); ?></strong>
+                            <span><?php _e('Erlaubt alle URLs, die mit dieser Domain beginnen', 'modular-blocks-plugin'); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <strong><?php _e('Exakte URL:', 'modular-blocks-plugin'); ?></strong>
+                            <span><?php _e('Erlaubt nur diese spezifische URL (und Unterseiten)', 'modular-blocks-plugin'); ?></span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #646970;">
+                        <strong><?php _e('Beispiel Domain-Prefix:', 'modular-blocks-plugin'); ?></strong>
+                        <code>https://sim.example.at</code> <?php _e('erlaubt', 'modular-blocks-plugin'); ?>
+                        <code>https://sim.example.at/physik/</code>, <code>https://sim.example.at/chemie/atom</code>, etc.
+                    </p>
+                    <p style="color: #646970;">
+                        <strong><?php _e('Beispiel Exakte URL:', 'modular-blocks-plugin'); ?></strong>
+                        <code>https://other.example.com/simulation/</code> <?php _e('erlaubt nur URLs unter diesem Pfad', 'modular-blocks-plugin'); ?>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Add/Edit Whitelist Entry -->
+        <div id="whitelist-entry-modal" class="modular-blocks-modal" style="display:none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="whitelist-modal-title"><?php _e('Whitelist-Eintrag hinzufügen', 'modular-blocks-plugin'); ?></h2>
+                    <button type="button" class="modal-close">
+                        <span class="dashicons dashicons-no"></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="whitelist-entry-form">
+                        <input type="hidden" id="whitelist-entry-id" name="id" value="">
+                        <p class="form-field">
+                            <label for="whitelist-name"><?php _e('Name', 'modular-blocks-plugin'); ?> *</label>
+                            <input type="text" id="whitelist-name" name="name" required placeholder="<?php _e('z.B. Physik-Simulationen', 'modular-blocks-plugin'); ?>">
+                            <span class="description"><?php _e('Anzeigename für die Auswahl im Block-Editor', 'modular-blocks-plugin'); ?></span>
+                        </p>
+                        <p class="form-field">
+                            <label for="whitelist-value"><?php _e('URL / Domain', 'modular-blocks-plugin'); ?> *</label>
+                            <input type="url" id="whitelist-value" name="value" required placeholder="https://example.com">
+                            <span class="description"><?php _e('Die URL oder Domain, die erlaubt werden soll', 'modular-blocks-plugin'); ?></span>
+                        </p>
+                        <p class="form-field">
+                            <label for="whitelist-type"><?php _e('Typ', 'modular-blocks-plugin'); ?></label>
+                            <select id="whitelist-type" name="type">
+                                <option value="domain"><?php _e('Domain-Prefix (empfohlen)', 'modular-blocks-plugin'); ?></option>
+                                <option value="exact"><?php _e('Exakte URL', 'modular-blocks-plugin'); ?></option>
+                            </select>
+                            <span class="description"><?php _e('Domain-Prefix erlaubt alle URLs unter dieser Domain', 'modular-blocks-plugin'); ?></span>
+                        </p>
+                        <p class="form-field">
+                            <label for="whitelist-description"><?php _e('Beschreibung (optional)', 'modular-blocks-plugin'); ?></label>
+                            <textarea id="whitelist-description" name="description" rows="2" placeholder="<?php _e('Optionale Notizen zu diesem Eintrag...', 'modular-blocks-plugin'); ?>"></textarea>
+                        </p>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button modal-close"><?php _e('Abbrechen', 'modular-blocks-plugin'); ?></button>
+                    <button type="submit" form="whitelist-entry-form" class="button button-primary" id="whitelist-submit-btn"><?php _e('Speichern', 'modular-blocks-plugin'); ?></button>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     /**

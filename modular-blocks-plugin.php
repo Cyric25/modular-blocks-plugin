@@ -46,6 +46,7 @@ class ModularBlocksPlugin {
     private $block_manager;
     private $admin_manager;
     private $webapp_manager;
+    private $iframe_whitelist_manager;
 
     public static function get_instance() {
         if (self::$instance === null) {
@@ -85,6 +86,11 @@ class ModularBlocksPlugin {
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-diagnostics.php';
         require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-webapp-manager.php';
 
+        // Iframe Whitelist Manager
+        if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-iframe-whitelist-manager.php')) {
+            require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-iframe-whitelist-manager.php';
+        }
+
         // ChemViz integration
         if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-enqueue.php')) {
             require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-enqueue.php';
@@ -93,9 +99,19 @@ class ModularBlocksPlugin {
             require_once MODULAR_BLOCKS_PLUGIN_PATH . 'includes/class-chemviz-shortcodes.php';
         }
 
+        // H5P Import for Drag and Drop block
+        if (file_exists(MODULAR_BLOCKS_PLUGIN_PATH . 'blocks/drag-and-drop/h5p-import.php')) {
+            require_once MODULAR_BLOCKS_PLUGIN_PATH . 'blocks/drag-and-drop/h5p-import.php';
+        }
+
         $this->block_manager = new ModularBlocks_Block_Manager();
         $this->admin_manager = new ModularBlocks_Admin_Manager();
         $this->webapp_manager = new ModularBlocks_WebApp_Manager();
+
+        // Initialize Iframe Whitelist Manager
+        if (class_exists('ModularBlocks_Iframe_Whitelist_Manager')) {
+            $this->iframe_whitelist_manager = new ModularBlocks_Iframe_Whitelist_Manager();
+        }
     }
 
     public function init() {
@@ -108,7 +124,14 @@ class ModularBlocksPlugin {
         // Initialize WebApp Manager
         $this->webapp_manager->init_webapps_directory();
         add_action('admin_enqueue_scripts', [$this, 'enqueue_webapp_data']);
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_h5p_import_data']);
         $this->debug_log('WebApp manager initialized');
+
+        // Initialize Iframe Whitelist Manager
+        if ($this->iframe_whitelist_manager) {
+            $this->iframe_whitelist_manager->init();
+            $this->debug_log('Iframe Whitelist manager initialized');
+        }
 
         // Initialize ChemViz features
         if (class_exists('ModularBlocks_ChemViz_Enqueue')) {
@@ -142,6 +165,27 @@ class ModularBlocksPlugin {
             'wp-blocks',
             'modularBlocksWebApps',
             $webapps
+        );
+    }
+
+    /**
+     * Enqueue H5P import data and nonce for block editor
+     */
+    public function enqueue_h5p_import_data() {
+        // Localize H5P import nonce and AJAX URL
+        wp_localize_script(
+            'wp-blocks',
+            'modularBlocksH5P',
+            [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('h5p_import_nonce'),
+                'strings' => [
+                    'importing' => __('Importiere H5P-Datei...', 'modular-blocks-plugin'),
+                    'success' => __('Import erfolgreich!', 'modular-blocks-plugin'),
+                    'error' => __('Import fehlgeschlagen', 'modular-blocks-plugin'),
+                    'invalidFile' => __('Ungültige Datei. Bitte wählen Sie eine .h5p-Datei.', 'modular-blocks-plugin'),
+                ]
+            ]
         );
     }
 

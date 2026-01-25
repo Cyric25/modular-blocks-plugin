@@ -67,6 +67,32 @@
             $('#clear-cache-button').on('click', () => {
                 this.clearCache();
             });
+
+            // Iframe Whitelist: Add entry button (event delegation for dynamic loading)
+            $(document).on('click', '#add-whitelist-entry', () => {
+                this.openWhitelistModal();
+            });
+
+            // Iframe Whitelist: Edit entry button
+            $(document).on('click', '.edit-whitelist-entry', (e) => {
+                this.editWhitelistEntry(e);
+            });
+
+            // Iframe Whitelist: Delete entry button
+            $(document).on('click', '.delete-whitelist-entry', (e) => {
+                this.deleteWhitelistEntry(e);
+            });
+
+            // Iframe Whitelist: Form submit (event delegation)
+            $(document).on('submit', '#whitelist-entry-form', (e) => {
+                e.preventDefault();
+                this.saveWhitelistEntry();
+            });
+
+            // Iframe Whitelist: Modal close buttons (specific to whitelist modal)
+            $(document).on('click', '#whitelist-entry-modal .modal-close, #whitelist-entry-modal .modal-overlay', () => {
+                this.closeModals();
+            });
         }
 
         toggleBlock(e) {
@@ -346,6 +372,138 @@
             $('html, body').animate({
                 scrollTop: $notice.offset().top - 100
             }, 300);
+        }
+
+        // ==========================================
+        // Iframe Whitelist Methods
+        // ==========================================
+
+        openWhitelistModal(editMode = false) {
+            // Reset form
+            $('#whitelist-entry-form')[0].reset();
+            $('#whitelist-entry-id').val('');
+
+            // Update modal title
+            if (editMode) {
+                $('#whitelist-modal-title').text('Whitelist-Eintrag bearbeiten');
+                $('#whitelist-submit-btn').text('Aktualisieren');
+            } else {
+                $('#whitelist-modal-title').text('Whitelist-Eintrag hinzufügen');
+                $('#whitelist-submit-btn').text('Speichern');
+            }
+
+            this.openModal('#whitelist-entry-modal');
+        }
+
+        editWhitelistEntry(e) {
+            const $button = $(e.currentTarget);
+            const data = $button.data();
+
+            // Fill form with existing data
+            $('#whitelist-entry-id').val(data.id);
+            $('#whitelist-name').val(data.name);
+            $('#whitelist-value').val(data.value);
+            $('#whitelist-type').val(data.type);
+            $('#whitelist-description').val(data.description || '');
+
+            this.openWhitelistModal(true);
+        }
+
+        saveWhitelistEntry() {
+            const $form = $('#whitelist-entry-form');
+            const entryId = $('#whitelist-entry-id').val();
+            const isEdit = !!entryId;
+
+            const formData = {
+                action: isEdit ? 'modular_blocks_whitelist_update' : 'modular_blocks_whitelist_add',
+                nonce: modularBlocksAdmin.nonce,
+                name: $('#whitelist-name').val(),
+                value: $('#whitelist-value').val(),
+                type: $('#whitelist-type').val(),
+                description: $('#whitelist-description').val()
+            };
+
+            if (isEdit) {
+                formData.id = entryId;
+            }
+
+            // Show loading
+            const $submitBtn = $('#whitelist-submit-btn');
+            const originalText = $submitBtn.text();
+            $submitBtn.prop('disabled', true).text('Speichere...');
+
+            $.ajax({
+                url: modularBlocksAdmin.ajaxUrl,
+                method: 'POST',
+                data: formData,
+                success: (response) => {
+                    if (response.success) {
+                        this.showNotice(response.data.message, 'success');
+                        this.closeModals();
+
+                        // Reload page to show updated list
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        this.showNotice(response.data || 'Fehler beim Speichern.', 'error');
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX Error:', error);
+                    this.showNotice('Fehler beim Speichern.', 'error');
+                },
+                complete: () => {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        }
+
+        deleteWhitelistEntry(e) {
+            const $button = $(e.currentTarget);
+            const entryId = $button.data('id');
+            const $row = $button.closest('tr');
+
+            if (!confirm('Möchten Sie diesen Whitelist-Eintrag wirklich löschen?')) {
+                return;
+            }
+
+            // Add loading state
+            $row.addClass('loading');
+            $button.prop('disabled', true);
+
+            $.ajax({
+                url: modularBlocksAdmin.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'modular_blocks_whitelist_delete',
+                    id: entryId,
+                    nonce: modularBlocksAdmin.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.showNotice(response.data.message, 'success');
+                        $row.fadeOut(300, function() {
+                            $(this).remove();
+
+                            // Check if table is empty
+                            if ($('#whitelist-entries tr').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        this.showNotice(response.data || 'Fehler beim Löschen.', 'error');
+                        $row.removeClass('loading');
+                        $button.prop('disabled', false);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX Error:', error);
+                    this.showNotice('Fehler beim Löschen.', 'error');
+                    $row.removeClass('loading');
+                    $button.prop('disabled', false);
+                }
+            });
         }
     }
 

@@ -1,7 +1,7 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/drag-and-drop",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "title": "Drag and Drop",
     "category": "modular-blocks",
     "icon": "move",
@@ -9,8 +9,8 @@
     "keywords": ["drag", "drop", "bilder", "zuordnung", "interactive", "h5p"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
-    "editorStyle": "file:./index.css",
-    "style": "file:./style-index.css",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css",
     "viewScript": "file:./view.js",
     "attributes": {
         "title": {
@@ -29,6 +29,14 @@
                 "id": null
             }
         },
+        "taskWidth": {
+            "type": "number",
+            "default": 800
+        },
+        "taskHeight": {
+            "type": "number",
+            "default": 400
+        },
         "draggables": {
             "type": "array",
             "default": [
@@ -43,7 +51,10 @@
                     },
                     "correctZones": ["zone1"],
                     "color": "#0073aa",
-                    "size": "medium"
+                    "size": "medium",
+                    "opacity": 100,
+                    "infinite": false,
+                    "tip": ""
                 },
                 {
                     "id": "drag2",
@@ -56,7 +67,10 @@
                     },
                     "correctZones": ["zone2"],
                     "color": "#d63638",
-                    "size": "medium"
+                    "size": "medium",
+                    "opacity": 100,
+                    "infinite": false,
+                    "tip": ""
                 }
             ]
         },
@@ -66,24 +80,36 @@
                 {
                     "id": "zone1",
                     "label": "Drop Zone 1",
+                    "showLabel": true,
                     "x": 20,
                     "y": 20,
                     "width": 150,
                     "height": 100,
                     "acceptMultiple": false,
                     "backgroundColor": "rgba(0, 115, 170, 0.1)",
-                    "borderColor": "#0073aa"
+                    "borderColor": "#0073aa",
+                    "opacity": 100,
+                    "autoAlign": true,
+                    "alignSpacing": 8,
+                    "tipCorrect": "",
+                    "tipIncorrect": ""
                 },
                 {
                     "id": "zone2",
                     "label": "Drop Zone 2",
+                    "showLabel": true,
                     "x": 70,
                     "y": 60,
                     "width": 150,
                     "height": 100,
                     "acceptMultiple": false,
                     "backgroundColor": "rgba(214, 54, 56, 0.1)",
-                    "borderColor": "#d63638"
+                    "borderColor": "#d63638",
+                    "opacity": 100,
+                    "autoAlign": true,
+                    "alignSpacing": 8,
+                    "tipCorrect": "",
+                    "tipIncorrect": ""
                 }
             ]
         },
@@ -119,9 +145,30 @@
             "type": "boolean",
             "default": true
         },
+        "applyPenalty": {
+            "type": "boolean",
+            "default": false
+        },
+        "penaltyPerWrong": {
+            "type": "number",
+            "default": 1
+        },
         "backgroundHeight": {
             "type": "number",
             "default": 400
+        },
+        "highlightDropZones": {
+            "type": "string",
+            "default": "dragging",
+            "enum": ["dragging", "always", "never"]
+        },
+        "enableFullscreen": {
+            "type": "boolean",
+            "default": true
+        },
+        "enableAutoScale": {
+            "type": "boolean",
+            "default": true
         },
         "scoreText": {
             "type": "string",
@@ -138,6 +185,14 @@
         "failText": {
             "type": "string",
             "default": "Versuchen Sie es noch einmal. Überprüfen Sie die Platzierungen."
+        },
+        "feedbackRanges": {
+            "type": "array",
+            "default": [
+                { "from": 0, "to": 50, "feedback": "Versuchen Sie es noch einmal." },
+                { "from": 51, "to": 80, "feedback": "Gut gemacht!" },
+                { "from": 81, "to": 100, "feedback": "Hervorragend!" }
+            ]
         }
     },
     "supports": {
@@ -156,23 +211,29 @@
                 {
                     "id": "fish",
                     "type": "text",
-                    "content": "🐠 Fisch",
+                    "content": "Fisch",
                     "correctZones": ["water"],
-                    "color": "#0073aa"
+                    "color": "#0073aa",
+                    "infinite": false,
+                    "tip": "Dieses Tier lebt im Wasser"
                 },
                 {
                     "id": "bird",
                     "type": "text",
-                    "content": "🐦 Vogel",
+                    "content": "Vogel",
                     "correctZones": ["sky"],
-                    "color": "#00a32a"
+                    "color": "#00a32a",
+                    "infinite": false,
+                    "tip": "Dieses Tier kann fliegen"
                 },
                 {
                     "id": "rabbit",
                     "type": "text",
-                    "content": "🐰 Hase",
+                    "content": "Hase",
                     "correctZones": ["land"],
-                    "color": "#d63638"
+                    "color": "#d63638",
+                    "infinite": false,
+                    "tip": "Dieses Tier lebt auf dem Boden"
                 }
             ],
             "dropZones": [
@@ -184,7 +245,9 @@
                     "width": 120,
                     "height": 80,
                     "backgroundColor": "rgba(0, 115, 170, 0.2)",
-                    "borderColor": "#0073aa"
+                    "borderColor": "#0073aa",
+                    "tipCorrect": "Richtig! Fische leben im Wasser.",
+                    "tipIncorrect": "Dieses Tier gehört nicht ins Wasser."
                 },
                 {
                     "id": "sky",
@@ -194,7 +257,9 @@
                     "width": 120,
                     "height": 80,
                     "backgroundColor": "rgba(0, 163, 42, 0.2)",
-                    "borderColor": "#00a32a"
+                    "borderColor": "#00a32a",
+                    "tipCorrect": "Richtig! Vögel fliegen am Himmel.",
+                    "tipIncorrect": "Dieses Tier gehört nicht in den Himmel."
                 },
                 {
                     "id": "land",
@@ -204,7 +269,9 @@
                     "width": 120,
                     "height": 80,
                     "backgroundColor": "rgba(214, 54, 56, 0.2)",
-                    "borderColor": "#d63638"
+                    "borderColor": "#d63638",
+                    "tipCorrect": "Richtig! Hasen leben auf dem Land.",
+                    "tipIncorrect": "Dieses Tier gehört nicht hierher."
                 }
             ]
         }

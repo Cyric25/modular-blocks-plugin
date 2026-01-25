@@ -305,13 +305,15 @@
     box-shadow: var(--poi-shadow-hover);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
     color: var(--color-primary-text, #333333);
+    /* Keine Transition hier - sofortiges Schließen */
 }
 
 .wp-block-modular-blocks-point-of-interest .poi-popup.active {
     opacity: 1;
     visibility: visible;
+    /* Transition nur beim Öffnen */
+    transition: opacity 0.15s ease-in, visibility 0.15s ease-in, transform 0.15s ease-in;
 }
 
 .wp-block-modular-blocks-point-of-interest .popup-content {
@@ -468,14 +470,15 @@
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
     z-index: 99;
+    /* Keine Transition - sofortiges Schließen */
 }
 
 .popup-style-modal .poi-popup.active ~ .modal-backdrop,
 .popup-style-modal:has(.poi-popup.active)::before {
     opacity: 1;
     visibility: visible;
+    transition: opacity 0.15s ease-in, visibility 0.15s ease-in;
 }
 
 /* Sidebar Style */

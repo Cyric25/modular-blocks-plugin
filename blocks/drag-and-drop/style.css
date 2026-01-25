@@ -1,19 +1,42 @@
 /**
  * Drag and Drop Block Styles
- * H5P-inspired styling for visual drag and drop activities
+ * Version 2.0.0 - H5P-inspired styling for visual drag and drop activities
  */
 
+/* ==========================================
+   CSS VARIABLES
+   ========================================== */
+.wp-block-modular-blocks-drag-and-drop {
+    --dd-primary: #0073aa;
+    --dd-success: #00a32a;
+    --dd-error: #d63638;
+    --dd-warning: #eab308;
+    --dd-bg: #ffffff;
+    --dd-bg-light: #f8f9fa;
+    --dd-border: #e0e0e0;
+    --dd-text: #1e1e1e;
+    --dd-text-light: #666666;
+    --dd-radius: 8px;
+    --dd-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --dd-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --dd-transition: all 0.3s ease;
+}
+
+/* ==========================================
+   MAIN CONTAINER
+   ========================================== */
 .wp-block-modular-blocks-drag-and-drop {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
     line-height: 1.6;
-    color: #1e1e1e;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    color: var(--dd-text);
+    background: var(--dd-bg);
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius);
     padding: 24px;
     margin: 24px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    box-shadow: var(--dd-shadow);
+    transition: var(--dd-transition);
+    position: relative;
 }
 
 /* Container */
@@ -22,31 +45,94 @@
     position: relative;
 }
 
-/* Header */
+/* ==========================================
+   FULLSCREEN MODE
+   ========================================== */
+.wp-block-modular-blocks-drag-and-drop.is-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 999999 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 32px !important;
+    overflow: auto !important;
+    background: var(--dd-bg) !important;
+}
+
+.wp-block-modular-blocks-drag-and-drop.is-fullscreen .drag-drop-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.is-fullscreen .drag-drop-fullscreen svg {
+    transform: rotate(180deg);
+}
+
+/* ==========================================
+   HEADER
+   ========================================== */
 .drag-drop-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
     margin-bottom: 24px;
-    text-align: center;
+    text-align: left;
+    position: relative;
 }
 
 .drag-drop-title {
+    flex: 1;
     font-size: 24px;
     font-weight: 600;
-    color: #1e1e1e;
+    color: var(--dd-text);
     margin: 0 0 12px 0;
     line-height: 1.3;
 }
 
 .drag-drop-description {
+    width: 100%;
     font-size: 16px;
-    color: #666666;
+    color: var(--dd-text-light);
     margin: 0;
     line-height: 1.5;
 }
 
-/* Activity Area Layout */
+.drag-drop-fullscreen {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--dd-border);
+    border-radius: 6px;
+    background: var(--dd-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dd-text-light);
+    transition: var(--dd-transition);
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.drag-drop-fullscreen:hover {
+    background: var(--dd-bg-light);
+    color: var(--dd-primary);
+    border-color: var(--dd-primary);
+}
+
+/* ==========================================
+   ACTIVITY AREA
+   ========================================== */
 .activity-area {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 24px;
     margin-bottom: 24px;
     min-height: var(--background-height, 400px);
@@ -59,34 +145,29 @@
     }
 }
 
-/* Draggable Elements Area */
-.draggables-area {
-    background: #f8f9fa;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
+/* Section Titles */
 .section-title {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
-    color: #1e1e1e;
-    margin: 0 0 16px 0;
+    color: var(--dd-text-light);
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.draggables-area .section-title::before {
-    content: "🎯";
-    font-size: 20px;
-}
-
-.drop-area .section-title::before {
-    content: "📍";
-    font-size: 20px;
+/* ==========================================
+   DRAGGABLES AREA
+   ========================================== */
+.draggables-area {
+    background: var(--dd-bg-light);
+    border: 2px solid var(--dd-border);
+    border-radius: var(--dd-radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .draggables-container {
@@ -97,179 +178,24 @@
     padding: 12px;
     border: 2px dashed #d1d5db;
     border-radius: 6px;
-    background: #ffffff;
-    transition: all 0.3s ease;
+    background: var(--dd-bg);
+    transition: var(--dd-transition);
     flex-grow: 1;
 }
 
 .draggables-container.drag-active {
-    border-color: #0073aa;
+    border-color: var(--dd-primary);
     background: rgba(0, 115, 170, 0.05);
 }
 
-/* Drop Area */
-.drop-area {
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-.drop-area-container {
-    position: relative;
-    flex-grow: 1;
-    min-height: var(--background-height, 400px);
-    border: 2px dashed #d1d5db;
-    border-radius: 6px;
-    background: #f8f9fa;
-    overflow: hidden;
-}
-
-.wp-block-modular-blocks-drag-and-drop.has-background-image .drop-area-container {
-    background: transparent;
-}
-
-.background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* Drop Zones */
-.drop-zones {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-}
-
-.drop-zone {
-    position: absolute;
-    border: 2px dashed transparent;
-    border-radius: 6px;
-    background: rgba(0, 115, 170, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    min-width: 100px;
-    min-height: 80px;
-}
-
-.drop-zone:hover {
-    border-color: rgba(0, 115, 170, 0.5);
-    background: rgba(0, 115, 170, 0.15);
-    transform: scale(1.02);
-}
-
-.drop-zone:focus {
-    outline: 3px solid rgba(0, 115, 170, 0.6);
-    outline-offset: 2px;
-    border-color: #0073aa;
-}
-
-.drop-zone.drag-active {
-    border-color: rgba(0, 115, 170, 0.7);
-    background: rgba(0, 115, 170, 0.2);
-}
-
-.drop-zone.drag-over {
-    border-color: #0073aa;
-    background: rgba(0, 115, 170, 0.3);
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(0, 115, 170, 0.4);
-}
-
-.drop-zone.selected {
-    border-color: #d63638;
-    background: rgba(214, 54, 56, 0.2);
-    animation: pulse 2s infinite;
-}
-
-.drop-zone.available {
-    border-color: rgba(0, 115, 170, 0.8);
-    animation: pulse 2s infinite;
-}
-
-.zone-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #0073aa;
-    text-align: center;
-    margin-bottom: 8px;
-    pointer-events: none;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 8px;
-    border-radius: 12px;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.zone-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex-grow: 1;
-    width: 100%;
-    min-height: 40px;
-}
-
-.zone-feedback {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e1e1e;
-    color: #ffffff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 1001;
-    opacity: 0;
-    animation: fadeInDown 0.3s ease forwards;
-}
-
-.zone-feedback::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-top-color: #1e1e1e;
-}
-
-.zone-feedback.correct {
-    background: #00a32a;
-}
-
-.zone-feedback.incorrect {
-    background: #d63638;
-}
-
-/* Draggable Elements */
+/* ==========================================
+   DRAGGABLE ELEMENTS
+   ========================================== */
 .draggable-element {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--element-color, #0073aa);
+    background: var(--element-color, var(--dd-primary));
     color: #ffffff;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -278,18 +204,19 @@
     font-weight: 500;
     cursor: grab;
     user-select: none;
-    transition: all 0.3s ease;
+    transition: var(--dd-transition);
     position: relative;
     min-width: 120px;
     min-height: 48px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--dd-shadow);
+    opacity: var(--element-opacity, 1);
 }
 
 .draggable-element:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    filter: brightness(0.9);
+    box-shadow: var(--dd-shadow-hover);
+    filter: brightness(0.95);
 }
 
 .draggable-element:active,
@@ -306,8 +233,10 @@
 }
 
 .draggable-element.selected {
-    border-color: #ffffff;
-    animation: pulse 1s infinite;
+    border-color: var(--dd-warning);
+    animation: pulse 1.5s infinite;
+    outline: 3px solid var(--dd-warning);
+    outline-offset: 2px;
 }
 
 /* Size Variants */
@@ -333,83 +262,219 @@
 }
 
 /* Type Variants */
-.draggable-text .draggable-content {
+.draggable-content {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    flex: 1;
 }
 
-.draggable-image .draggable-image {
+.draggable-image {
     max-width: 100%;
-    max-height: 40px;
+    max-height: 100%;
     object-fit: contain;
+    border-radius: 4px;
 }
 
-.draggable-image .draggable-text {
-    margin-top: 4px;
-    font-size: 12px;
+.draggable-both .draggable-content {
+    flex-direction: row;
 }
 
-/* Element in Drop Zone */
-.drop-zone .draggable-element {
-    position: static;
-    margin: 0;
+/* Image-only draggables: borderless, transparent background */
+.draggable-element.draggable-image {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px !important;
+    min-width: auto !important;
+    min-height: auto !important;
+}
+
+.draggable-element.draggable-image:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+.draggable-element.draggable-image:active,
+.draggable-element.draggable-image.dragging {
+    background: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.draggable-element.draggable-image .draggable-image {
+    max-width: 120px;
+    max-height: 80px;
     border-radius: 6px;
+}
+
+/* Large images for image-only draggables */
+.draggable-element.draggable-image.draggable-small .draggable-image {
+    max-width: 80px;
+    max-height: 60px;
+}
+
+.draggable-element.draggable-image.draggable-medium .draggable-image {
+    max-width: 120px;
+    max-height: 80px;
+}
+
+.draggable-element.draggable-image.draggable-large .draggable-image {
+    max-width: 180px;
+    max-height: 120px;
+}
+
+/* ==========================================
+   INFINITE DRAGGABLES
+   ========================================== */
+.infinite-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    background: var(--dd-warning);
+    color: #000;
+    border-radius: 50%;
     font-size: 14px;
-    min-width: auto;
-    width: 100%;
-    max-width: calc(100% - 8px);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 5;
 }
 
-/* Feedback States */
-.draggable-element.feedback-correct {
-    background: #00a32a !important;
-    animation: bounceIn 0.6s ease;
-}
-
-.draggable-element.feedback-incorrect {
-    background: #d63638 !important;
-    animation: shakeX 0.6s ease;
-}
-
-.draggable-element.result-correct {
-    background: #00a32a !important;
-}
-
-.draggable-element.result-incorrect {
-    background: #d63638 !important;
-}
-
-.drop-zone.has-correct {
-    border-color: #00a32a;
-    background: rgba(0, 163, 42, 0.2);
-}
-
-.drop-zone.has-incorrect {
-    border-color: #d63638;
-    background: rgba(214, 54, 56, 0.2);
-}
-
-.draggable-element.solution-placed {
-    background: #6c757d !important;
+.infinite-icon {
+    margin-right: 4px;
+    font-size: 12px;
     opacity: 0.8;
 }
 
-/* Element Feedback */
+.infinite-draggable::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border: 2px dashed var(--dd-warning);
+    border-radius: 10px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ==========================================
+   TIP BUTTON & TIPS
+   ========================================== */
+.tip-button {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: var(--dd-transition);
+}
+
+.draggable-element:hover .tip-button,
+.draggable-element:focus .tip-button {
+    opacity: 1;
+}
+
+.tip-button:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.element-tip {
+    position: absolute;
+    background: var(--dd-bg);
+    border: 1px solid var(--dd-border);
+    border-radius: 8px;
+    box-shadow: var(--dd-shadow-hover);
+    padding: 12px 16px;
+    max-width: 280px;
+    animation: tipAppear 0.3s ease;
+    z-index: 1000;
+}
+
+@keyframes tipAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tip-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.tip-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.tip-text {
+    font-size: 13px;
+    color: var(--dd-text);
+    line-height: 1.4;
+}
+
+.tip-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: var(--dd-bg-light);
+    color: var(--dd-text-light);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--dd-transition);
+}
+
+.tip-close:hover {
+    background: var(--dd-error);
+    color: #fff;
+}
+
+/* ==========================================
+   DRAGGABLE FEEDBACK
+   ========================================== */
 .draggable-feedback {
     position: absolute;
     top: -30px;
     left: 50%;
     transform: translateX(-50%);
-    background: #1e1e1e;
+    background: var(--dd-text);
     color: #ffffff;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
     white-space: nowrap;
     z-index: 1001;
-    opacity: 0;
     animation: fadeInDown 0.3s ease forwards;
 }
 
@@ -419,29 +484,288 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-top-color: #1e1e1e;
+    border: 5px solid transparent;
+    border-top-color: var(--dd-text);
 }
 
 .draggable-feedback.correct {
-    background: #00a32a;
+    background: var(--dd-success);
+}
+
+.draggable-feedback.correct::after {
+    border-top-color: var(--dd-success);
 }
 
 .draggable-feedback.incorrect {
-    background: #d63638;
+    background: var(--dd-error);
 }
 
-/* Controls */
+.draggable-feedback.incorrect::after {
+    border-top-color: var(--dd-error);
+}
+
+/* Feedback States */
+.draggable-element.feedback-correct {
+    animation: correctPulse 0.6s ease;
+}
+
+.draggable-element.feedback-incorrect {
+    animation: shakeX 0.6s ease;
+}
+
+.draggable-element.result-correct {
+    outline: 3px solid var(--dd-success);
+    outline-offset: 2px;
+}
+
+.draggable-element.result-incorrect {
+    outline: 3px solid var(--dd-error);
+    outline-offset: 2px;
+}
+
+.draggable-element.solution-placed {
+    outline: 3px solid var(--dd-primary);
+    outline-offset: 2px;
+    animation: solutionReveal 0.5s ease;
+}
+
+@keyframes correctPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); box-shadow: 0 0 20px var(--dd-success); }
+}
+
+@keyframes solutionReveal {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================
+   DROP AREA
+   ========================================== */
+.drop-area {
+    background: var(--dd-bg);
+    border: 2px solid var(--dd-border);
+    border-radius: var(--dd-radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.drop-area-container {
+    position: relative;
+    flex-grow: 1;
+    min-height: var(--background-height, 400px);
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+    background: var(--dd-bg-light);
+    overflow: hidden;
+}
+
+.wp-block-modular-blocks-drag-and-drop.has-background-image .drop-area-container {
+    background: transparent;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.drop-zones {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+/* ==========================================
+   DROP ZONES - Always gray, no custom colors
+   ========================================== */
+.drop-zone {
+    position: absolute;
+    border: 2px dashed #888888 !important;
+    border-radius: 6px;
+    transition: var(--dd-transition);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    min-width: 100px;
+    min-height: 80px;
+    opacity: var(--zone-opacity, 1);
+    background-color: rgba(128, 128, 128, 0.15) !important;
+}
+
+.zone-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 6px;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 3px 8px;
+    border-radius: 12px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #333333;
+}
+
+.zone-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+    justify-content: center;
+    flex-grow: 1;
+    width: 100%;
+    min-height: 40px;
+    padding: 4px;
+}
+
+.zone-feedback {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dd-text);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+}
+
+/* ==========================================
+   DROP ZONE HIGHLIGHT MODES - Always gray
+   ========================================== */
+/* Always highlight */
+.highlight-always .drop-zone {
+    border-style: solid !important;
+    border-color: #888888 !important;
+    box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.2);
+}
+
+/* Never highlight */
+.highlight-never .drop-zone {
+    border-color: transparent !important;
+    background-color: rgba(128, 128, 128, 0.08) !important;
+}
+
+.highlight-never .drop-zone .zone-label {
+    opacity: 0.5;
+}
+
+/* Highlight on drag (default) */
+.highlight-dragging .drop-zone {
+    border-style: dashed !important;
+    border-color: #888888 !important;
+}
+
+/* Drop Zone States - Always gray */
+.drop-zone:hover {
+    border-color: #666666 !important;
+    background-color: rgba(128, 128, 128, 0.25) !important;
+    transform: scale(1.01);
+}
+
+.drop-zone:focus {
+    outline: 3px solid rgba(100, 100, 100, 0.6);
+    outline-offset: 2px;
+    border-color: #666666 !important;
+}
+
+.drop-zone.drag-active {
+    border-style: solid !important;
+    border-color: #555555 !important;
+    box-shadow: 0 0 0 4px rgba(100, 100, 100, 0.2);
+}
+
+.drop-zone.drag-over {
+    border-style: solid !important;
+    border-color: #444444 !important;
+    background-color: rgba(128, 128, 128, 0.35) !important;
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(100, 100, 100, 0.4);
+}
+
+.drop-zone.available {
+    animation: zoneAvailable 1s infinite;
+}
+
+@keyframes zoneAvailable {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(100, 100, 100, 0.1); }
+}
+
+/* Feedback states - keep green/red for correct/incorrect indication */
+.drop-zone.has-correct {
+    border-color: var(--dd-success) !important;
+    background-color: rgba(0, 163, 42, 0.15) !important;
+}
+
+.drop-zone.has-incorrect {
+    border-color: var(--dd-error) !important;
+    background-color: rgba(214, 54, 56, 0.15) !important;
+}
+
+/* Elements inside zones */
+.zone-content .draggable-element {
+    position: static;
+    margin: 0;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: auto;
+    max-width: 100%;
+    padding: 8px 12px;
+}
+
+/* Multiple vs Single Zone indicators */
+.drop-zone.multiple-allowed::before {
+    content: "+";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555555;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================
+   CONTROLS
+   ========================================== */
 .drag-drop-controls {
     display: flex;
     gap: 12px;
     justify-content: center;
     margin-bottom: 24px;
     flex-wrap: wrap;
+    padding-top: 16px;
+    border-top: 1px solid var(--dd-border);
 }
 
 .drag-drop-button {
-    background: #0073aa;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--dd-primary);
     color: #ffffff;
     border: none;
     border-radius: 6px;
@@ -449,68 +773,86 @@
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--dd-transition);
     min-width: 120px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--dd-shadow);
 }
 
-.drag-drop-button:hover {
+.drag-drop-button:hover:not(:disabled) {
     background: #005a87;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+    box-shadow: var(--dd-shadow-hover);
 }
 
-.drag-drop-button:active {
+.drag-drop-button:active:not(:disabled) {
     transform: translateY(0);
 }
 
 .drag-drop-button:disabled {
-    background: #e0e0e0;
-    color: #666666;
+    background: #ccc;
+    color: #666;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
 .drag-drop-button.drag-drop-retry {
-    background: #d63638;
+    background: var(--dd-text-light);
 }
 
 .drag-drop-button.drag-drop-retry:hover {
-    background: #b32d2e;
+    background: #555;
 }
 
 .drag-drop-button.drag-drop-solution {
-    background: #00a32a;
+    background: transparent;
+    color: var(--dd-primary);
+    border: 2px solid var(--dd-primary);
 }
 
 .drag-drop-button.drag-drop-solution:hover {
-    background: #007a1f;
+    background: var(--dd-primary);
+    color: #fff;
 }
 
-/* Results */
+/* ==========================================
+   RESULTS
+   ========================================== */
 .drag-drop-results {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--dd-bg-light);
+    border: 1px solid var(--dd-border);
+    border-radius: var(--dd-radius);
     padding: 20px;
     margin-bottom: 16px;
     text-align: center;
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .score-display {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
-    color: #1e1e1e;
+    color: var(--dd-text);
     margin-bottom: 12px;
 }
 
 .result-message {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
     margin-bottom: 16px;
     padding: 12px 20px;
     border-radius: 6px;
+    display: inline-block;
 }
 
 .result-message.success {
@@ -520,9 +862,9 @@
 }
 
 .result-message.partial {
-    background: rgba(255, 193, 7, 0.1);
+    background: rgba(234, 179, 8, 0.1);
     color: #b8860b;
-    border: 2px solid rgba(255, 193, 7, 0.3);
+    border: 2px solid rgba(234, 179, 8, 0.3);
 }
 
 .result-message.fail {
@@ -532,19 +874,20 @@
 }
 
 .placement-feedback {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
     margin-top: 16px;
 }
 
 .feedback-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .feedback-item.correct {
@@ -563,25 +906,24 @@
 
 .feedback-status {
     font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background: currentColor;
-    color: white;
+    opacity: 0.8;
 }
 
-/* Instructions */
+/* ==========================================
+   INSTRUCTIONS
+   ========================================== */
 .drag-drop-instructions {
     background: rgba(0, 115, 170, 0.05);
     border: 1px solid rgba(0, 115, 170, 0.2);
     border-radius: 6px;
-    padding: 16px;
+    padding: 12px 16px;
     text-align: center;
 }
 
 .instruction-text {
     margin: 0;
-    font-size: 14px;
-    color: #0073aa;
+    font-size: 13px;
+    color: var(--dd-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -590,10 +932,136 @@
 
 .instruction-text svg {
     flex-shrink: 0;
+    opacity: 0.7;
 }
 
-/* Touch and Mobile Optimizations */
-@media (max-width: 768px) {
+/* ==========================================
+   ERROR STATE
+   ========================================== */
+.drag-drop-error {
+    background: rgba(214, 54, 56, 0.1);
+    border: 1px solid var(--dd-error);
+    border-radius: var(--dd-radius);
+    padding: 20px;
+    text-align: center;
+    color: var(--dd-error);
+}
+
+/* ==========================================
+   AUTO-SCALE MODE
+   ========================================== */
+.wp-block-modular-blocks-drag-and-drop.auto-scale .drop-area-container {
+    transform-origin: top left;
+}
+
+/* ==========================================
+   TOUCH & MOBILE
+   ========================================== */
+.touch-clone {
+    opacity: 0.85 !important;
+    transform: rotate(3deg) scale(1.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #ffffff !important;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ==========================================
+   RESPONSIVE - PC, Tablet, Mobile
+   ========================================== */
+
+/* Large Desktop (1200px+) */
+@media (min-width: 1200px) {
+    .wp-block-modular-blocks-drag-and-drop {
+        padding: 32px;
+    }
+
+    .activity-area {
+        grid-template-columns: 320px 1fr;
+        gap: 32px;
+    }
+
+    .draggable-element {
+        padding: 14px 20px;
+        font-size: 17px;
+    }
+
+    .draggable-element.draggable-image .draggable-image {
+        max-width: 150px;
+        max-height: 100px;
+    }
+}
+
+/* Tablet Landscape (1024px - 1199px) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .activity-area {
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+    }
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .wp-block-modular-blocks-drag-and-drop {
+        padding: 20px;
+    }
+
+    .activity-area {
+        grid-template-columns: 240px 1fr;
+        gap: 20px;
+    }
+
+    .draggables-area {
+        padding: 16px;
+    }
+
+    .draggable-element {
+        padding: 10px 14px;
+        font-size: 15px;
+        min-height: 44px;
+    }
+
+    .draggable-element.draggable-image .draggable-image {
+        max-width: 100px;
+        max-height: 70px;
+    }
+
+    .drop-zone {
+        min-width: 90px;
+        min-height: 70px;
+    }
+
+    .zone-label {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+}
+
+/* Mobile (below 768px) */
+@media (max-width: 767px) {
     .wp-block-modular-blocks-drag-and-drop {
         padding: 16px;
         margin: 16px 0;
@@ -604,22 +1072,41 @@
     }
 
     .activity-area {
-        min-height: 300px;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        min-height: auto;
     }
 
-    .drop-area-container {
-        min-height: 250px;
-    }
-
-    .draggable-element {
-        padding: 12px 16px;
-        font-size: 15px;
-        min-height: 48px; /* Touch target size */
-        border-radius: 6px;
+    .draggables-area {
+        padding: 12px;
+        order: 1;
     }
 
     .draggables-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 8px;
+        min-height: 100px;
+    }
+
+    .drop-area {
+        order: 2;
+    }
+
+    .drop-area-container {
+        min-height: 280px;
+    }
+
+    .draggable-element {
+        padding: 10px 14px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .draggable-element.draggable-image .draggable-image {
+        max-width: 80px;
+        max-height: 60px;
     }
 
     .drop-zone {
@@ -629,7 +1116,7 @@
     }
 
     .zone-label {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .drag-drop-controls {
@@ -640,82 +1127,63 @@
     .drag-drop-button {
         width: 100%;
         max-width: 280px;
-        min-height: 48px; /* Touch target size */
+        min-height: 44px;
+        justify-content: center;
     }
 
     .placement-feedback {
-        grid-template-columns: 1fr;
+        flex-direction: column;
     }
 }
 
-/* Touch Clone for Mobile Dragging */
-.touch-clone {
-    opacity: 0.8 !important;
-    transform: rotate(5deg) scale(1.1) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-    border: 2px solid #ffffff !important;
+/* Small Mobile (below 480px) */
+@media (max-width: 479px) {
+    .drag-drop-header {
+        flex-direction: column;
+    }
+
+    .drag-drop-fullscreen {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    .zone-content .draggable-element {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .draggable-element.draggable-image .draggable-image {
+        max-width: 60px;
+        max-height: 45px;
+    }
+
+    .drop-area-container {
+        min-height: 220px;
+    }
 }
 
-/* Snap Mode Enhancements */
-.wp-block-modular-blocks-drag-and-drop.snap-enabled .drop-zone {
-    border-style: solid;
-}
-
-.wp-block-modular-blocks-drag-and-drop.snap-enabled .drop-zone.drag-over {
-    animation: snapPulse 0.3s ease;
-}
-
-/* Instant Feedback Mode */
-.wp-block-modular-blocks-drag-and-drop.instant-feedback .drop-zone {
-    transition: all 0.3s ease;
-}
-
-.wp-block-modular-blocks-drag-and-drop.instant-feedback .draggable-element {
-    transition: all 0.3s ease;
-}
-
-/* High Contrast and Accessibility */
+/* ==========================================
+   ACCESSIBILITY
+   ========================================== */
 @media (prefers-contrast: high) {
     .wp-block-modular-blocks-drag-and-drop {
         border-width: 2px;
     }
 
-    .draggable-element {
-        border-width: 3px;
-    }
-
+    .draggable-element,
     .drop-zone {
         border-width: 3px;
     }
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-    }
-}
-
-/* Print Styles */
-@media print {
-    .wp-block-modular-blocks-drag-and-drop {
-        break-inside: avoid;
-        box-shadow: none;
-        border: 2px solid #000;
-    }
-
-    .drag-drop-controls {
-        display: none;
-    }
-
-    .drag-drop-results {
-        border: 1px solid #000;
-    }
-
-    .drop-area-container {
-        border: 1px solid #000;
     }
 }
 
@@ -732,65 +1200,7 @@
     border: 0 !important;
 }
 
-/* Animations */
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0.3);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes shakeX {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-5px);
-    }
-    75% {
-        transform: translateX(5px);
-    }
-}
-
-@keyframes fadeInDown {
-    0% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-@keyframes snapPulse {
-    0%, 100% {
-        border-color: #0073aa;
-    }
-    50% {
-        border-color: #00a32a;
-        background: rgba(0, 163, 42, 0.3);
-    }
-}
-
-/* Focus States for Better Keyboard Navigation */
+/* Focus States */
 .draggable-element:focus,
 .drop-zone:focus {
     outline: 3px solid rgba(0, 115, 170, 0.6);
@@ -798,50 +1208,23 @@
     z-index: 10;
 }
 
-.draggable-element.selected {
-    outline: 3px solid #ffffff;
-    outline-offset: 2px;
-}
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+@media print {
+    .wp-block-modular-blocks-drag-and-drop {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 2px solid #000;
+    }
 
-.drop-zone.selected {
-    outline: 3px solid #d63638;
-    outline-offset: 2px;
-}
+    .drag-drop-controls,
+    .drag-drop-fullscreen,
+    .tip-button {
+        display: none !important;
+    }
 
-/* Multiple Drop Zone Support */
-.drop-zone.multiple-allowed {
-    border-style: dotted;
-}
-
-.drop-zone.multiple-allowed::before {
-    content: "⊕";
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 16px;
-    color: #0073aa;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.drop-zone.single-only::before {
-    content: "①";
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 12px;
-    color: #666666;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    .drop-zone {
+        border-style: solid !important;
+    }
 }

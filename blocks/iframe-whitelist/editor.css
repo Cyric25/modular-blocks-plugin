@@ -1,0 +1,119 @@
+/**
+ * Iframe Whitelist Block - Editor Styles
+ */
+
+/* Editor placeholder */
+.wp-block-modular-blocks-iframe-whitelist .components-placeholder {
+    min-height: 200px;
+    background: #f0f0f0;
+    border: 2px dashed #c3c4c7;
+}
+
+.wp-block-modular-blocks-iframe-whitelist .components-placeholder__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wp-block-modular-blocks-iframe-whitelist .components-placeholder .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+/* Preview container */
+.iframe-whitelist-preview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.iframe-whitelist-preview.has-border {
+    border: 2px solid #c3c4c7;
+}
+
+/* Overlay in editor */
+.iframe-whitelist-overlay {
+    text-align: center;
+    color: #fff;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.iframe-whitelist-overlay .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.iframe-whitelist-overlay p {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.iframe-whitelist-overlay code {
+    display: block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 13px;
+    word-break: break-all;
+    margin-bottom: 10px;
+}
+
+.iframe-whitelist-overlay small {
+    display: block;
+    opacity: 0.8;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* Height indicator */
+.iframe-whitelist-height-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+/* Input mode toggle */
+.iframe-whitelist-input-mode {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.iframe-whitelist-input-mode .components-button {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Inspector controls adjustments */
+.wp-block-modular-blocks-iframe-whitelist .components-notice {
+    margin: 10px 0;
+}
+
+/* Aspect ratio preview in editor */
+.iframe-whitelist-preview[style*="padding-bottom"] {
+    height: 0;
+}
+
+.iframe-whitelist-preview[style*="padding-bottom"] .iframe-whitelist-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

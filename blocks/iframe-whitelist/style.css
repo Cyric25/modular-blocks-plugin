@@ -1,0 +1,189 @@
+/**
+ * Iframe Whitelist Block - Frontend Styles
+ */
+
+.wp-block-modular-blocks-iframe-whitelist {
+    margin: 20px 0;
+    position: relative;
+}
+
+/* Container */
+.iframe-whitelist-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Iframe */
+.iframe-whitelist-frame {
+    display: block;
+    width: 100%;
+    border: none;
+    background: #f5f5f5;
+}
+
+/* Border variant */
+.wp-block-modular-blocks-iframe-whitelist.has-border .iframe-whitelist-container {
+    border: 1px solid #ddd;
+}
+
+/* Aspect ratio support */
+.wp-block-modular-blocks-iframe-whitelist.has-aspect-ratio .iframe-whitelist-container {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.has-aspect-ratio .iframe-whitelist-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.aspect-ratio-16-9 .iframe-whitelist-container {
+    padding-bottom: 56.25%;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.aspect-ratio-4-3 .iframe-whitelist-container {
+    padding-bottom: 75%;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.aspect-ratio-1-1 .iframe-whitelist-container {
+    padding-bottom: 100%;
+}
+
+/* Fullscreen button */
+.iframe-fullscreen-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 10;
+    opacity: 0;
+}
+
+.wp-block-modular-blocks-iframe-whitelist:hover .iframe-fullscreen-button,
+.wp-block-modular-blocks-iframe-whitelist:focus-within .iframe-fullscreen-button {
+    opacity: 1;
+}
+
+.iframe-fullscreen-button:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.iframe-fullscreen-button:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.iframe-fullscreen-button .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Error state */
+.iframe-whitelist-error {
+    background: #fef1f1;
+    border: 1px solid #d63638;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    color: #d63638;
+}
+
+.iframe-whitelist-error .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.iframe-whitelist-error p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Placeholder state */
+.iframe-whitelist-placeholder {
+    background: #f0f0f1;
+    border: 2px dashed #c3c4c7;
+    border-radius: 4px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #646970;
+}
+
+.iframe-whitelist-placeholder p {
+    margin: 0;
+}
+
+/* Fullscreen mode */
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    margin: 0;
+    border-radius: 0;
+    background: #000;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-whitelist-container {
+    height: 100%;
+    padding-bottom: 0 !important;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-whitelist-frame {
+    position: static;
+    height: 100%;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button:hover {
+    background: #fff;
+}
+
+/* Loading state */
+.iframe-whitelist-frame[data-loading="true"] {
+    background: #f5f5f5 url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="%23ddd" stroke-width="4" fill="none"/><circle cx="50" cy="50" r="40" stroke="%230073aa" stroke-width="4" fill="none" stroke-dasharray="251" stroke-dashoffset="188" transform="rotate(-90 50 50)"><animateTransform attributeName="transform" type="rotate" from="-90 50 50" to="270 50 50" dur="1s" repeatCount="indefinite"/></circle></svg>') center center no-repeat;
+    background-size: 50px 50px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .iframe-fullscreen-button {
+        opacity: 1;
+        width: 36px;
+        height: 36px;
+    }
+
+    .iframe-fullscreen-button .dashicons {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}

@@ -18,6 +18,8 @@
         "packages-update": "wp-scripts packages-update",
         "plugin-zip": "node create-zip.js",
         "plugin-zip-empty": "node create-empty-plugin-zip.js",
+        "plugin-zip-custom": "node create-custom-plugin-zip.js",
+        "plugin-zip-update": "node create-custom-plugin-zip.js --preserve",
         "block-zips": "node create-block-zips.js",
         "zip-all": "npm run build && npm run plugin-zip && npm run plugin-zip-empty && npm run block-zips",
         "test:e2e": "wp-scripts test-e2e",

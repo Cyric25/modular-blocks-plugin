@@ -1,424 +1,374 @@
 /**
  * Drag and Drop Block Frontend JavaScript
  * H5P-inspired drag and drop functionality for WordPress
+ * Version 2.0.0 - Full H5P Feature Parity
  */
 
 (function() {
     'use strict';
 
-    window.initDragAndDrop = function(blockElement) {
-        const data = JSON.parse(blockElement.dataset.dragDrop);
-        const {
-            draggables,
-            dropZones,
-            showFeedback,
-            showRetry,
-            showSolution,
-            instantFeedback,
-            enableSnap,
-            showScore,
-            randomizeDraggables,
-            allowPartialScore,
-            backgroundHeight,
-            scoreText,
-            successText,
-            partialSuccessText,
-            failText,
-            strings
-        } = data;
+    /**
+     * DragAndDrop Class - H5P-style implementation
+     */
+    class DragAndDrop {
+        constructor(blockElement) {
+            this.block = blockElement;
+            this.data = JSON.parse(blockElement.dataset.dragDrop);
+            this.uniqueId = blockElement.id;
 
-        let currentState = {
-            placements: {},
-            isChecked: false,
-            score: 0,
-            totalPoints: draggables.length,
-            isDragging: false
-        };
+            // State management
+            this.state = {
+                placements: {},
+                isChecked: false,
+                score: 0,
+                totalPoints: this.data.draggables.length,
+                isDragging: false,
+                isFullscreen: false,
+                scaleFactor: 1,
+                cloneCounter: 0
+            };
 
-        const elements = {
-            container: blockElement.querySelector('.drag-drop-container'),
-            draggablesContainer: blockElement.querySelector('.draggables-container'),
-            dropArea: blockElement.querySelector('.drop-area-container'),
-            dropZones: blockElement.querySelectorAll('.drop-zone'),
-            draggableElements: blockElement.querySelectorAll('.draggable-element'),
-            checkButton: blockElement.querySelector('.drag-drop-check'),
-            retryButton: blockElement.querySelector('.drag-drop-retry'),
-            solutionButton: blockElement.querySelector('.drag-drop-solution'),
-            results: blockElement.querySelector('.drag-drop-results')
-        };
+            // DOM element references
+            this.elements = {};
 
-        function initializeDragAndDrop() {
-            setupDraggableElements();
-            setupDropZones();
-            setupControls();
-            updateCheckButtonState();
+            // Drag state
+            this.draggedElement = null;
+            this.touchData = null;
+            this.selectedElement = null;
 
-            if (randomizeDraggables) {
-                randomizeDraggableOrder();
+            this.init();
+        }
+
+        init() {
+            this.cacheElements();
+            this.setupDraggableElements();
+            this.setupDropZones();
+            this.setupControls();
+            this.setupHighlightMode();
+            this.setupFullscreen();
+            this.setupAutoScale();
+            this.updateCheckButtonState();
+
+            if (this.data.randomizeDraggables) {
+                this.randomizeDraggableOrder();
             }
         }
 
-        function setupDraggableElements() {
-            elements.draggableElements.forEach(element => {
+        cacheElements() {
+            this.elements = {
+                container: this.block.querySelector('.drag-drop-container'),
+                draggablesContainer: this.block.querySelector('.draggables-container'),
+                dropArea: this.block.querySelector('.drop-area-container'),
+                dropZones: this.block.querySelectorAll('.drop-zone'),
+                draggableElements: this.block.querySelectorAll('.draggable-element'),
+                checkButton: this.block.querySelector('.drag-drop-check'),
+                retryButton: this.block.querySelector('.drag-drop-retry'),
+                solutionButton: this.block.querySelector('.drag-drop-solution'),
+                fullscreenButton: this.block.querySelector('.drag-drop-fullscreen'),
+                results: this.block.querySelector('.drag-drop-results')
+            };
+        }
+
+        // ==========================================
+        // DRAGGABLE ELEMENTS SETUP
+        // ==========================================
+
+        setupDraggableElements() {
+            this.elements.draggableElements.forEach(element => {
                 const draggableId = element.dataset.draggableId;
+                const isInfinite = element.dataset.infinite === 'true';
 
                 // Mouse events
-                element.addEventListener('dragstart', handleDragStart);
-                element.addEventListener('dragend', handleDragEnd);
+                element.addEventListener('mousedown', e => this.handleMouseDown(e, element));
+                element.addEventListener('dragstart', e => this.handleDragStart(e, element));
+                element.addEventListener('dragend', e => this.handleDragEnd(e, element));
 
                 // Touch events for mobile
-                element.addEventListener('touchstart', handleTouchStart, { passive: false });
-                element.addEventListener('touchmove', handleTouchMove, { passive: false });
-                element.addEventListener('touchend', handleTouchEnd, { passive: false });
+                element.addEventListener('touchstart', e => this.handleTouchStart(e, element), { passive: false });
+                element.addEventListener('touchmove', e => this.handleTouchMove(e), { passive: false });
+                element.addEventListener('touchend', e => this.handleTouchEnd(e), { passive: false });
 
                 // Keyboard events
-                element.addEventListener('keydown', handleKeyDown);
+                element.addEventListener('keydown', e => this.handleKeyDown(e, element));
 
-                // Click events for keyboard users
-                element.addEventListener('click', handleElementClick);
+                // Click for tip display
+                if (element.dataset.tip) {
+                    element.addEventListener('dblclick', e => this.showTip(element, element.dataset.tip));
+                }
 
                 // Set initial state
                 element.setAttribute('aria-grabbed', 'false');
-                currentState.placements[draggableId] = null;
+                this.state.placements[draggableId] = null;
             });
         }
 
-        function setupDropZones() {
-            elements.dropZones.forEach(zone => {
-                const zoneId = zone.dataset.zoneId;
+        // ==========================================
+        // MOUSE DRAG HANDLING
+        // ==========================================
 
-                // Drag events
-                zone.addEventListener('dragover', handleDragOver);
-                zone.addEventListener('drop', handleDrop);
-                zone.addEventListener('dragenter', handleDragEnter);
-                zone.addEventListener('dragleave', handleDragLeave);
+        handleMouseDown(event, element) {
+            if (this.state.isChecked) return;
 
-                // Keyboard events
-                zone.addEventListener('keydown', handleZoneKeyDown);
-                zone.addEventListener('click', handleZoneClick);
+            const isInfinite = element.dataset.infinite === 'true';
 
-                // Set initial state
-                zone.setAttribute('aria-dropeffect', 'move');
-            });
+            if (isInfinite && !element.dataset.isClone) {
+                // Clone the element for infinite draggables
+                this.draggedElement = this.cloneInfiniteDraggable(element);
+            }
         }
 
-        function setupControls() {
-            elements.checkButton?.addEventListener('click', checkAnswers);
-            elements.retryButton?.addEventListener('click', resetActivity);
-            elements.solutionButton?.addEventListener('click', showSolutions);
-        }
+        handleDragStart(event, element) {
+            if (this.state.isChecked) {
+                event.preventDefault();
+                return;
+            }
 
-        // Drag and Drop Event Handlers
-        let draggedElement = null;
-        let touchData = null;
+            const isInfinite = element.dataset.infinite === 'true';
 
-        function handleDragStart(event) {
-            draggedElement = event.target;
-            currentState.isDragging = true;
+            // Use clone if it exists, otherwise the element itself
+            const dragElement = this.draggedElement || element;
+            this.draggedElement = dragElement;
+            this.state.isDragging = true;
 
-            event.target.setAttribute('aria-grabbed', 'true');
-            event.target.classList.add('dragging');
+            dragElement.setAttribute('aria-grabbed', 'true');
+            dragElement.classList.add('dragging');
 
             event.dataTransfer.effectAllowed = 'move';
-            event.dataTransfer.setData('text/plain', event.target.dataset.draggableId);
+            event.dataTransfer.setData('text/plain', dragElement.dataset.draggableId);
 
-            // Add visual feedback
-            elements.dropZones.forEach(zone => {
-                zone.classList.add('drag-active');
-            });
+            // Add visual feedback to drop zones
+            this.highlightDropZones(true);
         }
 
-        function handleDragEnd(event) {
-            event.target.setAttribute('aria-grabbed', 'false');
-            event.target.classList.remove('dragging');
+        handleDragEnd(event, element) {
+            const dragElement = this.draggedElement || element;
 
-            draggedElement = null;
-            currentState.isDragging = false;
+            dragElement.setAttribute('aria-grabbed', 'false');
+            dragElement.classList.remove('dragging');
+
+            this.draggedElement = null;
+            this.state.isDragging = false;
 
             // Remove visual feedback
-            elements.dropZones.forEach(zone => {
-                zone.classList.remove('drag-active', 'drag-over');
-            });
+            this.highlightDropZones(false);
         }
 
-        function handleDragOver(event) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-        }
+        // ==========================================
+        // TOUCH HANDLING
+        // ==========================================
 
-        function handleDragEnter(event) {
-            event.preventDefault();
-            event.target.closest('.drop-zone').classList.add('drag-over');
-        }
+        handleTouchStart(event, element) {
+            if (this.state.isChecked) return;
 
-        function handleDragLeave(event) {
-            const zone = event.target.closest('.drop-zone');
-            if (zone && !zone.contains(event.relatedTarget)) {
-                zone.classList.remove('drag-over');
-            }
-        }
+            const touch = event.touches[0];
+            const isInfinite = element.dataset.infinite === 'true';
 
-        function handleDrop(event) {
-            event.preventDefault();
-            const zone = event.target.closest('.drop-zone');
-            const draggableId = event.dataTransfer.getData('text/plain');
-            const draggableElement = blockElement.querySelector(`[data-draggable-id="${draggableId}"]`);
-
-            if (zone && draggableElement) {
-                dropElementInZone(draggableElement, zone);
+            let dragElement = element;
+            if (isInfinite && !element.dataset.isClone) {
+                dragElement = this.cloneInfiniteDraggable(element);
             }
 
-            zone.classList.remove('drag-over');
-        }
-
-        // Touch Event Handlers
-        function handleTouchStart(event) {
-            const element = event.target.closest('.draggable-element');
-            if (!element) return;
-
-            touchData = {
-                element: element,
-                startX: event.touches[0].clientX,
-                startY: event.touches[0].clientY,
-                elementStartX: element.offsetLeft,
-                elementStartY: element.offsetTop
+            this.touchData = {
+                element: dragElement,
+                startX: touch.clientX,
+                startY: touch.clientY,
+                elementRect: dragElement.getBoundingClientRect()
             };
 
-            element.classList.add('dragging');
-            currentState.isDragging = true;
+            dragElement.classList.add('dragging');
+            this.state.isDragging = true;
 
-            // Create touch clone for visual feedback
-            createTouchClone(element, event.touches[0]);
+            this.createTouchClone(dragElement, touch);
+            this.highlightDropZones(true);
         }
 
-        function handleTouchMove(event) {
-            if (!touchData) return;
+        handleTouchMove(event) {
+            if (!this.touchData) return;
 
             event.preventDefault();
 
             const touch = event.touches[0];
-            const deltaX = touch.clientX - touchData.startX;
-            const deltaY = touch.clientY - touchData.startY;
 
-            // Move the clone
-            if (touchData.clone) {
-                touchData.clone.style.left = (touch.clientX - touchData.clone.offsetWidth / 2) + 'px';
-                touchData.clone.style.top = (touch.clientY - touchData.clone.offsetHeight / 2) + 'px';
+            if (this.touchData.clone) {
+                this.touchData.clone.style.left = (touch.clientX - this.touchData.clone.offsetWidth / 2) + 'px';
+                this.touchData.clone.style.top = (touch.clientY - this.touchData.clone.offsetHeight / 2) + 'px';
             }
 
-            // Check for drop zone collision
-            const dropZone = getDropZoneAtPosition(touch.clientX, touch.clientY);
-            highlightDropZone(dropZone);
+            const dropZone = this.getDropZoneAtPosition(touch.clientX, touch.clientY);
+            this.highlightCurrentDropZone(dropZone);
         }
 
-        function handleTouchEnd(event) {
-            if (!touchData) return;
+        handleTouchEnd(event) {
+            if (!this.touchData) return;
 
             const touch = event.changedTouches[0];
-            const dropZone = getDropZoneAtPosition(touch.clientX, touch.clientY);
+            const dropZone = this.getDropZoneAtPosition(touch.clientX, touch.clientY);
 
-            if (dropZone && touchData.element) {
-                dropElementInZone(touchData.element, dropZone);
+            if (dropZone && this.touchData.element) {
+                this.dropElementInZone(this.touchData.element, dropZone);
+            } else if (this.touchData.element.dataset.isClone === 'true') {
+                // Remove unused clone
+                this.touchData.element.remove();
             }
 
-            // Cleanup
-            cleanupTouch();
+            this.cleanupTouch();
         }
 
-        function createTouchClone(element, touch) {
+        createTouchClone(element, touch) {
             const clone = element.cloneNode(true);
             clone.classList.add('touch-clone');
             clone.style.position = 'fixed';
             clone.style.pointerEvents = 'none';
             clone.style.zIndex = '9999';
-            clone.style.opacity = '0.8';
+            clone.style.opacity = '0.9';
             clone.style.left = (touch.clientX - element.offsetWidth / 2) + 'px';
             clone.style.top = (touch.clientY - element.offsetHeight / 2) + 'px';
+            clone.style.transform = 'scale(1.05) rotate(2deg)';
 
             document.body.appendChild(clone);
-            touchData.clone = clone;
+            this.touchData.clone = clone;
         }
 
-        function getDropZoneAtPosition(x, y) {
-            const elementAtPoint = document.elementFromPoint(x, y);
-            return elementAtPoint ? elementAtPoint.closest('.drop-zone') : null;
-        }
-
-        function highlightDropZone(zone) {
-            // Remove previous highlights
-            elements.dropZones.forEach(z => z.classList.remove('drag-over'));
-
-            // Highlight current zone
-            if (zone) {
-                zone.classList.add('drag-over');
-            }
-        }
-
-        function cleanupTouch() {
-            if (touchData?.clone) {
-                document.body.removeChild(touchData.clone);
+        cleanupTouch() {
+            if (this.touchData?.clone) {
+                document.body.removeChild(this.touchData.clone);
             }
 
-            if (touchData?.element) {
-                touchData.element.classList.remove('dragging');
+            if (this.touchData?.element) {
+                this.touchData.element.classList.remove('dragging');
             }
 
-            // Remove all highlights
-            elements.dropZones.forEach(zone => {
+            this.elements.dropZones.forEach(zone => {
                 zone.classList.remove('drag-over', 'drag-active');
             });
 
-            touchData = null;
-            currentState.isDragging = false;
+            this.touchData = null;
+            this.state.isDragging = false;
         }
 
-        // Keyboard Event Handlers
-        let selectedElement = null;
-        let selectedZone = null;
+        // ==========================================
+        // DROP ZONE HANDLING
+        // ==========================================
 
-        function handleKeyDown(event) {
-            const element = event.target;
+        setupDropZones() {
+            this.elements.dropZones.forEach(zone => {
+                zone.addEventListener('dragover', e => this.handleDragOver(e));
+                zone.addEventListener('drop', e => this.handleDrop(e, zone));
+                zone.addEventListener('dragenter', e => this.handleDragEnter(e, zone));
+                zone.addEventListener('dragleave', e => this.handleDragLeave(e, zone));
+                zone.addEventListener('keydown', e => this.handleZoneKeyDown(e, zone));
+                zone.addEventListener('click', e => this.handleZoneClick(e, zone));
 
-            switch (event.key) {
-                case 'Enter':
-                case ' ':
-                    event.preventDefault();
-                    if (selectedElement === element) {
-                        selectedElement = null;
-                        element.classList.remove('selected');
-                        announceToScreenReader(strings.returnToStart);
-                    } else {
-                        selectElement(element);
-                    }
-                    break;
-                case 'Escape':
-                    if (selectedElement) {
-                        unselectAll();
-                        announceToScreenReader(strings.returnToStart);
-                    }
-                    break;
-            }
-        }
-
-        function handleZoneKeyDown(event) {
-            const zone = event.target;
-
-            switch (event.key) {
-                case 'Enter':
-                case ' ':
-                    event.preventDefault();
-                    if (selectedElement) {
-                        dropElementInZone(selectedElement, zone);
-                        unselectAll();
-                    } else {
-                        selectZone(zone);
-                    }
-                    break;
-                case 'Escape':
-                    unselectAll();
-                    break;
-            }
-        }
-
-        function handleElementClick(event) {
-            if (!currentState.isDragging) {
-                const element = event.target.closest('.draggable-element');
-                if (selectedElement === element) {
-                    unselectAll();
-                } else {
-                    selectElement(element);
-                }
-            }
-        }
-
-        function handleZoneClick(event) {
-            if (!currentState.isDragging && selectedElement) {
-                const zone = event.target.closest('.drop-zone');
-                if (zone) {
-                    dropElementInZone(selectedElement, zone);
-                    unselectAll();
-                }
-            }
-        }
-
-        function selectElement(element) {
-            unselectAll();
-            selectedElement = element;
-            element.classList.add('selected');
-            element.setAttribute('aria-selected', 'true');
-            announceToScreenReader(strings.dragToZone);
-
-            // Highlight available drop zones
-            elements.dropZones.forEach(zone => {
-                zone.classList.add('available');
+                zone.setAttribute('aria-dropeffect', 'move');
             });
         }
 
-        function selectZone(zone) {
-            unselectAll();
-            selectedZone = zone;
-            zone.classList.add('selected');
-            zone.setAttribute('aria-selected', 'true');
+        handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
         }
 
-        function unselectAll() {
-            if (selectedElement) {
-                selectedElement.classList.remove('selected');
-                selectedElement.setAttribute('aria-selected', 'false');
-            }
-
-            if (selectedZone) {
-                selectedZone.classList.remove('selected');
-                selectedZone.setAttribute('aria-selected', 'false');
-            }
-
-            // Remove zone highlighting
-            elements.dropZones.forEach(zone => {
-                zone.classList.remove('available');
-            });
-
-            selectedElement = null;
-            selectedZone = null;
+        handleDragEnter(event, zone) {
+            event.preventDefault();
+            zone.classList.add('drag-over');
         }
 
-        // Core Drop Logic
-        function dropElementInZone(element, zone) {
+        handleDragLeave(event, zone) {
+            if (zone && !zone.contains(event.relatedTarget)) {
+                zone.classList.remove('drag-over');
+            }
+        }
+
+        handleDrop(event, zone) {
+            event.preventDefault();
+            const draggableId = event.dataTransfer.getData('text/plain');
+            let draggableElement = this.block.querySelector(`[data-draggable-id="${draggableId}"]:not(.touch-clone)`);
+
+            // Use the dragged element if it's a clone
+            if (this.draggedElement && this.draggedElement.dataset.isClone === 'true') {
+                draggableElement = this.draggedElement;
+            }
+
+            if (zone && draggableElement) {
+                this.dropElementInZone(draggableElement, zone);
+            }
+
+            zone.classList.remove('drag-over');
+        }
+
+        // ==========================================
+        // INFINITE DRAGGABLES (CLONING)
+        // ==========================================
+
+        cloneInfiniteDraggable(element) {
+            this.state.cloneCounter++;
+            const clone = element.cloneNode(true);
+            const originalId = element.dataset.draggableId;
+            const cloneId = `${originalId}-clone-${this.state.cloneCounter}`;
+
+            clone.dataset.draggableId = cloneId;
+            clone.dataset.originalId = originalId;
+            clone.dataset.isClone = 'true';
+
+            // Copy correct zones from original
+            clone.dataset.correctZones = element.dataset.correctZones;
+
+            // Add to draggables container
+            this.elements.draggablesContainer.appendChild(clone);
+
+            // Setup events for clone
+            clone.addEventListener('dragstart', e => this.handleDragStart(e, clone));
+            clone.addEventListener('dragend', e => this.handleDragEnd(e, clone));
+            clone.addEventListener('touchstart', e => this.handleTouchStart(e, clone), { passive: false });
+            clone.addEventListener('touchmove', e => this.handleTouchMove(e), { passive: false });
+            clone.addEventListener('touchend', e => this.handleTouchEnd(e), { passive: false });
+            clone.addEventListener('keydown', e => this.handleKeyDown(e, clone));
+
+            // Track in state
+            this.state.placements[cloneId] = null;
+
+            return clone;
+        }
+
+        // ==========================================
+        // CORE DROP LOGIC
+        // ==========================================
+
+        dropElementInZone(element, zone) {
             const draggableId = element.dataset.draggableId;
             const zoneId = zone.dataset.zoneId;
             const acceptMultiple = zone.dataset.acceptMultiple === 'true';
+            const autoAlign = zone.dataset.autoAlign !== 'false';
             const zoneContent = zone.querySelector('.zone-content');
 
             // Check if zone accepts multiple elements
             if (!acceptMultiple && zoneContent.children.length > 0) {
-                // Return existing element to source
                 const existingElement = zoneContent.firstElementChild;
-                returnElementToSource(existingElement);
+                this.returnElementToSource(existingElement);
             }
 
             // Remove element from current position
-            if (currentState.placements[draggableId]) {
-                const currentZone = blockElement.querySelector(`[data-zone-id="${currentState.placements[draggableId]}"]`);
+            if (this.state.placements[draggableId]) {
+                const currentZoneId = this.state.placements[draggableId];
+                const currentZone = this.block.querySelector(`[data-zone-id="${currentZoneId}"]`);
                 if (currentZone) {
                     const currentZoneContent = currentZone.querySelector('.zone-content');
                     if (currentZoneContent.contains(element)) {
                         currentZoneContent.removeChild(element);
+                        this.autoAlignZone(currentZone);
                     }
                 }
-            } else {
-                // Remove from draggables container
-                if (elements.draggablesContainer.contains(element)) {
-                    elements.draggablesContainer.removeChild(element);
-                }
+            } else if (this.elements.draggablesContainer.contains(element)) {
+                this.elements.draggablesContainer.removeChild(element);
             }
 
             // Add to new zone
             zoneContent.appendChild(element);
-            currentState.placements[draggableId] = zoneId;
+            this.state.placements[draggableId] = zoneId;
 
-            // Apply snap positioning if enabled
-            if (enableSnap) {
-                element.style.position = 'static';
-                element.style.transform = 'none';
+            // Apply auto-alignment
+            if (autoAlign) {
+                this.autoAlignZone(zone);
             }
 
             // Update ARIA states
@@ -426,49 +376,401 @@
             zone.setAttribute('aria-expanded', 'true');
 
             // Instant feedback
-            if (instantFeedback) {
-                provideFeedbackForElement(element, zone);
+            if (this.data.instantFeedback) {
+                this.provideFeedbackForElement(element, zone);
             }
 
-            updateCheckButtonState();
-            announceToScreenReader(strings.correct);
+            this.updateCheckButtonState();
+            this.announceToScreenReader(this.data.strings.dragToZone);
         }
 
-        function returnElementToSource(element) {
+        returnElementToSource(element) {
             const draggableId = element.dataset.draggableId;
+            const isClone = element.dataset.isClone === 'true';
+
+            // Get the zone it was in for re-alignment
+            const currentZoneId = this.state.placements[draggableId];
+            const currentZone = currentZoneId ? this.block.querySelector(`[data-zone-id="${currentZoneId}"]`) : null;
 
             // Remove from current zone
             if (element.parentElement) {
                 element.parentElement.removeChild(element);
             }
 
-            // Return to draggables container
-            elements.draggablesContainer.appendChild(element);
-            currentState.placements[draggableId] = null;
+            // If it's a clone, just remove it entirely
+            if (isClone) {
+                delete this.state.placements[draggableId];
+            } else {
+                // Return to draggables container
+                this.elements.draggablesContainer.appendChild(element);
+                this.state.placements[draggableId] = null;
+            }
 
             // Reset styles
             element.style.position = '';
             element.style.transform = '';
             element.setAttribute('aria-describedby', '');
+            element.classList.remove('result-correct', 'result-incorrect', 'feedback-correct', 'feedback-incorrect');
 
-            updateCheckButtonState();
+            // Re-align the zone that lost the element
+            if (currentZone) {
+                this.autoAlignZone(currentZone);
+            }
+
+            this.updateCheckButtonState();
         }
 
-        function provideFeedbackForElement(element, zone) {
+        // ==========================================
+        // AUTO-ALIGNMENT (H5P STYLE)
+        // ==========================================
+
+        autoAlignZone(zone) {
+            const zoneContent = zone.querySelector('.zone-content');
+            const spacing = parseInt(zone.dataset.alignSpacing) || 8;
+            const elements = Array.from(zoneContent.children);
+
+            if (elements.length === 0) return;
+
+            const zoneWidth = zoneContent.offsetWidth;
+            const zoneHeight = zoneContent.offsetHeight;
+
+            // Reset positions
+            elements.forEach(el => {
+                el.style.position = 'relative';
+                el.style.left = '';
+                el.style.top = '';
+                el.style.transform = '';
+            });
+
+            // Let CSS flexbox handle the layout
+            zoneContent.style.display = 'flex';
+            zoneContent.style.flexWrap = 'wrap';
+            zoneContent.style.gap = spacing + 'px';
+            zoneContent.style.alignContent = 'flex-start';
+            zoneContent.style.justifyContent = 'center';
+
+            // Trigger reflow and animate
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'scale(0.8)';
+
+                setTimeout(() => {
+                    el.style.transition = 'all 0.3s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'scale(1)';
+                }, index * 50);
+            });
+
+            // Dispatch alignment event
+            zone.dispatchEvent(new CustomEvent('elementaligned', { bubbles: true }));
+        }
+
+        // ==========================================
+        // HIGHLIGHT MODES
+        // ==========================================
+
+        setupHighlightMode() {
+            if (this.data.highlightDropZones === 'always') {
+                this.elements.dropZones.forEach(zone => {
+                    zone.classList.add('highlight-always');
+                });
+            } else if (this.data.highlightDropZones === 'never') {
+                this.elements.dropZones.forEach(zone => {
+                    zone.classList.add('highlight-never');
+                });
+            }
+        }
+
+        highlightDropZones(active) {
+            if (this.data.highlightDropZones === 'never') return;
+
+            this.elements.dropZones.forEach(zone => {
+                if (active) {
+                    zone.classList.add('drag-active');
+                } else {
+                    zone.classList.remove('drag-active', 'drag-over');
+                }
+            });
+        }
+
+        highlightCurrentDropZone(zone) {
+            this.elements.dropZones.forEach(z => z.classList.remove('drag-over'));
+            if (zone) {
+                zone.classList.add('drag-over');
+            }
+        }
+
+        getDropZoneAtPosition(x, y) {
+            const elementAtPoint = document.elementFromPoint(x, y);
+            return elementAtPoint ? elementAtPoint.closest('.drop-zone') : null;
+        }
+
+        // ==========================================
+        // FULLSCREEN MODE
+        // ==========================================
+
+        setupFullscreen() {
+            if (!this.data.enableFullscreen) return;
+
+            const fullscreenBtn = this.elements.fullscreenButton;
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+            }
+
+            // Listen for fullscreen changes
+            document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
+            document.addEventListener('webkitfullscreenchange', () => this.onFullscreenChange());
+        }
+
+        toggleFullscreen() {
+            if (this.state.isFullscreen) {
+                this.exitFullscreen();
+            } else {
+                this.enterFullscreen();
+            }
+        }
+
+        enterFullscreen() {
+            const container = this.elements.container;
+
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen();
+            }
+
+            this.state.isFullscreen = true;
+            this.block.classList.add('is-fullscreen');
+        }
+
+        exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+
+            this.state.isFullscreen = false;
+            this.block.classList.remove('is-fullscreen');
+        }
+
+        onFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            this.state.isFullscreen = isFullscreen;
+
+            if (isFullscreen) {
+                this.block.classList.add('is-fullscreen');
+            } else {
+                this.block.classList.remove('is-fullscreen');
+            }
+
+            // Recalculate scale
+            if (this.data.enableAutoScale) {
+                setTimeout(() => this.calculateScale(), 100);
+            }
+        }
+
+        // ==========================================
+        // AUTO-SCALING (H5P STYLE)
+        // ==========================================
+
+        setupAutoScale() {
+            if (!this.data.enableAutoScale) return;
+
+            this.calculateScale();
+
+            // Debounced resize handler
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => this.calculateScale(), 100);
+            });
+        }
+
+        calculateScale() {
+            const container = this.elements.container;
+            const dropArea = this.elements.dropArea;
+
+            if (!dropArea) return;
+
+            const containerWidth = container.offsetWidth;
+            const originalWidth = this.data.taskWidth || 800;
+
+            // Calculate scale factor
+            let scale = containerWidth / originalWidth;
+            scale = Math.min(1.2, Math.max(0.5, scale)); // Clamp between 0.5 and 1.2
+
+            this.state.scaleFactor = scale;
+
+            // Apply scale to drop area
+            if (scale !== 1) {
+                dropArea.style.transform = `scale(${scale})`;
+                dropArea.style.transformOrigin = 'top left';
+
+                // Adjust container height to account for scaling
+                const originalHeight = this.data.backgroundHeight || 400;
+                container.style.minHeight = (originalHeight * scale) + 'px';
+            } else {
+                dropArea.style.transform = '';
+                container.style.minHeight = '';
+            }
+        }
+
+        // ==========================================
+        // KEYBOARD HANDLING
+        // ==========================================
+
+        handleKeyDown(event, element) {
+            if (this.state.isChecked) return;
+
+            switch (event.key) {
+                case 'Enter':
+                case ' ':
+                    event.preventDefault();
+                    if (this.selectedElement === element) {
+                        this.unselectAll();
+                        this.announceToScreenReader(this.data.strings.returnToStart);
+                    } else {
+                        this.selectElement(element);
+                    }
+                    break;
+                case 'Escape':
+                    if (this.selectedElement) {
+                        this.unselectAll();
+                        this.announceToScreenReader(this.data.strings.returnToStart);
+                    }
+                    break;
+                case 'h':
+                case 'H':
+                    // Show tip on H key
+                    if (element.dataset.tip) {
+                        event.preventDefault();
+                        this.showTip(element, element.dataset.tip);
+                    }
+                    break;
+            }
+        }
+
+        handleZoneKeyDown(event, zone) {
+            if (this.state.isChecked) return;
+
+            switch (event.key) {
+                case 'Enter':
+                case ' ':
+                    event.preventDefault();
+                    if (this.selectedElement) {
+                        this.dropElementInZone(this.selectedElement, zone);
+                        this.unselectAll();
+                    }
+                    break;
+                case 'Escape':
+                    this.unselectAll();
+                    break;
+            }
+        }
+
+        handleZoneClick(event, zone) {
+            if (this.state.isChecked) return;
+
+            if (!this.state.isDragging && this.selectedElement) {
+                this.dropElementInZone(this.selectedElement, zone);
+                this.unselectAll();
+            }
+        }
+
+        selectElement(element) {
+            this.unselectAll();
+            this.selectedElement = element;
+            element.classList.add('selected');
+            element.setAttribute('aria-selected', 'true');
+            this.announceToScreenReader(this.data.strings.dragToZone);
+
+            this.elements.dropZones.forEach(zone => {
+                zone.classList.add('available');
+            });
+        }
+
+        unselectAll() {
+            if (this.selectedElement) {
+                this.selectedElement.classList.remove('selected');
+                this.selectedElement.setAttribute('aria-selected', 'false');
+            }
+
+            this.elements.dropZones.forEach(zone => {
+                zone.classList.remove('available', 'selected');
+            });
+
+            this.selectedElement = null;
+        }
+
+        // ==========================================
+        // TIPS / HINTS
+        // ==========================================
+
+        showTip(element, tipText) {
+            // Remove existing tip
+            const existingTip = this.block.querySelector('.element-tip');
+            if (existingTip) existingTip.remove();
+
+            // Create tip element
+            const tip = document.createElement('div');
+            tip.className = 'element-tip';
+            tip.innerHTML = `
+                <div class="tip-content">
+                    <span class="tip-icon">💡</span>
+                    <span class="tip-text">${tipText}</span>
+                </div>
+                <button class="tip-close" aria-label="Schließen">&times;</button>
+            `;
+
+            // Position near element
+            const rect = element.getBoundingClientRect();
+            const blockRect = this.block.getBoundingClientRect();
+
+            tip.style.position = 'absolute';
+            tip.style.left = (rect.left - blockRect.left) + 'px';
+            tip.style.top = (rect.bottom - blockRect.top + 10) + 'px';
+            tip.style.zIndex = '1000';
+
+            this.block.appendChild(tip);
+
+            // Close button handler
+            tip.querySelector('.tip-close').addEventListener('click', () => tip.remove());
+
+            // Auto-close after 5 seconds
+            setTimeout(() => tip.remove(), 5000);
+        }
+
+        // ==========================================
+        // FEEDBACK
+        // ==========================================
+
+        provideFeedbackForElement(element, zone) {
             const draggableId = element.dataset.draggableId;
+            const originalId = element.dataset.originalId || draggableId;
             const zoneId = zone.dataset.zoneId;
             const correctZones = JSON.parse(element.dataset.correctZones || '[]');
             const isCorrect = correctZones.includes(zoneId);
 
+            // Get zone-specific feedback
+            const tipCorrect = zone.dataset.tipCorrect;
+            const tipIncorrect = zone.dataset.tipIncorrect;
+
             const feedback = element.querySelector('.draggable-feedback');
             if (feedback) {
-                feedback.textContent = isCorrect ? strings.correct : strings.incorrect;
+                feedback.textContent = isCorrect
+                    ? (tipCorrect || this.data.strings.correct)
+                    : (tipIncorrect || this.data.strings.incorrect);
                 feedback.className = `draggable-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
                 feedback.style.display = 'block';
 
                 setTimeout(() => {
                     feedback.style.display = 'none';
-                }, 2000);
+                }, 3000);
             }
 
             // Visual feedback
@@ -478,276 +780,412 @@
             }, 1000);
         }
 
-        // Answer Checking
-        function checkAnswers() {
-            if (currentState.isChecked) return;
+        // ==========================================
+        // CONTROLS
+        // ==========================================
 
-            currentState.isChecked = true;
-            currentState.score = 0;
+        setupControls() {
+            this.elements.checkButton?.addEventListener('click', () => this.checkAnswers());
+            this.elements.retryButton?.addEventListener('click', () => this.resetActivity());
+            this.elements.solutionButton?.addEventListener('click', () => this.showSolutions());
+        }
+
+        updateCheckButtonState() {
+            const hasAnyPlacement = Object.values(this.state.placements).some(p => p !== null);
+            if (this.elements.checkButton) {
+                this.elements.checkButton.disabled = !hasAnyPlacement;
+            }
+        }
+
+        // ==========================================
+        // ANSWER CHECKING
+        // ==========================================
+
+        checkAnswers() {
+            if (this.state.isChecked) return;
+
+            this.state.isChecked = true;
+            this.state.score = 0;
+            let wrongCount = 0;
 
             const results = [];
 
-            draggables.forEach(draggable => {
-                const element = blockElement.querySelector(`[data-draggable-id="${draggable.id}"]`);
-                const placedZone = currentState.placements[draggable.id];
+            // Check original draggables
+            this.data.draggables.forEach(draggable => {
+                const draggableId = draggable.id;
                 const correctZones = draggable.correctZones || [];
-                const isCorrect = placedZone && correctZones.includes(placedZone);
 
-                if (isCorrect) {
-                    currentState.score++;
-                }
+                // Find all placed elements (including clones)
+                const placedElements = this.findPlacedElements(draggableId);
 
-                results.push({
-                    element,
-                    draggable,
-                    placedZone,
-                    correctZones,
-                    isCorrect
-                });
+                if (placedElements.length === 0) {
+                    // Not placed - count as wrong
+                    wrongCount++;
+                    results.push({
+                        draggable,
+                        placedZone: null,
+                        isCorrect: false
+                    });
+                } else {
+                    placedElements.forEach(({ element, zoneId }) => {
+                        const isCorrect = correctZones.includes(zoneId);
 
-                // Visual feedback
-                if (element) {
-                    element.classList.add(isCorrect ? 'result-correct' : 'result-incorrect');
-
-                    if (showFeedback) {
-                        const feedback = element.querySelector('.draggable-feedback');
-                        if (feedback) {
-                            feedback.textContent = isCorrect ? strings.correct : strings.incorrect;
-                            feedback.className = `draggable-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
-                            feedback.style.display = 'block';
+                        if (isCorrect) {
+                            this.state.score++;
+                        } else {
+                            wrongCount++;
                         }
-                    }
+
+                        results.push({
+                            element,
+                            draggable,
+                            placedZone: zoneId,
+                            correctZones,
+                            isCorrect
+                        });
+
+                        // Visual feedback
+                        if (element) {
+                            element.classList.add(isCorrect ? 'result-correct' : 'result-incorrect');
+
+                            // Show zone-specific feedback
+                            if (this.data.showFeedback) {
+                                const zone = this.block.querySelector(`[data-zone-id="${zoneId}"]`);
+                                const tipText = isCorrect
+                                    ? (zone?.dataset.tipCorrect || this.data.strings.correct)
+                                    : (zone?.dataset.tipIncorrect || this.data.strings.incorrect);
+
+                                const feedback = element.querySelector('.draggable-feedback');
+                                if (feedback) {
+                                    feedback.textContent = tipText;
+                                    feedback.className = `draggable-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+                                    feedback.style.display = 'block';
+                                }
+                            }
+                        }
+                    });
                 }
             });
 
-            // Show results
-            displayResults();
-            updateControls();
+            // Apply penalty if enabled
+            if (this.data.applyPenalty && wrongCount > 0) {
+                const penalty = wrongCount * (this.data.penaltyPerWrong || 1);
+                this.state.score = Math.max(0, this.state.score - penalty);
+            }
 
-            // Disable further interactions
-            disableInteractions();
+            // Show results
+            this.displayResults();
+            this.updateControls();
+            this.disableInteractions();
         }
 
-        function displayResults() {
-            if (!elements.results || !showScore) return;
+        findPlacedElements(draggableId) {
+            const results = [];
 
-            const scoreDisplay = elements.results.querySelector('.score-display');
-            const messageDisplay = elements.results.querySelector('.result-message');
-            const feedbackDisplay = elements.results.querySelector('.placement-feedback');
+            // Check direct placement
+            if (this.state.placements[draggableId]) {
+                const element = this.block.querySelector(`[data-draggable-id="${draggableId}"]`);
+                results.push({ element, zoneId: this.state.placements[draggableId] });
+            }
+
+            // Check clones
+            Object.keys(this.state.placements).forEach(key => {
+                if (key.startsWith(draggableId + '-clone-') && this.state.placements[key]) {
+                    const element = this.block.querySelector(`[data-draggable-id="${key}"]`);
+                    results.push({ element, zoneId: this.state.placements[key] });
+                }
+            });
+
+            return results;
+        }
+
+        displayResults() {
+            if (!this.elements.results || !this.data.showScore) return;
+
+            const scoreDisplay = this.elements.results.querySelector('.score-display');
+            const messageDisplay = this.elements.results.querySelector('.result-message');
+            const feedbackDisplay = this.elements.results.querySelector('.placement-feedback');
 
             // Score display
             if (scoreDisplay) {
-                const scoreMessage = scoreText
-                    .replace('@score', currentState.score)
-                    .replace('@total', currentState.totalPoints);
+                const scoreMessage = this.data.scoreText
+                    .replace('@score', this.state.score)
+                    .replace('@total', this.state.totalPoints);
                 scoreDisplay.textContent = scoreMessage;
             }
 
             // Result message
             if (messageDisplay) {
+                const percentage = (this.state.score / this.state.totalPoints) * 100;
                 let message = '';
-                const percentage = (currentState.score / currentState.totalPoints) * 100;
+                let messageClass = '';
 
-                if (percentage === 100) {
-                    message = successText;
-                } else if (percentage > 50 && allowPartialScore) {
-                    message = partialSuccessText;
-                } else {
-                    message = failText;
+                // Use feedback ranges if available
+                if (this.data.feedbackRanges && this.data.feedbackRanges.length > 0) {
+                    for (const range of this.data.feedbackRanges) {
+                        if (percentage >= range.from && percentage <= range.to) {
+                            message = range.feedback;
+                            break;
+                        }
+                    }
+                }
+
+                // Fallback to default messages
+                if (!message) {
+                    if (percentage === 100) {
+                        message = this.data.successText;
+                        messageClass = 'success';
+                    } else if (percentage > 50 && this.data.allowPartialScore) {
+                        message = this.data.partialSuccessText;
+                        messageClass = 'partial';
+                    } else {
+                        message = this.data.failText;
+                        messageClass = 'fail';
+                    }
                 }
 
                 messageDisplay.textContent = message;
-                messageDisplay.className = `result-message ${percentage === 100 ? 'success' : percentage > 50 ? 'partial' : 'fail'}`;
+                messageDisplay.className = `result-message ${messageClass}`;
             }
 
             // Detailed feedback
-            if (feedbackDisplay && showFeedback) {
-                const feedbackItems = draggables.map(draggable => {
-                    const placedZone = currentState.placements[draggable.id];
-                    const correctZones = draggable.correctZones || [];
-                    const isCorrect = placedZone && correctZones.includes(placedZone);
+            if (feedbackDisplay && this.data.showFeedback) {
+                const feedbackItems = this.data.draggables.map(draggable => {
+                    const placedElements = this.findPlacedElements(draggable.id);
 
-                    return `<div class="feedback-item ${isCorrect ? 'correct' : 'incorrect'}">
-                        <span class="feedback-element">${draggable.content}</span>
-                        <span class="feedback-status">${isCorrect ? strings.correct : strings.incorrect}</span>
-                    </div>`;
+                    if (placedElements.length === 0) {
+                        return `<div class="feedback-item incorrect">
+                            <span class="feedback-element">${draggable.content}</span>
+                            <span class="feedback-status">${this.data.strings.incorrect}</span>
+                        </div>`;
+                    }
+
+                    return placedElements.map(({ zoneId }) => {
+                        const isCorrect = (draggable.correctZones || []).includes(zoneId);
+                        return `<div class="feedback-item ${isCorrect ? 'correct' : 'incorrect'}">
+                            <span class="feedback-element">${draggable.content}</span>
+                            <span class="feedback-status">${isCorrect ? this.data.strings.correct : this.data.strings.incorrect}</span>
+                        </div>`;
+                    }).join('');
                 }).join('');
 
                 feedbackDisplay.innerHTML = feedbackItems;
             }
 
-            elements.results.style.display = 'block';
+            this.elements.results.style.display = 'block';
 
             // Announce results to screen readers
-            const announcement = `${strings.check} ${currentState.score} ${strings.correct} ${strings.incorrect} ${currentState.totalPoints - currentState.score}`;
-            announceToScreenReader(announcement);
+            this.announceToScreenReader(
+                `${this.data.strings.check} ${this.state.score} ${this.data.strings.correct}`
+            );
         }
 
-        function updateControls() {
-            elements.checkButton.style.display = 'none';
-
-            if (elements.retryButton && showRetry) {
-                elements.retryButton.style.display = 'inline-block';
+        updateControls() {
+            if (this.elements.checkButton) {
+                this.elements.checkButton.style.display = 'none';
             }
 
-            if (elements.solutionButton && showSolution) {
-                elements.solutionButton.style.display = 'inline-block';
+            if (this.elements.retryButton && this.data.showRetry) {
+                this.elements.retryButton.style.display = 'inline-flex';
+            }
+
+            if (this.elements.solutionButton && this.data.showSolution) {
+                this.elements.solutionButton.style.display = 'inline-flex';
             }
         }
 
-        function disableInteractions() {
-            elements.draggableElements.forEach(element => {
+        disableInteractions() {
+            const allDraggables = this.block.querySelectorAll('.draggable-element');
+            allDraggables.forEach(element => {
                 element.setAttribute('draggable', 'false');
                 element.setAttribute('tabindex', '-1');
                 element.style.pointerEvents = 'none';
             });
 
-            elements.dropZones.forEach(zone => {
+            this.elements.dropZones.forEach(zone => {
                 zone.setAttribute('tabindex', '-1');
                 zone.style.pointerEvents = 'none';
             });
         }
 
-        function enableInteractions() {
-            elements.draggableElements.forEach(element => {
+        enableInteractions() {
+            const allDraggables = this.block.querySelectorAll('.draggable-element');
+            allDraggables.forEach(element => {
                 element.setAttribute('draggable', 'true');
                 element.setAttribute('tabindex', '0');
                 element.style.pointerEvents = '';
             });
 
-            elements.dropZones.forEach(zone => {
+            this.elements.dropZones.forEach(zone => {
                 zone.setAttribute('tabindex', '0');
                 zone.style.pointerEvents = '';
             });
         }
 
-        // Reset and Solution Functions
-        function resetActivity() {
-            currentState = {
+        // ==========================================
+        // RESET
+        // ==========================================
+
+        resetActivity() {
+            // Reset state
+            this.state = {
                 placements: {},
                 isChecked: false,
                 score: 0,
-                totalPoints: draggables.length,
-                isDragging: false
+                totalPoints: this.data.draggables.length,
+                isDragging: false,
+                isFullscreen: this.state.isFullscreen,
+                scaleFactor: this.state.scaleFactor,
+                cloneCounter: 0
             };
 
-            // Return all elements to source
-            elements.draggableElements.forEach(element => {
-                returnElementToSource(element);
-                element.classList.remove('result-correct', 'result-incorrect', 'feedback-correct', 'feedback-incorrect');
+            // Remove all clones
+            const clones = this.block.querySelectorAll('[data-is-clone="true"]');
+            clones.forEach(clone => clone.remove());
+
+            // Return all original elements to source
+            this.elements.draggableElements.forEach(element => {
+                if (element.parentElement !== this.elements.draggablesContainer) {
+                    this.elements.draggablesContainer.appendChild(element);
+                }
+                element.classList.remove('result-correct', 'result-incorrect', 'feedback-correct', 'feedback-incorrect', 'solution-placed');
 
                 const feedback = element.querySelector('.draggable-feedback');
                 if (feedback) {
                     feedback.style.display = 'none';
                 }
+
+                this.state.placements[element.dataset.draggableId] = null;
             });
 
             // Clear zones
-            elements.dropZones.forEach(zone => {
+            this.elements.dropZones.forEach(zone => {
                 const zoneContent = zone.querySelector('.zone-content');
                 zoneContent.innerHTML = '';
                 zone.classList.remove('has-correct', 'has-incorrect');
             });
 
             // Reset controls
-            elements.checkButton.style.display = 'inline-block';
-            elements.checkButton.disabled = true;
-
-            if (elements.retryButton) {
-                elements.retryButton.style.display = 'none';
+            if (this.elements.checkButton) {
+                this.elements.checkButton.style.display = 'inline-flex';
+                this.elements.checkButton.disabled = true;
             }
 
-            if (elements.solutionButton) {
-                elements.solutionButton.style.display = 'none';
+            if (this.elements.retryButton) {
+                this.elements.retryButton.style.display = 'none';
+            }
+
+            if (this.elements.solutionButton) {
+                this.elements.solutionButton.style.display = 'none';
             }
 
             // Hide results
-            if (elements.results) {
-                elements.results.style.display = 'none';
+            if (this.elements.results) {
+                this.elements.results.style.display = 'none';
             }
 
             // Re-enable interactions
-            enableInteractions();
+            this.enableInteractions();
 
             // Randomize again if enabled
-            if (randomizeDraggables) {
-                randomizeDraggableOrder();
+            if (this.data.randomizeDraggables) {
+                this.randomizeDraggableOrder();
             }
 
-            announceToScreenReader(strings.retry);
+            this.announceToScreenReader(this.data.strings.retry);
         }
 
-        function showSolutions() {
+        // ==========================================
+        // SHOW SOLUTION
+        // ==========================================
+
+        showSolutions() {
             // Place each draggable in its first correct zone
-            draggables.forEach(draggable => {
-                const element = blockElement.querySelector(`[data-draggable-id="${draggable.id}"]`);
+            this.data.draggables.forEach(draggable => {
+                const element = this.block.querySelector(`[data-draggable-id="${draggable.id}"]:not([data-is-clone="true"])`);
                 const correctZones = draggable.correctZones || [];
 
                 if (element && correctZones.length > 0) {
                     const targetZoneId = correctZones[0];
-                    const targetZone = blockElement.querySelector(`[data-zone-id="${targetZoneId}"]`);
+                    const targetZone = this.block.querySelector(`[data-zone-id="${targetZoneId}"]`);
 
                     if (targetZone) {
-                        dropElementInZone(element, targetZone);
+                        this.dropElementInZone(element, targetZone);
                         element.classList.add('solution-placed');
                     }
                 }
             });
 
-            // Update state to reflect solutions
-            currentState.score = currentState.totalPoints;
-            currentState.isChecked = true;
+            // Update state
+            this.state.score = this.state.totalPoints;
+            this.state.isChecked = true;
 
-            displayResults();
-            disableInteractions();
+            this.displayResults();
+            this.disableInteractions();
 
             // Hide solution button
-            if (elements.solutionButton) {
-                elements.solutionButton.style.display = 'none';
+            if (this.elements.solutionButton) {
+                this.elements.solutionButton.style.display = 'none';
             }
 
-            announceToScreenReader(strings.showSolution);
+            this.announceToScreenReader(this.data.strings.showSolution);
         }
 
-        // Utility Functions
-        function updateCheckButtonState() {
-            const hasAnyPlacement = Object.values(currentState.placements).some(placement => placement !== null);
-            elements.checkButton.disabled = !hasAnyPlacement;
-        }
+        // ==========================================
+        // UTILITIES
+        // ==========================================
 
-        function randomizeDraggableOrder() {
-            const elementsArray = Array.from(elements.draggableElements);
-            const shuffled = elementsArray.sort(() => Math.random() - 0.5);
+        randomizeDraggableOrder() {
+            const elements = Array.from(this.block.querySelectorAll('.draggable-element:not([data-is-clone="true"])'));
+            const shuffled = elements.sort(() => Math.random() - 0.5);
 
             shuffled.forEach(element => {
-                elements.draggablesContainer.appendChild(element);
+                this.elements.draggablesContainer.appendChild(element);
             });
         }
 
-        function announceToScreenReader(message) {
+        announceToScreenReader(message) {
             const announcement = document.createElement('div');
             announcement.setAttribute('aria-live', 'polite');
             announcement.setAttribute('aria-atomic', 'true');
             announcement.className = 'sr-only';
             announcement.textContent = message;
 
-            blockElement.appendChild(announcement);
+            this.block.appendChild(announcement);
 
-            setTimeout(() => {
-                blockElement.removeChild(announcement);
-            }, 1000);
+            setTimeout(() => announcement.remove(), 1000);
         }
 
-        // Initialize the activity
-        initializeDragAndDrop();
+        // Public API
+        getPublicAPI() {
+            return {
+                reset: () => this.resetActivity(),
+                check: () => this.checkAnswers(),
+                showSolution: () => this.showSolutions(),
+                getState: () => ({ ...this.state }),
+                getScore: () => this.state.score,
+                getMaxScore: () => this.state.totalPoints
+            };
+        }
+    }
 
-        // Return public API for external control
-        return {
-            reset: resetActivity,
-            check: checkAnswers,
-            showSolution: showSolutions,
-            getState: () => ({ ...currentState })
-        };
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+
+    window.initDragAndDrop = function(blockElement) {
+        const instance = new DragAndDrop(blockElement);
+        return instance.getPublicAPI();
     };
+
+    // Auto-initialize all blocks on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.wp-block-modular-blocks-drag-and-drop').forEach(block => {
+            if (!block.dataset.initialized) {
+                block.dataset.initialized = 'true';
+                window.initDragAndDrop(block);
+            }
+        });
+    });
 
 })();
