@@ -75,6 +75,7 @@
             const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
             const [zoneStart, setZoneStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
             const visualEditorRef = useRef(null);
+            const justFinishedDragRef = useRef(false); // Prevents click after drag/resize
 
             const blockProps = useBlockProps({
                 className: 'wp-block-modular-blocks-drag-and-drop-editor'
@@ -189,7 +190,7 @@
                 const newDropZones = [...dropZones, {
                     id: newId,
                     label: __('Neue Drop Zone', 'modular-blocks-plugin'),
-                    showLabel: true,
+                    showLabel: false,
                     x: 20 + (dropZones.length * 10) % 60,
                     y: 20 + (dropZones.length * 10) % 60,
                     width: 150,
@@ -638,6 +639,14 @@
 
             // Handle mouse up
             function handleEditorMouseUp() {
+                // Mark that we just finished dragging/resizing to prevent click
+                if (isDragging || isResizing) {
+                    justFinishedDragRef.current = true;
+                    // Reset after a short delay
+                    setTimeout(() => {
+                        justFinishedDragRef.current = false;
+                    }, 100);
+                }
                 setIsDragging(false);
                 setIsResizing(false);
                 setResizeHandle(null);
@@ -645,7 +654,8 @@
 
             // Add zone at click position
             function handleEditorClick(e) {
-                if (isDragging || isResizing) return;
+                // Prevent adding zone if we just finished dragging/resizing
+                if (isDragging || isResizing || justFinishedDragRef.current) return;
 
                 // Only add zone if clicking on empty area (not on existing zone)
                 if (e.target.classList.contains('visual-editor-zones-overlay')) {
@@ -657,7 +667,7 @@
                     const newZone = {
                         id: newId,
                         label: __('Zone', 'modular-blocks-plugin') + ' ' + (dropZones.length + 1),
-                        showLabel: true,
+                        showLabel: false,
                         x: Math.min(80, xPercent),
                         y: Math.min(80, yPercent),
                         width: 120,

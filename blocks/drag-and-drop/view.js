@@ -115,6 +115,9 @@
                 // Keyboard events
                 element.addEventListener('keydown', e => this.handleKeyDown(e, element));
 
+                // Click/Tap to select (for touch-friendly interaction)
+                element.addEventListener('click', e => this.handleDraggableClick(e, element));
+
                 // Click for tip display
                 if (element.dataset.tip) {
                     element.addEventListener('dblclick', e => this.showTip(element, element.dataset.tip));
@@ -175,6 +178,38 @@
 
             // Remove visual feedback
             this.highlightDropZones(false);
+        }
+
+        // ==========================================
+        // TAP-TO-SELECT (Touch-friendly interaction)
+        // ==========================================
+
+        handleDraggableClick(event, element) {
+            if (this.state.isChecked) return;
+
+            // Don't trigger on drag operations
+            if (this.state.isDragging) return;
+
+            // Prevent event from bubbling to zone
+            event.stopPropagation();
+
+            const isInfinite = element.dataset.infinite === 'true';
+            const isClone = element.dataset.isClone === 'true';
+
+            // If clicking on already selected element, deselect it
+            if (this.selectedElement === element) {
+                this.unselectAll();
+                return;
+            }
+
+            // For infinite elements that are not clones, create a clone to select
+            let selectElement = element;
+            if (isInfinite && !isClone) {
+                selectElement = this.cloneInfiniteDraggable(element);
+            }
+
+            // Select the element
+            this.selectElement(selectElement);
         }
 
         // ==========================================
@@ -347,6 +382,7 @@
             clone.addEventListener('touchmove', e => this.handleTouchMove(e), { passive: false });
             clone.addEventListener('touchend', e => this.handleTouchEnd(e), { passive: false });
             clone.addEventListener('keydown', e => this.handleKeyDown(e, clone));
+            clone.addEventListener('click', e => this.handleDraggableClick(e, clone));
 
             // Track in state
             this.state.placements[cloneId] = null;
