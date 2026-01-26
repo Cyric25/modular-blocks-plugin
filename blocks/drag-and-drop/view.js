@@ -41,6 +41,7 @@
 
         init() {
             this.cacheElements();
+            this.enforceVerticalLayout(); // Force vertical layout immediately
             this.setupDraggableElements();
             this.setupDropZones();
             this.setupControls();
@@ -51,6 +52,29 @@
 
             if (this.data.randomizeDraggables) {
                 this.randomizeDraggableOrder();
+            }
+        }
+
+        // Force vertical layout (drop area on top, draggables below)
+        enforceVerticalLayout() {
+            const activityArea = this.block.querySelector('.activity-area');
+            const dropArea = this.block.querySelector('.drop-area');
+            const draggablesArea = this.block.querySelector('.draggables-area');
+
+            if (activityArea) {
+                activityArea.style.display = 'flex';
+                activityArea.style.flexDirection = 'column';
+                activityArea.style.gridTemplateColumns = 'none';
+            }
+
+            if (dropArea) {
+                dropArea.style.order = '1';
+                dropArea.style.width = '100%';
+            }
+
+            if (draggablesArea) {
+                draggablesArea.style.order = '2';
+                draggablesArea.style.width = '100%';
             }
         }
 
@@ -592,32 +616,12 @@
         }
 
         calculateScale() {
-            const container = this.elements.container;
-            const dropArea = this.elements.dropArea;
+            // Disable auto-scaling transform - let CSS handle responsive layout
+            // The image now uses width: 100% and scales naturally
+            this.state.scaleFactor = 1;
 
-            if (!dropArea) return;
-
-            const containerWidth = container.offsetWidth;
-            const originalWidth = this.data.taskWidth || 800;
-
-            // Calculate scale factor
-            let scale = containerWidth / originalWidth;
-            scale = Math.min(1.2, Math.max(0.5, scale)); // Clamp between 0.5 and 1.2
-
-            this.state.scaleFactor = scale;
-
-            // Apply scale to drop area
-            if (scale !== 1) {
-                dropArea.style.transform = `scale(${scale})`;
-                dropArea.style.transformOrigin = 'top left';
-
-                // Adjust container height to account for scaling
-                const originalHeight = this.data.backgroundHeight || 400;
-                container.style.minHeight = (originalHeight * scale) + 'px';
-            } else {
-                dropArea.style.transform = '';
-                container.style.minHeight = '';
-            }
+            // Re-enforce vertical layout after any resize
+            this.enforceVerticalLayout();
         }
 
         // ==========================================

@@ -168,9 +168,10 @@
 /* ==========================================
    ACTIVITY AREA - Vertical layout: Drop area on top, draggables below
    ========================================== */
-.activity-area {
+.wp-block-modular-blocks-drag-and-drop .activity-area {
     display: flex !important;
     flex-direction: column !important;
+    grid-template-columns: none !important;
     gap: 16px !important;
     margin-bottom: 20px;
     width: 100%;
@@ -193,7 +194,7 @@
 /* ==========================================
    DRAGGABLES AREA - Horizontal layout at bottom
    ========================================== */
-.draggables-area {
+.wp-block-modular-blocks-drag-and-drop .draggables-area {
     background: var(--dd-bg-light);
     border: 2px solid var(--dd-border);
     border-radius: var(--dd-radius);
@@ -581,7 +582,7 @@
 /* ==========================================
    DROP AREA - Full width on top
    ========================================== */
-.drop-area {
+.wp-block-modular-blocks-drag-and-drop .drop-area {
     background: transparent;
     border: none;
     border-radius: var(--dd-radius);
