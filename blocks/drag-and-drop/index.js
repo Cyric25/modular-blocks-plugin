@@ -648,7 +648,7 @@
                 if (isDragging || isResizing) return;
 
                 // Only add zone if clicking on empty area (not on existing zone)
-                if (e.target.classList.contains('visual-editor-area')) {
+                if (e.target.classList.contains('visual-editor-zones-overlay')) {
                     const pos = getRelativePosition(e);
                     const xPercent = (pos.x / pos.width) * 100;
                     const yPercent = (pos.y / pos.height) * 100;
@@ -691,47 +691,71 @@
                             onClick: addDropZone
                         }, __('+ Zone hinzufügen', 'modular-blocks-plugin'))
                     ),
+                    // Container for image and zones - position: relative
                     el('div', {
                         ref: visualEditorRef,
                         className: 'visual-editor-area' + (isDragging ? ' is-dragging' : '') + (isResizing ? ' is-resizing' : ''),
                         style: {
-                            height: backgroundHeight + 'px',
-                            background: backgroundImage?.url
-                                ? `url(${backgroundImage.url}) center/contain no-repeat #f0f0f0`
-                                : '#f0f0f0',
                             position: 'relative',
-                            cursor: isDragging ? 'grabbing' : 'crosshair',
-                            userSelect: 'none'
-                        },
-                        onMouseMove: handleEditorMouseMove,
-                        onMouseUp: handleEditorMouseUp,
-                        onMouseLeave: handleEditorMouseUp,
-                        onClick: handleEditorClick
+                            minHeight: '200px',
+                            background: backgroundImage?.url ? 'transparent' : '#f0f0f0',
+                            borderRadius: '4px',
+                            overflow: 'hidden'
+                        }
                     },
-                        // Render zones - always gray in editor
-                        dropZones.map((zone, index) => {
-                            const isSelected = editingZoneIndex === index;
-                            // Use gray for all zones
-                            const zoneColor = '#888888';
-                            const selectedColor = '#555555';
-                            return el('div', {
-                                key: zone.id,
-                                className: 'visual-zone' + (isSelected ? ' selected' : ''),
-                                style: {
-                                    position: 'absolute',
-                                    left: zone.x + '%',
-                                    top: zone.y + '%',
-                                    width: zone.width + 'px',
-                                    height: zone.height + 'px',
-                                    border: `2px ${isSelected ? 'solid' : 'dashed'} ${isSelected ? selectedColor : zoneColor}`,
-                                    borderRadius: '4px',
-                                    backgroundColor: isSelected ? 'rgba(128, 128, 128, 0.25)' : 'rgba(128, 128, 128, 0.15)',
-                                    cursor: isDragging && editingZoneIndex === index ? 'grabbing' : 'grab',
-                                    boxShadow: isSelected ? '0 0 0 2px ' + selectedColor : 'none',
-                                    zIndex: isSelected ? 10 : 1
-                                },
-                                onMouseDown: (e) => handleZoneMouseDown(e, index)
+                        // Background image as img element (same as frontend)
+                        backgroundImage?.url && el('img', {
+                            src: backgroundImage.url,
+                            alt: backgroundImage.alt || '',
+                            style: {
+                                display: 'block',
+                                width: '100%',
+                                height: 'auto',
+                                pointerEvents: 'none',
+                                borderRadius: '4px'
+                            }
+                        }),
+                        // Overlay container for drop zones - exactly over the image
+                        el('div', {
+                            className: 'visual-editor-zones-overlay',
+                            style: {
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                cursor: isDragging ? 'grabbing' : 'crosshair',
+                                userSelect: 'none'
                             },
+                            onMouseMove: handleEditorMouseMove,
+                            onMouseUp: handleEditorMouseUp,
+                            onMouseLeave: handleEditorMouseUp,
+                            onClick: handleEditorClick
+                        },
+                            // Render zones - always gray in editor
+                            dropZones.map((zone, index) => {
+                                const isSelected = editingZoneIndex === index;
+                                // Use gray for all zones
+                                const zoneColor = '#888888';
+                                const selectedColor = '#555555';
+                                return el('div', {
+                                    key: zone.id,
+                                    className: 'visual-zone' + (isSelected ? ' selected' : ''),
+                                    style: {
+                                        position: 'absolute',
+                                        left: zone.x + '%',
+                                        top: zone.y + '%',
+                                        width: zone.width + 'px',
+                                        height: zone.height + 'px',
+                                        border: `2px ${isSelected ? 'solid' : 'dashed'} ${isSelected ? selectedColor : zoneColor}`,
+                                        borderRadius: '4px',
+                                        backgroundColor: isSelected ? 'rgba(128, 128, 128, 0.25)' : 'rgba(128, 128, 128, 0.15)',
+                                        cursor: isDragging && editingZoneIndex === index ? 'grabbing' : 'grab',
+                                        boxShadow: isSelected ? '0 0 0 2px ' + selectedColor : 'none',
+                                        zIndex: isSelected ? 10 : 1
+                                    },
+                                    onMouseDown: (e) => handleZoneMouseDown(e, index)
+                                },
                                 // Zone label
                                 el('div', {
                                     className: 'visual-zone-label',
@@ -821,23 +845,24 @@
                             );
                         }),
 
-                        // Empty state message
-                        dropZones.length === 0 && el('div', {
-                            className: 'visual-editor-empty',
-                            style: {
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                textAlign: 'center',
-                                color: '#666',
-                                pointerEvents: 'none'
-                            }
-                        },
-                            el('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '📍'),
-                            el('div', { style: { fontSize: '14px' } }, __('Klicken um erste Drop-Zone hinzuzufügen', 'modular-blocks-plugin'))
-                        )
-                    ),
+                            // Empty state message
+                            dropZones.length === 0 && el('div', {
+                                className: 'visual-editor-empty',
+                                style: {
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    textAlign: 'center',
+                                    color: '#666',
+                                    pointerEvents: 'none'
+                                }
+                            },
+                                el('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '📍'),
+                                el('div', { style: { fontSize: '14px' } }, __('Klicken um erste Drop-Zone hinzuzufügen', 'modular-blocks-plugin'))
+                            )
+                        ) // Close zones overlay div
+                    ), // Close visual-editor-area div
 
                     // Selected zone properties panel
                     editingZoneIndex !== null && dropZones[editingZoneIndex] && el('div', { className: 'visual-zone-properties' },
@@ -884,33 +909,57 @@
                     el('div', {
                         className: 'preview-area',
                         style: {
-                            height: backgroundHeight + 'px',
                             position: 'relative',
-                            background: backgroundImage?.url ? `url(${backgroundImage.url}) center/contain no-repeat` : '#f8f9fa'
+                            background: backgroundImage?.url ? 'transparent' : '#f8f9fa',
+                            minHeight: '200px',
+                            borderRadius: '4px',
+                            overflow: 'hidden'
                         }
                     },
-                        // Drop zones - always gray
-                        dropZones.map((zone, index) =>
-                            el('div', {
-                                key: index,
-                                className: 'preview-zone',
-                                style: {
-                                    position: 'absolute',
-                                    left: zone.x + '%',
-                                    top: zone.y + '%',
-                                    width: zone.width + 'px',
-                                    height: zone.height + 'px',
-                                    border: '2px dashed #888888',
-                                    borderRadius: '6px',
-                                    backgroundColor: 'rgba(128, 128, 128, 0.15)',
-                                    opacity: (zone.opacity || 100) / 100,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '12px',
-                                    color: '#333333'
-                                }
-                            }, zone.showLabel !== false ? zone.label : '')
+                        // Background image as img element (same as frontend)
+                        backgroundImage?.url && el('img', {
+                            src: backgroundImage.url,
+                            alt: backgroundImage.alt || '',
+                            style: {
+                                display: 'block',
+                                width: '100%',
+                                height: 'auto',
+                                borderRadius: '4px'
+                            }
+                        }),
+                        // Overlay for drop zones - exactly over the image
+                        el('div', {
+                            style: {
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0
+                            }
+                        },
+                            // Drop zones - always gray
+                            dropZones.map((zone, index) =>
+                                el('div', {
+                                    key: index,
+                                    className: 'preview-zone',
+                                    style: {
+                                        position: 'absolute',
+                                        left: zone.x + '%',
+                                        top: zone.y + '%',
+                                        width: zone.width + 'px',
+                                        height: zone.height + 'px',
+                                        border: '2px dashed #888888',
+                                        borderRadius: '6px',
+                                        backgroundColor: 'rgba(128, 128, 128, 0.15)',
+                                        opacity: (zone.opacity || 100) / 100,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '12px',
+                                        color: '#333333'
+                                    }
+                                }, zone.showLabel !== false ? zone.label : '')
+                            )
                         )
                     ),
                     el('div', { className: 'preview-draggables' },
