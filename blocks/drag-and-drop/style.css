@@ -553,25 +553,22 @@
 .drop-area-container {
     position: relative;
     width: 100%;
-    height: var(--background-height, 400px);
+    min-height: 200px;
     border: 2px dashed #d1d5db;
     border-radius: 6px;
     background: var(--dd-bg-light);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .wp-block-modular-blocks-drag-and-drop.has-background-image .drop-area-container {
     background: transparent;
+    min-height: auto;
 }
 
 .background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
+    display: block;
     width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
+    height: auto;
     pointer-events: none;
     z-index: 1;
 }

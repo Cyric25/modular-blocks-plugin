@@ -209,7 +209,7 @@ $drag_drop_data = [
 
             <!-- Drop Area -->
             <div class="drop-area">
-                <div class="drop-area-container" style="height: <?php echo $background_height; ?>px;">
+                <div class="drop-area-container">
                     <?php if (!empty($background_image['url'])): ?>
                         <img
                             src="<?php echo esc_url($background_image['url']); ?>"
