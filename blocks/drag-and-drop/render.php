@@ -148,7 +148,6 @@ $drag_drop_data = [
         <div class="activity-area">
             <!-- Draggable Elements Area -->
             <div class="draggables-area">
-                <h4 class="section-title"><?php esc_html_e('Elemente', 'modular-blocks-plugin'); ?></h4>
                 <div class="draggables-container">
                     <?php foreach ($display_draggables as $index => $draggable): ?>
                         <?php
@@ -210,8 +209,7 @@ $drag_drop_data = [
 
             <!-- Drop Area -->
             <div class="drop-area">
-                <h4 class="section-title"><?php esc_html_e('Drop-Bereich', 'modular-blocks-plugin'); ?></h4>
-                <div class="drop-area-container" style="min-height: <?php echo $background_height; ?>px;">
+                <div class="drop-area-container" style="height: <?php echo $background_height; ?>px;">
                     <?php if (!empty($background_image['url'])): ?>
                         <img
                             src="<?php echo esc_url($background_image['url']); ?>"
