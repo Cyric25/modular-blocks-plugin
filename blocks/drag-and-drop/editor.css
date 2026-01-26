@@ -525,6 +525,18 @@
     cursor: nwse-resize !important;
 }
 
+/* Prevent background fade during drag/resize operations */
+.wp-block-modular-blocks-drag-and-drop-editor .visual-editor-area.is-dragging,
+.wp-block-modular-blocks-drag-and-drop-editor .visual-editor-area.is-resizing,
+.wp-block-modular-blocks-drag-and-drop-editor .visual-editor-area.is-dragging *,
+.wp-block-modular-blocks-drag-and-drop-editor .visual-editor-area.is-resizing * {
+    opacity: 1 !important;
+}
+
+.wp-block-modular-blocks-drag-and-drop-editor .visual-editor-area img {
+    opacity: 1 !important;
+}
+
 .wp-block-modular-blocks-drag-and-drop-editor .visual-zone {
     transition: box-shadow 0.15s ease !important;
 }

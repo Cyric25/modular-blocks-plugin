@@ -438,38 +438,6 @@
                             onChange: value => updateDropZone(index, { showLabel: value })
                         }),
 
-                        el('div', { className: 'position-grid' },
-                            el('h5', {}, __('Position & Größe', 'modular-blocks-plugin')),
-                            el(RangeControl, {
-                                label: __('X Position (%)', 'modular-blocks-plugin'),
-                                value: zone.x,
-                                onChange: value => updateDropZone(index, { x: value }),
-                                min: 0,
-                                max: 100
-                            }),
-                            el(RangeControl, {
-                                label: __('Y Position (%)', 'modular-blocks-plugin'),
-                                value: zone.y,
-                                onChange: value => updateDropZone(index, { y: value }),
-                                min: 0,
-                                max: 100
-                            }),
-                            el(RangeControl, {
-                                label: __('Breite (px)', 'modular-blocks-plugin'),
-                                value: zone.width,
-                                onChange: value => updateDropZone(index, { width: value }),
-                                min: 50,
-                                max: 400
-                            }),
-                            el(RangeControl, {
-                                label: __('Höhe (px)', 'modular-blocks-plugin'),
-                                value: zone.height,
-                                onChange: value => updateDropZone(index, { height: value }),
-                                min: 50,
-                                max: 400
-                            })
-                        ),
-
                         el('div', { className: 'color-control' },
                             el('label', {}, __('Rahmenfarbe', 'modular-blocks-plugin')),
                             el(ColorPalette, {
