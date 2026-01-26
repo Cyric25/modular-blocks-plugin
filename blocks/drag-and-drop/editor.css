@@ -7,9 +7,11 @@
 /* ============================================
    CDB CONTAINER COMPATIBILITY - HIGH SPECIFICITY RESET
    These rules ensure styles work inside CDB containers
+   Using same selector pattern as CDB: [data-type*="container-block-designer"]
    ============================================ */
 .wp-block-modular-blocks-drag-and-drop-editor.wp-block-modular-blocks-drag-and-drop-editor,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor,
 .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor {
     all: revert;
     display: block !important;
@@ -23,11 +25,15 @@
     line-height: 1.5 !important;
     color: #1e1e1e !important;
     box-sizing: border-box !important;
+    position: relative !important;
+    z-index: auto !important;
+    min-height: auto !important;
 }
 
 /* Reset all child elements inside drag-and-drop when in CDB */
 .wp-block-modular-blocks-drag-and-drop-editor.wp-block-modular-blocks-drag-and-drop-editor *,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor *,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor *,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor *,
 .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor * {
     box-sizing: border-box !important;
 }
@@ -48,8 +54,8 @@
    TABS NAVIGATION
    ============================================ */
 .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs,
-.wp-block-modular-blocks-drag-and-drop-editor.wp-block-modular-blocks-drag-and-drop-editor .editor-tabs,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs {
     display: flex !important;
     gap: 4px !important;
     margin-bottom: 20px !important;
@@ -58,11 +64,14 @@
     border-radius: 6px !important;
     flex-wrap: wrap !important;
     border: none !important;
+    position: static !important;
+    width: auto !important;
+    min-height: auto !important;
 }
 
 .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button,
-.wp-block-modular-blocks-drag-and-drop-editor.wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button {
     background: transparent !important;
     border: none !important;
     padding: 10px 16px !important;
@@ -75,15 +84,20 @@
     justify-content: center !important;
     text-decoration: none !important;
     box-shadow: none !important;
+    position: static !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: auto !important;
+    opacity: 1 !important;
 }
 
 .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button:hover,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button:hover {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button:hover {
     background: #e0e0e0 !important;
 }
 
 .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button.active,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button.active {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .editor-tabs .components-button.active {
     background: #0073aa !important;
     color: #ffffff !important;
     box-shadow: 0 2px 4px rgba(0, 115, 170, 0.3) !important;
@@ -92,21 +106,28 @@
 /* ============================================
    TAB CONTENT AREAS
    ============================================ */
-.wp-block-modular-blocks-drag-and-drop-editor .tab-content {
-    min-height: 200px;
+.wp-block-modular-blocks-drag-and-drop-editor .tab-content,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .tab-content {
+    min-height: 200px !important;
+    display: block !important;
+    position: static !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .tab-description {
-    color: #666666;
-    font-size: 14px;
-    margin-bottom: 16px;
-    text-align: center;
+.wp-block-modular-blocks-drag-and-drop-editor .tab-description,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .tab-description {
+    color: #666666 !important;
+    font-size: 14px !important;
+    margin-bottom: 16px !important;
+    text-align: center !important;
+    display: block !important;
+    position: static !important;
 }
 
 /* ============================================
    ADD BUTTONS
    ============================================ */
-.wp-block-modular-blocks-drag-and-drop-editor .add-item-button {
+.wp-block-modular-blocks-drag-and-drop-editor .add-item-button,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .add-item-button {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -131,8 +152,10 @@
    ============================================ */
 .wp-block-modular-blocks-drag-and-drop-editor .draggable-item,
 .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .draggable-item,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .draggable-item,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor .draggable-item,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item {
     background: #ffffff !important;
     border: 1px solid #e0e0e0 !important;
     border-left: 4px solid #0073aa !important;
@@ -142,17 +165,20 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     display: block !important;
     padding: 0 !important;
+    position: static !important;
+    opacity: 1 !important;
+    min-height: auto !important;
 }
 
 .wp-block-modular-blocks-drag-and-drop-editor .draggable-item:hover,
 .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item:hover,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .draggable-item:hover,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item:hover {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .draggable-item:hover,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .dropzone-item {
     background: #f8fbff !important;
     border-left-color: #0073aa !important;
 }
@@ -161,7 +187,8 @@
    ITEM HEADER (Clickable to expand/collapse)
    ============================================ */
 .wp-block-modular-blocks-drag-and-drop-editor .item-header,
-[class*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-header {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-header,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-drag-and-drop-editor .item-header {
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
@@ -182,15 +209,19 @@
     border-bottom-color: #e0e0e0 !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .item-color-indicator {
+.wp-block-modular-blocks-drag-and-drop-editor .item-color-indicator,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-color-indicator {
     width: 20px !important;
     height: 20px !important;
+    display: block !important;
+    position: static !important;
     border-radius: 4px !important;
     flex-shrink: 0 !important;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .item-title {
+.wp-block-modular-blocks-drag-and-drop-editor .item-title,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-title {
     flex: 1 !important;
     font-weight: 600 !important;
     color: #1e1e1e !important;
@@ -198,33 +229,43 @@
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    display: block !important;
+    position: static !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .expand-icon {
+.wp-block-modular-blocks-drag-and-drop-editor .expand-icon,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .expand-icon {
     color: #666666 !important;
     font-size: 12px !important;
     transition: transform 0.2s ease !important;
     font-weight: bold !important;
+    display: inline-block !important;
+    position: static !important;
 }
 
 /* ============================================
    BADGES
    ============================================ */
-.wp-block-modular-blocks-drag-and-drop-editor .badge {
+.wp-block-modular-blocks-drag-and-drop-editor .badge,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .badge {
     font-size: 11px !important;
     padding: 3px 8px !important;
     border-radius: 4px !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
+    display: inline-block !important;
+    position: static !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .badge.infinite {
+.wp-block-modular-blocks-drag-and-drop-editor .badge.infinite,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .badge.infinite {
     background: #dbeafe !important;
     color: #1d4ed8 !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .badge.multiple {
+.wp-block-modular-blocks-drag-and-drop-editor .badge.multiple,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .badge.multiple {
     background: #dcfce7 !important;
     color: #15803d !important;
 }
@@ -232,24 +273,29 @@
 /* ============================================
    ITEM CONTENT (Expandable area)
    ============================================ */
-.wp-block-modular-blocks-drag-and-drop-editor .item-content {
+.wp-block-modular-blocks-drag-and-drop-editor .item-content,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-content {
     display: block !important;
     padding: 20px !important;
     background: #ffffff !important;
+    position: static !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .collapsed .item-content {
+.wp-block-modular-blocks-drag-and-drop-editor .collapsed .item-content,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .collapsed .item-content {
     display: none !important;
 }
 
 /* ============================================
    FORM CONTROLS WITHIN ITEMS
    ============================================ */
-.wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control {
+.wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control {
     margin-bottom: 16px !important;
 }
 
-.wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control__label {
+.wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control__label,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-drag-and-drop-editor .item-content .components-base-control__label {
     display: block !important;
     font-weight: 500 !important;
     font-size: 12px !important;
