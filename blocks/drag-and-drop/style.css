@@ -42,27 +42,37 @@
     box-sizing: border-box;
 }
 
-/* Inside CDB Container - full width */
+/* Inside CDB Container - full width, no overflow */
 .cbd-content .wp-block-modular-blocks-drag-and-drop,
 .cbd-container-content .wp-block-modular-blocks-drag-and-drop,
 .wp-block-container-block-designer-container .wp-block-modular-blocks-drag-and-drop,
 [class*="container-block"] .wp-block-modular-blocks-drag-and-drop {
     width: 100% !important;
     max-width: 100% !important;
-    margin-left: 0;
-    margin-right: 0;
-    border: none;
-    box-shadow: none;
-    padding: 8px;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 8px !important;
+    overflow: hidden !important;
 }
 
 /* Ensure images scale within CDB */
 .cbd-content .background-image,
 .cbd-container-content .background-image,
-.wp-block-container-block-designer-container .background-image {
+.wp-block-container-block-designer-container .background-image,
+[class*="container-block"] .background-image {
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
+}
+
+/* Ensure activity area is vertical in CDB */
+.cbd-content .activity-area,
+.cbd-container-content .activity-area,
+.wp-block-container-block-designer-container .activity-area,
+[class*="container-block"] .activity-area {
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 /* Container */
@@ -159,10 +169,12 @@
    ACTIVITY AREA - Vertical layout: Drop area on top, draggables below
    ========================================== */
 .activity-area {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 24px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Section Titles */
@@ -185,8 +197,10 @@
     background: var(--dd-bg-light);
     border: 2px solid var(--dd-border);
     border-radius: var(--dd-radius);
-    padding: 16px;
-    order: 2; /* Below drop area */
+    padding: 12px;
+    order: 2 !important; /* Below drop area */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .draggables-area .section-title {
@@ -568,25 +582,27 @@
    DROP AREA - Full width on top
    ========================================== */
 .drop-area {
-    background: var(--dd-bg);
-    border: 2px solid var(--dd-border);
+    background: transparent;
+    border: none;
     border-radius: var(--dd-radius);
-    padding: 8px;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    order: 1; /* Above draggables */
+    order: 1 !important; /* Above draggables */
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
 .drop-area-container {
     position: relative;
     width: 100%;
+    max-width: 100%;
     min-height: 150px;
     border: none;
     border-radius: 6px;
     background: var(--dd-bg-light);
-    overflow: visible;
+    overflow: hidden; /* Prevent image overflow */
     box-sizing: border-box;
 }
 
