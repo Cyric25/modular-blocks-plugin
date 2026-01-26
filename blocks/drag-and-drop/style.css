@@ -37,8 +37,32 @@
     box-shadow: var(--dd-shadow);
     transition: var(--dd-transition);
     position: relative;
+    width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* Inside CDB Container - full width */
+.cbd-content .wp-block-modular-blocks-drag-and-drop,
+.cbd-container-content .wp-block-modular-blocks-drag-and-drop,
+.wp-block-container-block-designer-container .wp-block-modular-blocks-drag-and-drop,
+[class*="container-block"] .wp-block-modular-blocks-drag-and-drop {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0;
+    margin-right: 0;
+    border: none;
+    box-shadow: none;
+    padding: 8px;
+}
+
+/* Ensure images scale within CDB */
+.cbd-content .background-image,
+.cbd-container-content .background-image,
+.wp-block-container-block-designer-container .background-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
 }
 
 /* Container */
