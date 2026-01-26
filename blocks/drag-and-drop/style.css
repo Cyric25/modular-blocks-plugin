@@ -32,17 +32,21 @@
     background: var(--dd-bg);
     border: 1px solid var(--dd-border);
     border-radius: var(--dd-radius);
-    padding: 24px;
+    padding: 16px;
     margin: 24px 0;
     box-shadow: var(--dd-shadow);
     transition: var(--dd-transition);
     position: relative;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Container */
 .drag-drop-container {
+    width: 100%;
     max-width: 100%;
     position: relative;
+    box-sizing: border-box;
 }
 
 /* ==========================================
@@ -543,34 +547,39 @@
     background: var(--dd-bg);
     border: 2px solid var(--dd-border);
     border-radius: var(--dd-radius);
-    padding: 16px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
     order: 1; /* Above draggables */
     width: 100%;
+    box-sizing: border-box;
 }
 
 .drop-area-container {
     position: relative;
     width: 100%;
-    min-height: 200px;
-    border: 2px dashed #d1d5db;
+    min-height: 150px;
+    border: none;
     border-radius: 6px;
     background: var(--dd-bg-light);
     overflow: visible;
+    box-sizing: border-box;
 }
 
 .wp-block-modular-blocks-drag-and-drop.has-background-image .drop-area-container {
     background: transparent;
     min-height: auto;
+    border: none;
 }
 
 .background-image {
     display: block;
     width: 100%;
     height: auto;
+    max-width: 100%;
     pointer-events: none;
     z-index: 1;
+    border-radius: 4px;
 }
 
 .drop-zones {
@@ -580,6 +589,11 @@
     width: 100%;
     height: 100%;
     z-index: 2;
+    pointer-events: none;
+}
+
+.drop-zone {
+    pointer-events: auto;
 }
 
 /* ==========================================
