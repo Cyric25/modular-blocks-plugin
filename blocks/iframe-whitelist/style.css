@@ -62,9 +62,9 @@
 /* Toolbar */
 .iframe-whitelist-toolbar {
     display: flex;
-    gap: 8px;
-    padding: 8px 12px;
-    background: #f0f0f1;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--color-ui-surface-light, #f5ede9);
     border: 1px solid #ddd;
     border-bottom: none;
     border-radius: 4px 4px 0 0;
@@ -74,46 +74,34 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border: none;
     border-radius: 4px;
-    background: #fff;
-    color: #1e1e1e;
-    font-size: 13px;
+    background: var(--color-ui-surface, #e24614);
+    color: #fff;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    transition: background 0.2s, transform 0.1s;
 }
 
 .iframe-toolbar-button:hover {
-    background: #f0f0f1;
-    border-color: #0073aa;
-    color: #0073aa;
+    background: var(--color-ui-surface-dark, #c93d12);
+    color: #fff;
     text-decoration: none;
+    transform: translateY(-1px);
 }
 
 .iframe-toolbar-button:focus {
-    outline: 2px solid #0073aa;
+    outline: 2px solid var(--color-ui-surface, #e24614);
     outline-offset: 2px;
 }
 
 .iframe-toolbar-button .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-}
-
-.iframe-open-button {
-    background: #0073aa;
-    border-color: #0073aa;
-    color: #fff;
-}
-
-.iframe-open-button:hover {
-    background: #005a87;
-    border-color: #005a87;
-    color: #fff;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Border variant */
