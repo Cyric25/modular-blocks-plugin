@@ -59,9 +59,71 @@
     flex-grow: 1 !important;
 }
 
+/* Toolbar */
+.iframe-whitelist-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f0f0f1;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+}
+
+.iframe-toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: #1e1e1e;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.iframe-toolbar-button:hover {
+    background: #f0f0f1;
+    border-color: #0073aa;
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.iframe-toolbar-button:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.iframe-toolbar-button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.iframe-open-button {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+}
+
+.iframe-open-button:hover {
+    background: #005a87;
+    border-color: #005a87;
+    color: #fff;
+}
+
 /* Border variant */
 .wp-block-modular-blocks-iframe-whitelist.has-border .iframe-whitelist-container {
     border: 1px solid #ddd;
+}
+
+/* Toolbar border adjustment when block has border */
+.wp-block-modular-blocks-iframe-whitelist.has-border .iframe-whitelist-toolbar {
+    border-color: #ddd;
 }
 
 /* Aspect ratio support */
@@ -91,46 +153,7 @@
     padding-bottom: 100%;
 }
 
-/* Fullscreen button */
-.iframe-fullscreen-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, transform 0.2s;
-    z-index: 10;
-    opacity: 0;
-}
-
-.wp-block-modular-blocks-iframe-whitelist:hover .iframe-fullscreen-button,
-.wp-block-modular-blocks-iframe-whitelist:focus-within .iframe-fullscreen-button {
-    opacity: 1;
-}
-
-.iframe-fullscreen-button:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: scale(1.1);
-}
-
-.iframe-fullscreen-button:focus {
-    outline: 2px solid #0073aa;
-    outline-offset: 2px;
-}
-
-.iframe-fullscreen-button .dashicons {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-}
+/* Fullscreen button in toolbar - inherits from .iframe-toolbar-button */
 
 /* Error state */
 .iframe-whitelist-error {
@@ -180,10 +203,25 @@
     margin: 0;
     border-radius: 0;
     background: #000;
+    display: flex;
+    flex-direction: column;
+}
+
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-whitelist-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    background: rgba(240, 240, 241, 0.95);
+    z-index: 1000000;
+    justify-content: flex-end;
 }
 
 .wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-whitelist-container {
-    height: 100%;
+    flex: 1;
+    height: calc(100vh - 50px);
+    margin-top: 50px;
     padding-bottom: 0 !important;
 }
 
@@ -192,17 +230,12 @@
     height: 100%;
 }
 
-.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button .iframe-button-text {
+    display: none;
 }
 
-.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button:hover {
-    background: #fff;
+.wp-block-modular-blocks-iframe-whitelist.is-fullscreen .iframe-fullscreen-button::after {
+    content: 'Schließen';
 }
 
 /* Loading state */
@@ -213,13 +246,20 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .iframe-fullscreen-button {
-        opacity: 1;
-        width: 36px;
-        height: 36px;
+    .iframe-whitelist-toolbar {
+        flex-wrap: wrap;
     }
 
-    .iframe-fullscreen-button .dashicons {
+    .iframe-toolbar-button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .iframe-button-text {
+        display: none;
+    }
+
+    .iframe-toolbar-button .dashicons {
         font-size: 18px;
         width: 18px;
         height: 18px;

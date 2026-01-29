@@ -102,13 +102,24 @@ foreach ($iframe_attrs as $attr => $value) {
 }
 $iframe_html .= '></iframe>';
 
-// Build fullscreen button
-$fullscreen_button = '';
+// Build toolbar with buttons
+$toolbar_html = '<div class="iframe-whitelist-toolbar">';
+
+// Open in new tab button
+$toolbar_html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" class="iframe-toolbar-button iframe-open-button">' .
+                 '<span class="dashicons dashicons-external"></span>' .
+                 '<span class="iframe-button-text">' . esc_html__('Website öffnen', 'modular-blocks-plugin') . '</span>' .
+                 '</a>';
+
+// Fullscreen button
 if ($allow_fullscreen) {
-    $fullscreen_button = '<button type="button" class="iframe-fullscreen-button" aria-label="' . esc_attr__('Vollbild', 'modular-blocks-plugin') . '">' .
-                         '<span class="dashicons dashicons-fullscreen-alt"></span>' .
-                         '</button>';
+    $toolbar_html .= '<button type="button" class="iframe-toolbar-button iframe-fullscreen-button" aria-label="' . esc_attr__('Vollbild', 'modular-blocks-plugin') . '">' .
+                     '<span class="dashicons dashicons-fullscreen-alt"></span>' .
+                     '<span class="iframe-button-text">' . esc_html__('Vollbild', 'modular-blocks-plugin') . '</span>' .
+                     '</button>';
 }
+
+$toolbar_html .= '</div>';
 
 // Wrapper attributes
 $wrapper_attrs = get_block_wrapper_attributes([
@@ -118,8 +129,8 @@ $wrapper_attrs = get_block_wrapper_attributes([
 
 ?>
 <div <?php echo $wrapper_attrs; ?>>
+    <?php echo $toolbar_html; ?>
     <div class="iframe-whitelist-container">
         <?php echo $iframe_html; ?>
-        <?php echo $fullscreen_button; ?>
     </div>
 </div>

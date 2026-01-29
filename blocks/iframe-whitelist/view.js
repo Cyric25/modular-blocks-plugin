@@ -1,1 +1,150 @@
-!function(){"use strict";function e(){document.querySelectorAll(".wp-block-modular-blocks-iframe-whitelist").forEach(e=>{s(e)})}function s(e){const s=e.querySelector(".iframe-fullscreen-button"),n=e.querySelector(".iframe-whitelist-frame");s&&n&&(s.addEventListener("click",function(s){s.preventDefault(),function(e){e.classList.contains("is-fullscreen")?t(e):function(e){const s=e.querySelector(".iframe-fullscreen-button");e.requestFullscreen?e.requestFullscreen().then(()=>{e.classList.add("is-fullscreen"),l(s,!0)}).catch(()=>{e.classList.add("is-fullscreen"),l(s,!0),document.body.style.overflow="hidden"}):e.webkitRequestFullscreen?(e.webkitRequestFullscreen(),e.classList.add("is-fullscreen"),l(s,!0)):e.msRequestFullscreen?(e.msRequestFullscreen(),e.classList.add("is-fullscreen"),l(s,!0)):(e.classList.add("is-fullscreen"),l(s,!0),document.body.style.overflow="hidden")}(e)}(e)}),document.addEventListener("keydown",function(s){"Escape"===s.key&&e.classList.contains("is-fullscreen")&&t(e)}),document.addEventListener("fullscreenchange",function(){!document.fullscreenElement&&e.classList.contains("is-fullscreen")&&(e.classList.remove("is-fullscreen"),l(s,!1))}),n.addEventListener("load",function(){n.removeAttribute("data-loading")}))}function t(e,s){const t=e.querySelector(".iframe-fullscreen-button");document.fullscreenElement?document.exitFullscreen().catch(()=>{}):document.webkitFullscreenElement?document.webkitExitFullscreen():document.msFullscreenElement&&document.msExitFullscreen(),e.classList.remove("is-fullscreen"),l(t,!1),document.body.style.overflow=""}function l(e,s){if(!e)return;const t=e.querySelector(".dashicons");t&&(s?(t.classList.remove("dashicons-fullscreen-alt"),t.classList.add("dashicons-fullscreen-exit-alt")):(t.classList.remove("dashicons-fullscreen-exit-alt"),t.classList.add("dashicons-fullscreen-alt"))),e.setAttribute("aria-label",s?"Vollbild beenden":"Vollbild")}"loading"===document.readyState?document.addEventListener("DOMContentLoaded",e):e(),"undefined"!=typeof MutationObserver&&new MutationObserver(function(e){e.forEach(function(e){e.addedNodes.forEach(function(e){if(1===e.nodeType){e.classList&&e.classList.contains("wp-block-modular-blocks-iframe-whitelist")&&s(e);const t=e.querySelectorAll&&e.querySelectorAll(".wp-block-modular-blocks-iframe-whitelist");t&&t.forEach(s)}})})}).observe(document.body,{childList:!0,subtree:!0})}();
+/**
+ * Iframe Whitelist Block - Frontend JavaScript
+ */
+(function() {
+    'use strict';
+
+    function init() {
+        document.querySelectorAll('.wp-block-modular-blocks-iframe-whitelist').forEach(function(block) {
+            setupBlock(block);
+        });
+    }
+
+    function setupBlock(block) {
+        const fullscreenButton = block.querySelector('.iframe-fullscreen-button');
+        const iframe = block.querySelector('.iframe-whitelist-frame');
+
+        if (!fullscreenButton || !iframe) {
+            return;
+        }
+
+        // Fullscreen button click
+        fullscreenButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleFullscreen(block);
+        });
+
+        // ESC key to exit fullscreen
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && block.classList.contains('is-fullscreen')) {
+                exitFullscreen(block);
+            }
+        });
+
+        // Handle native fullscreen change
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement && block.classList.contains('is-fullscreen')) {
+                block.classList.remove('is-fullscreen');
+                updateButtonState(fullscreenButton, false);
+            }
+        });
+
+        // Iframe load handler
+        iframe.addEventListener('load', function() {
+            iframe.removeAttribute('data-loading');
+        });
+    }
+
+    function toggleFullscreen(block) {
+        if (block.classList.contains('is-fullscreen')) {
+            exitFullscreen(block);
+        } else {
+            enterFullscreen(block);
+        }
+    }
+
+    function enterFullscreen(block) {
+        const button = block.querySelector('.iframe-fullscreen-button');
+
+        // Try native fullscreen API first
+        if (block.requestFullscreen) {
+            block.requestFullscreen().then(function() {
+                block.classList.add('is-fullscreen');
+                updateButtonState(button, true);
+            }).catch(function() {
+                // Fallback to CSS fullscreen
+                block.classList.add('is-fullscreen');
+                updateButtonState(button, true);
+                document.body.style.overflow = 'hidden';
+            });
+        } else if (block.webkitRequestFullscreen) {
+            block.webkitRequestFullscreen();
+            block.classList.add('is-fullscreen');
+            updateButtonState(button, true);
+        } else if (block.msRequestFullscreen) {
+            block.msRequestFullscreen();
+            block.classList.add('is-fullscreen');
+            updateButtonState(button, true);
+        } else {
+            // CSS-only fullscreen
+            block.classList.add('is-fullscreen');
+            updateButtonState(button, true);
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function exitFullscreen(block) {
+        const button = block.querySelector('.iframe-fullscreen-button');
+
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(function() {});
+        } else if (document.webkitFullscreenElement) {
+            document.webkitExitFullscreen();
+        } else if (document.msFullscreenElement) {
+            document.msExitFullscreen();
+        }
+
+        block.classList.remove('is-fullscreen');
+        updateButtonState(button, false);
+        document.body.style.overflow = '';
+    }
+
+    function updateButtonState(button, isFullscreen) {
+        if (!button) return;
+
+        const icon = button.querySelector('.dashicons');
+        const textSpan = button.querySelector('.iframe-button-text');
+
+        if (icon) {
+            if (isFullscreen) {
+                icon.classList.remove('dashicons-fullscreen-alt');
+                icon.classList.add('dashicons-fullscreen-exit-alt');
+            } else {
+                icon.classList.remove('dashicons-fullscreen-exit-alt');
+                icon.classList.add('dashicons-fullscreen-alt');
+            }
+        }
+
+        if (textSpan) {
+            textSpan.textContent = isFullscreen ? 'Schließen' : 'Vollbild';
+        }
+
+        button.setAttribute('aria-label', isFullscreen ? 'Vollbild beenden' : 'Vollbild');
+    }
+
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Handle dynamically added blocks
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) {
+                        if (node.classList && node.classList.contains('wp-block-modular-blocks-iframe-whitelist')) {
+                            setupBlock(node);
+                        }
+                        const blocks = node.querySelectorAll && node.querySelectorAll('.wp-block-modular-blocks-iframe-whitelist');
+                        if (blocks) {
+                            blocks.forEach(setupBlock);
+                        }
+                    }
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    }
+})();
