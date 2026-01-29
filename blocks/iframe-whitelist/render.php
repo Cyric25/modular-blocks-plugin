@@ -58,8 +58,10 @@ if ($aspect_ratio !== 'custom') {
     $iframe_style = 'height: ' . $height . 'px;';
 }
 
+// Always ensure full width
+$wrapper_style = 'display: block; width: 100%;';
 if ($border_radius > 0) {
-    $wrapper_style = 'border-radius: ' . $border_radius . 'px; overflow: hidden;';
+    $wrapper_style .= ' border-radius: ' . $border_radius . 'px; overflow: hidden;';
 }
 
 // Sandbox attributes for security
@@ -71,6 +73,8 @@ $iframe_attrs = [
     'class' => 'iframe-whitelist-frame',
     'sandbox' => $sandbox,
     'loading' => 'lazy',
+    'width' => '100%',
+    'style' => 'width: 100%; display: block;',
 ];
 
 if (!empty($title)) {
@@ -84,7 +88,7 @@ if ($allow_fullscreen) {
 }
 
 if (!empty($iframe_style)) {
-    $iframe_attrs['style'] = $iframe_style;
+    $iframe_attrs['style'] .= ' ' . $iframe_style;
 }
 
 // Build iframe tag
