@@ -106,7 +106,7 @@ $iframe_html .= '></iframe>';
 $toolbar_html = '<div class="iframe-whitelist-toolbar">';
 
 // Open in new tab button
-$toolbar_html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" class="iframe-toolbar-button iframe-open-button">' .
+$toolbar_html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" class="iframe-toolbar-button">' .
                  '<span class="dashicons dashicons-external"></span>' .
                  '<span class="iframe-button-text">' . esc_html__('Website öffnen', 'modular-blocks-plugin') . '</span>' .
                  '</a>';

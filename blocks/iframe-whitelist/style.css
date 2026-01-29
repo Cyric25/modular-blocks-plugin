@@ -70,26 +70,31 @@
     border-radius: 4px 4px 0 0;
 }
 
-.iframe-toolbar-button {
+.iframe-toolbar-button,
+.iframe-toolbar-button:link,
+.iframe-toolbar-button:visited {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    border: none;
+    border: none !important;
     border-radius: 4px;
-    background: var(--color-ui-surface, #e24614);
-    color: #fff;
+    background: #e24614 !important;
+    background: var(--color-ui-surface, #e24614) !important;
+    color: #fff !important;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    text-decoration: none;
+    text-decoration: none !important;
     transition: background 0.2s, transform 0.1s;
 }
 
-.iframe-toolbar-button:hover {
-    background: var(--color-ui-surface-dark, #c93d12);
-    color: #fff;
-    text-decoration: none;
+.iframe-toolbar-button:hover,
+.iframe-toolbar-button:active {
+    background: #c93d12 !important;
+    background: var(--color-ui-surface-dark, #c93d12) !important;
+    color: #fff !important;
+    text-decoration: none !important;
     transform: translateY(-1px);
 }
 
