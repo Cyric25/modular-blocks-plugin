@@ -64,14 +64,13 @@ if ($border_radius > 0) {
     $wrapper_style .= ' border-radius: ' . $border_radius . 'px; overflow: hidden;';
 }
 
-// Sandbox attributes for security
-$sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
+// No sandbox attribute - URLs are already whitelisted/trusted
+// This allows full functionality (PDF export, downloads, etc.)
 
 // Build iframe attributes
 $iframe_attrs = [
     'src' => esc_url($url),
     'class' => 'iframe-whitelist-frame',
-    'sandbox' => $sandbox,
     'loading' => 'lazy',
     'width' => '100%',
     'style' => 'width: 100%; display: block;',
@@ -102,20 +101,40 @@ foreach ($iframe_attrs as $attr => $value) {
 }
 $iframe_html .= '></iframe>';
 
+// Get theme colors from WordPress Customizer (falls back to defaults)
+$color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
+$color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
+$color_ui_surface_light = get_theme_mod('color_ui_surface_light', '#f5ede9');
+
+// Button inline styles - using theme colors from PHP
+$button_style = 'display: inline-flex !important; align-items: center !important; gap: 6px !important; ' .
+                'padding: 8px 16px !important; border: none !important; border-radius: 4px !important; ' .
+                'background: ' . esc_attr($color_ui_surface) . ' !important; background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'color: #fff !important; font-size: 14px !important; font-weight: 500 !important; ' .
+                'cursor: pointer !important; text-decoration: none !important; box-shadow: none !important;';
+
+$icon_style = 'font-size: 18px !important; width: 18px !important; height: 18px !important; ' .
+              'color: #fff !important; background: transparent !important;';
+
+$text_style = 'color: #fff !important; background: transparent !important; display: inline !important;';
+
 // Build toolbar with buttons
-$toolbar_html = '<div class="iframe-whitelist-toolbar">';
+$toolbar_style = 'display: flex; align-items: center; gap: 10px; padding: 10px 12px; ' .
+                 'background-color: ' . esc_attr($color_ui_surface_light) . '; ' .
+                 'border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0;';
+$toolbar_html = '<div class="iframe-whitelist-toolbar" style="' . esc_attr($toolbar_style) . '">';
 
 // Open in new tab button
-$toolbar_html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" class="iframe-toolbar-button">' .
-                 '<span class="dashicons dashicons-external"></span>' .
-                 '<span class="iframe-button-text">' . esc_html__('Website öffnen', 'modular-blocks-plugin') . '</span>' .
+$toolbar_html .= '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" class="iframe-toolbar-button" style="' . esc_attr($button_style) . '">' .
+                 '<span class="dashicons dashicons-external" style="' . esc_attr($icon_style) . '"></span>' .
+                 '<span class="iframe-button-text" style="' . esc_attr($text_style) . '">' . esc_html__('Website öffnen', 'modular-blocks-plugin') . '</span>' .
                  '</a>';
 
 // Fullscreen button
 if ($allow_fullscreen) {
-    $toolbar_html .= '<button type="button" class="iframe-toolbar-button iframe-fullscreen-button" aria-label="' . esc_attr__('Vollbild', 'modular-blocks-plugin') . '">' .
-                     '<span class="dashicons dashicons-fullscreen-alt"></span>' .
-                     '<span class="iframe-button-text">' . esc_html__('Vollbild', 'modular-blocks-plugin') . '</span>' .
+    $toolbar_html .= '<button type="button" class="iframe-toolbar-button iframe-fullscreen-button" style="' . esc_attr($button_style) . '" aria-label="' . esc_attr__('Vollbild', 'modular-blocks-plugin') . '">' .
+                     '<span class="dashicons dashicons-fullscreen-alt" style="' . esc_attr($icon_style) . '"></span>' .
+                     '<span class="iframe-button-text" style="' . esc_attr($text_style) . '">' . esc_html__('Vollbild', 'modular-blocks-plugin') . '</span>' .
                      '</button>';
 }
 

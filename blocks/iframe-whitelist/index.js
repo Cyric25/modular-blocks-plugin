@@ -1,1 +1,332 @@
-(()=>{"use strict";var e,l={208:()=>{const e=window.wp.blocks,l=window.wp.blockEditor,i=window.wp.components,n=window.wp.i18n,r=window.wp.element,a=window.ReactJSXRuntime,o=e=>{const l=[{value:"",label:(0,n.__)("-- URL auswählen --","modular-blocks-plugin")}];return e.forEach(e=>{l.push({value:e.value,label:`${e.name} (${"domain"===e.type?(0,n.__)("Domain","modular-blocks-plugin"):(0,n.__)("Exakt","modular-blocks-plugin")})`})}),l};(0,e.registerBlockType)("modular-blocks/iframe-whitelist",{edit:({attributes:e,setAttributes:s})=>{const{url:t,height:u,aspectRatio:d,allowFullscreen:c,showBorder:h,borderRadius:p,title:m}=e,g=(0,l.useBlockProps)(),b=void 0!==window.modularBlocksIframeWhitelist&&window.modularBlocksIframeWhitelist.whitelist||[],[_,v]=(0,r.useState)(""),[k,x]=(0,r.useState)("dropdown"),[f,w]=(0,r.useState)(null);(0,r.useEffect)(()=>{"manual"===k&&v(t)},[k]),(0,r.useEffect)(()=>{if("manual"===k&&_){const e=((e,l)=>{if(!e)return{valid:!1,entry:null};for(const i of l)if("domain"===i.type){if(0===e.indexOf(i.value))return{valid:!0,entry:i}}else{const l=e.replace(/\/$/,""),n=i.value.replace(/\/$/,"");if(l===n||0===l.indexOf(n+"/"))return{valid:!0,entry:i}}return{valid:!1,entry:null}})(_,b);w(e)}else w(null)},[_,k,b]);const j=e=>{s({url:e}),w(null)},C={borderRadius:p>0?`${p}px`:void 0,overflow:p>0?"hidden":void 0},y=(e=>{switch(e){case"16:9":return"56.25%";case"4:3":return"75%";case"1:1":return"100%";default:return null}})(d);y&&(C.paddingBottom=y,C.position="relative");const B=0===b.length;return(0,a.jsxs)(a.Fragment,{children:[(0,a.jsxs)(l.InspectorControls,{children:[(0,a.jsxs)(i.PanelBody,{title:(0,n.__)("URL-Einstellungen","modular-blocks-plugin"),children:[B?(0,a.jsx)(i.Notice,{status:"warning",isDismissible:!1,children:(0,n.__)("Die Whitelist ist leer. Bitte fügen Sie zuerst URLs in den Plugin-Einstellungen hinzu.","modular-blocks-plugin")}):(0,a.jsxs)(a.Fragment,{children:[(0,a.jsxs)("div",{className:"iframe-whitelist-input-mode",children:[(0,a.jsx)(i.Button,{variant:"dropdown"===k?"primary":"secondary",onClick:()=>x("dropdown"),isSmall:!0,children:(0,n.__)("Auswählen","modular-blocks-plugin")}),(0,a.jsx)(i.Button,{variant:"manual"===k?"primary":"secondary",onClick:()=>x("manual"),isSmall:!0,children:(0,n.__)("Eingeben","modular-blocks-plugin")})]}),"dropdown"===k?(0,a.jsx)(i.SelectControl,{label:(0,n.__)("Whitelist-URL","modular-blocks-plugin"),value:t,options:o(b),onChange:j}):(0,a.jsxs)(a.Fragment,{children:[(0,a.jsx)(i.TextControl,{label:(0,n.__)("URL eingeben","modular-blocks-plugin"),value:_,onChange:v,placeholder:"https://example.com/app",help:(0,n.__)("URL muss mit einem Whitelist-Eintrag übereinstimmen.","modular-blocks-plugin")}),f&&(0,a.jsx)(i.Notice,{status:f.valid?"success":"error",isDismissible:!1,children:f.valid?(0,n.__)("URL ist gültig: ","modular-blocks-plugin")+f.entry.name:(0,n.__)("URL nicht in der Whitelist gefunden.","modular-blocks-plugin")}),(0,a.jsx)(i.Button,{variant:"primary",onClick:()=>{f&&f.valid&&s({url:_})},disabled:!f||!f.valid,children:(0,n.__)("URL übernehmen","modular-blocks-plugin")})]})]}),(0,a.jsx)(i.TextControl,{label:(0,n.__)("Titel (Barrierefreiheit)","modular-blocks-plugin"),value:m,onChange:e=>s({title:e}),placeholder:(0,n.__)("Beschreibung des Inhalts","modular-blocks-plugin"),help:(0,n.__)("Wird als title-Attribut für Screenreader verwendet.","modular-blocks-plugin")})]}),(0,a.jsxs)(i.PanelBody,{title:(0,n.__)("Darstellung","modular-blocks-plugin"),initialOpen:!0,children:[(0,a.jsx)(i.SelectControl,{label:(0,n.__)("Seitenverhältnis","modular-blocks-plugin"),value:d,options:[{value:"custom",label:(0,n.__)("Benutzerdefinierte Höhe","modular-blocks-plugin")},{value:"16:9",label:"16:9 (Breitbild)"},{value:"4:3",label:"4:3 (Standard)"},{value:"1:1",label:"1:1 (Quadrat)"}],onChange:e=>s({aspectRatio:e})}),"custom"===d&&(0,a.jsx)(i.RangeControl,{label:(0,n.__)("Höhe (px)","modular-blocks-plugin"),value:u,onChange:e=>s({height:e}),min:200,max:1200,step:10}),(0,a.jsx)(i.ToggleControl,{label:(0,n.__)("Rahmen anzeigen","modular-blocks-plugin"),checked:h,onChange:e=>s({showBorder:e})}),(0,a.jsx)(i.RangeControl,{label:(0,n.__)("Eckenradius (px)","modular-blocks-plugin"),value:p,onChange:e=>s({borderRadius:e}),min:0,max:24})]}),(0,a.jsx)(i.PanelBody,{title:(0,n.__)("Funktionen","modular-blocks-plugin"),initialOpen:!1,children:(0,a.jsx)(i.ToggleControl,{label:(0,n.__)("Vollbild erlauben","modular-blocks-plugin"),checked:c,onChange:e=>s({allowFullscreen:e}),help:(0,n.__)("Zeigt einen Vollbild-Button an.","modular-blocks-plugin")})})]}),(0,a.jsx)("div",{...g,children:B?(0,a.jsx)(i.Placeholder,{icon:"shield-alt",label:(0,n.__)("Iframe Whitelist","modular-blocks-plugin"),instructions:(0,n.__)('Die Whitelist ist leer. Bitte konfigurieren Sie zuerst erlaubte URLs in den Plugin-Einstellungen unter "Modulare Blöcke → Iframe Whitelist".',"modular-blocks-plugin"),children:(0,a.jsx)(i.Button,{variant:"primary",href:window.ajaxurl?.replace("admin-ajax.php","admin.php?page=modular-blocks-iframe-whitelist"),children:(0,n.__)("Whitelist konfigurieren","modular-blocks-plugin")})}):t?(0,a.jsxs)("div",{className:"iframe-whitelist-preview "+(h?"has-border":""),style:C,children:[(0,a.jsxs)("div",{className:"iframe-whitelist-overlay",children:[(0,a.jsx)("span",{className:"dashicons dashicons-shield-alt"}),(0,a.jsx)("p",{children:(0,n.__)("Iframe-Vorschau","modular-blocks-plugin")}),(0,a.jsx)("code",{children:t}),m&&(0,a.jsx)("small",{children:m})]}),"custom"===d&&(0,a.jsxs)("div",{className:"iframe-whitelist-height-indicator",children:[u,"px"]})]}):(0,a.jsx)(i.Placeholder,{icon:"shield-alt",label:(0,n.__)("Iframe Whitelist","modular-blocks-plugin"),instructions:(0,n.__)("Wählen Sie eine URL aus der Whitelist aus oder geben Sie eine passende URL ein.","modular-blocks-plugin"),children:(0,a.jsx)(i.SelectControl,{value:t,options:o(b),onChange:j})})})]})},save:()=>null})}},i={};function n(e){var r=i[e];if(void 0!==r)return r.exports;var a=i[e]={exports:{}};return l[e](a,a.exports,n),a.exports}n.m=l,e=[],n.O=(l,i,r,a)=>{if(!i){var o=1/0;for(d=0;d<e.length;d++){for(var[i,r,a]=e[d],s=!0,t=0;t<i.length;t++)(!1&a||o>=a)&&Object.keys(n.O).every(e=>n.O[e](i[t]))?i.splice(t--,1):(s=!1,a<o&&(o=a));if(s){e.splice(d--,1);var u=r();void 0!==u&&(l=u)}}return l}a=a||0;for(var d=e.length;d>0&&e[d-1][2]>a;d--)e[d]=e[d-1];e[d]=[i,r,a]},n.o=(e,l)=>Object.prototype.hasOwnProperty.call(e,l),(()=>{var e={429:0,121:0};n.O.j=l=>0===e[l];var l=(l,i)=>{var r,a,[o,s,t]=i,u=0;if(o.some(l=>0!==e[l])){for(r in s)n.o(s,r)&&(n.m[r]=s[r]);if(t)var d=t(n)}for(l&&l(i);u<o.length;u++)a=o[u],n.o(e,a)&&e[a]&&e[a][0](),e[a]=0;return n.O(d)},i=globalThis.webpackChunkmodular_blocks_plugin=globalThis.webpackChunkmodular_blocks_plugin||[];i.forEach(l.bind(null,0)),i.push=l.bind(null,i.push.bind(i))})();var r=n.O(void 0,[121],()=>n(208));r=n.O(r)})();
+/**
+ * WordPress dependencies
+ */
+import { registerBlockType } from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
+import {
+    InspectorControls,
+    useBlockProps,
+} from '@wordpress/block-editor';
+import {
+    PanelBody,
+    TextControl,
+    SelectControl,
+    RangeControl,
+    ToggleControl,
+    Button,
+    Notice,
+    Placeholder,
+} from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import './editor.css';
+import './style.css';
+
+/**
+ * Build whitelist options for SelectControl
+ */
+const buildWhitelistOptions = (whitelist) => {
+    const options = [
+        { value: '', label: __('-- URL auswählen --', 'modular-blocks-plugin') }
+    ];
+
+    whitelist.forEach(entry => {
+        options.push({
+            value: entry.value,
+            label: `${entry.name} (${entry.type === 'domain' ? __('Domain', 'modular-blocks-plugin') : __('Exakt', 'modular-blocks-plugin')})`
+        });
+    });
+
+    return options;
+};
+
+/**
+ * Validate URL against whitelist
+ */
+const validateUrl = (url, whitelist) => {
+    if (!url) {
+        return { valid: false, entry: null };
+    }
+
+    for (const entry of whitelist) {
+        if (entry.type === 'domain') {
+            if (url.indexOf(entry.value) === 0) {
+                return { valid: true, entry };
+            }
+        } else {
+            // Exact match
+            const normalizedUrl = url.replace(/\/$/, '');
+            const normalizedEntry = entry.value.replace(/\/$/, '');
+            if (normalizedUrl === normalizedEntry || normalizedUrl.indexOf(normalizedEntry + '/') === 0) {
+                return { valid: true, entry };
+            }
+        }
+    }
+
+    return { valid: false, entry: null };
+};
+
+/**
+ * Calculate aspect ratio padding
+ */
+const getAspectRatioPadding = (aspectRatio) => {
+    switch (aspectRatio) {
+        case '16:9':
+            return '56.25%';
+        case '4:3':
+            return '75%';
+        case '1:1':
+            return '100%';
+        default:
+            return null;
+    }
+};
+
+/**
+ * Block registration
+ */
+registerBlockType('modular-blocks/iframe-whitelist', {
+    edit: ({ attributes, setAttributes }) => {
+        const {
+            url,
+            height,
+            aspectRatio,
+            allowFullscreen,
+            showBorder,
+            borderRadius,
+            title,
+        } = attributes;
+
+        const blockProps = useBlockProps();
+
+        // Get whitelist from localized data
+        const whitelist = (typeof window.modularBlocksIframeWhitelist !== 'undefined' &&
+            window.modularBlocksIframeWhitelist.whitelist) || [];
+
+        // State for manual URL input
+        const [manualUrl, setManualUrl] = useState('');
+        const [inputMode, setInputMode] = useState('dropdown'); // 'dropdown' or 'manual'
+        const [validationResult, setValidationResult] = useState(null);
+
+        // Sync manual URL when switching modes
+        useEffect(() => {
+            if (inputMode === 'manual') {
+                setManualUrl(url);
+            }
+        }, [inputMode]);
+
+        // Validate manual URL on change
+        useEffect(() => {
+            if (inputMode === 'manual' && manualUrl) {
+                const result = validateUrl(manualUrl, whitelist);
+                setValidationResult(result);
+            } else {
+                setValidationResult(null);
+            }
+        }, [manualUrl, inputMode, whitelist]);
+
+        // Handle URL selection from dropdown
+        const handleUrlChange = (newUrl) => {
+            setAttributes({ url: newUrl });
+            setValidationResult(null);
+        };
+
+        // Handle applying manual URL
+        const applyManualUrl = () => {
+            if (validationResult && validationResult.valid) {
+                setAttributes({ url: manualUrl });
+            }
+        };
+
+        // Build preview styles
+        const previewStyle = {
+            borderRadius: borderRadius > 0 ? `${borderRadius}px` : undefined,
+            overflow: borderRadius > 0 ? 'hidden' : undefined,
+        };
+
+        const paddingBottom = getAspectRatioPadding(aspectRatio);
+        if (paddingBottom) {
+            previewStyle.paddingBottom = paddingBottom;
+            previewStyle.position = 'relative';
+        }
+
+        const isWhitelistEmpty = whitelist.length === 0;
+
+        return (
+            <>
+                <InspectorControls>
+                    <PanelBody title={__('URL-Einstellungen', 'modular-blocks-plugin')}>
+                        {isWhitelistEmpty ? (
+                            <Notice status="warning" isDismissible={false}>
+                                {__('Die Whitelist ist leer. Bitte fügen Sie zuerst URLs in den Plugin-Einstellungen hinzu.', 'modular-blocks-plugin')}
+                            </Notice>
+                        ) : (
+                            <>
+                                <div className="iframe-whitelist-input-mode">
+                                    <Button
+                                        variant={inputMode === 'dropdown' ? 'primary' : 'secondary'}
+                                        onClick={() => setInputMode('dropdown')}
+                                        isSmall
+                                    >
+                                        {__('Auswählen', 'modular-blocks-plugin')}
+                                    </Button>
+                                    <Button
+                                        variant={inputMode === 'manual' ? 'primary' : 'secondary'}
+                                        onClick={() => setInputMode('manual')}
+                                        isSmall
+                                    >
+                                        {__('Eingeben', 'modular-blocks-plugin')}
+                                    </Button>
+                                </div>
+
+                                {inputMode === 'dropdown' ? (
+                                    <SelectControl
+                                        label={__('Whitelist-URL', 'modular-blocks-plugin')}
+                                        value={url}
+                                        options={buildWhitelistOptions(whitelist)}
+                                        onChange={handleUrlChange}
+                                    />
+                                ) : (
+                                    <>
+                                        <TextControl
+                                            label={__('URL eingeben', 'modular-blocks-plugin')}
+                                            value={manualUrl}
+                                            onChange={setManualUrl}
+                                            placeholder="https://example.com/app"
+                                            help={__('URL muss mit einem Whitelist-Eintrag übereinstimmen.', 'modular-blocks-plugin')}
+                                        />
+                                        {validationResult && (
+                                            <Notice
+                                                status={validationResult.valid ? 'success' : 'error'}
+                                                isDismissible={false}
+                                            >
+                                                {validationResult.valid
+                                                    ? __('URL ist gültig: ', 'modular-blocks-plugin') + validationResult.entry.name
+                                                    : __('URL nicht in der Whitelist gefunden.', 'modular-blocks-plugin')
+                                                }
+                                            </Notice>
+                                        )}
+                                        <Button
+                                            variant="primary"
+                                            onClick={applyManualUrl}
+                                            disabled={!validationResult || !validationResult.valid}
+                                        >
+                                            {__('URL übernehmen', 'modular-blocks-plugin')}
+                                        </Button>
+                                    </>
+                                )}
+                            </>
+                        )}
+
+                        <TextControl
+                            label={__('Titel (Barrierefreiheit)', 'modular-blocks-plugin')}
+                            value={title}
+                            onChange={(newTitle) => setAttributes({ title: newTitle })}
+                            placeholder={__('Beschreibung des Inhalts', 'modular-blocks-plugin')}
+                            help={__('Wird als title-Attribut für Screenreader verwendet.', 'modular-blocks-plugin')}
+                        />
+                    </PanelBody>
+
+                    <PanelBody title={__('Darstellung', 'modular-blocks-plugin')} initialOpen={true}>
+                        <SelectControl
+                            label={__('Seitenverhältnis', 'modular-blocks-plugin')}
+                            value={aspectRatio}
+                            options={[
+                                { value: 'custom', label: __('Benutzerdefinierte Höhe', 'modular-blocks-plugin') },
+                                { value: '16:9', label: '16:9 (Breitbild)' },
+                                { value: '4:3', label: '4:3 (Standard)' },
+                                { value: '1:1', label: '1:1 (Quadrat)' },
+                            ]}
+                            onChange={(newRatio) => setAttributes({ aspectRatio: newRatio })}
+                        />
+
+                        {aspectRatio === 'custom' && (
+                            <RangeControl
+                                label={__('Höhe (px)', 'modular-blocks-plugin')}
+                                value={height}
+                                onChange={(newHeight) => setAttributes({ height: newHeight })}
+                                min={200}
+                                max={1200}
+                                step={10}
+                            />
+                        )}
+
+                        <ToggleControl
+                            label={__('Rahmen anzeigen', 'modular-blocks-plugin')}
+                            checked={showBorder}
+                            onChange={(newValue) => setAttributes({ showBorder: newValue })}
+                        />
+
+                        <RangeControl
+                            label={__('Eckenradius (px)', 'modular-blocks-plugin')}
+                            value={borderRadius}
+                            onChange={(newRadius) => setAttributes({ borderRadius: newRadius })}
+                            min={0}
+                            max={24}
+                        />
+                    </PanelBody>
+
+                    <PanelBody title={__('Funktionen', 'modular-blocks-plugin')} initialOpen={false}>
+                        <ToggleControl
+                            label={__('Vollbild erlauben', 'modular-blocks-plugin')}
+                            checked={allowFullscreen}
+                            onChange={(newValue) => setAttributes({ allowFullscreen: newValue })}
+                            help={__('Zeigt einen Vollbild-Button an.', 'modular-blocks-plugin')}
+                        />
+                    </PanelBody>
+                </InspectorControls>
+
+                <div {...blockProps}>
+                    {isWhitelistEmpty ? (
+                        <Placeholder
+                            icon="shield-alt"
+                            label={__('Iframe Whitelist', 'modular-blocks-plugin')}
+                            instructions={__('Die Whitelist ist leer. Bitte konfigurieren Sie zuerst erlaubte URLs in den Plugin-Einstellungen unter "Modulare Blöcke → Iframe Whitelist".', 'modular-blocks-plugin')}
+                        >
+                            <Button
+                                variant="primary"
+                                href={window.ajaxurl?.replace('admin-ajax.php', 'admin.php?page=modular-blocks-iframe-whitelist')}
+                            >
+                                {__('Whitelist konfigurieren', 'modular-blocks-plugin')}
+                            </Button>
+                        </Placeholder>
+                    ) : url ? (
+                        <div
+                            className={`iframe-whitelist-preview ${showBorder ? 'has-border' : ''}`}
+                            style={previewStyle}
+                        >
+                            <div className="iframe-whitelist-overlay">
+                                <span className="dashicons dashicons-shield-alt"></span>
+                                <p>{__('Iframe-Vorschau', 'modular-blocks-plugin')}</p>
+                                <code>{url}</code>
+                                {title && <small>{title}</small>}
+                            </div>
+                            {aspectRatio === 'custom' && (
+                                <div className="iframe-whitelist-height-indicator">
+                                    {height}px
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <Placeholder
+                            icon="shield-alt"
+                            label={__('Iframe Whitelist', 'modular-blocks-plugin')}
+                            instructions={__('Wählen Sie eine URL aus der Whitelist aus oder geben Sie eine passende URL ein.', 'modular-blocks-plugin')}
+                        >
+                            <SelectControl
+                                value={url}
+                                options={buildWhitelistOptions(whitelist)}
+                                onChange={handleUrlChange}
+                            />
+                        </Placeholder>
+                    )}
+                </div>
+            </>
+        );
+    },
+
+    save: () => null, // Dynamic rendering via PHP
+});

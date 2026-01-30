@@ -256,6 +256,73 @@ The admin interface uses AJAX (`wp_ajax_modular_blocks_toggle_block`) to enable/
 - Individual block assets are defined in `block.json` using `editorScript`, `editorStyle`, `style`, `viewScript`
 - The Block Manager automatically enqueues these when `register_block_type()` is called
 
+### Buttons mit Theme-Farben (WICHTIG!)
+
+**Problem:** CSS-Variablen (`var(--color-ui-surface)`) in externen Stylesheets oder sogar in Inline-Styles werden oft von WordPress-Core-Styles oder anderen Plugins überschrieben. Selbst mit `!important` funktionieren CSS-Variablen nicht zuverlässig.
+
+**Lösung:** Theme-Farben direkt in PHP mit `get_theme_mod()` holen und als Inline-Styles mit hardcoded Hex-Werten ausgeben.
+
+```php
+// In render.php - Theme-Farben aus WordPress Customizer holen
+$color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
+$color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
+$color_ui_surface_light = get_theme_mod('color_ui_surface_light', '#f5ede9');
+
+// Button-Styles mit PHP-Variablen (NICHT CSS-Variablen!)
+$button_style = 'display: inline-flex !important; align-items: center !important; ' .
+                'padding: 8px 16px !important; border: none !important; border-radius: 4px !important; ' .
+                'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'color: #fff !important; cursor: pointer !important; text-decoration: none !important;';
+
+// HTML mit Inline-Styles ausgeben
+echo '<button style="' . esc_attr($button_style) . '">Button Text</button>';
+```
+
+**Warum das funktioniert:**
+1. `get_theme_mod()` liest die tatsächlichen Customizer-Werte aus der Datenbank
+2. Inline-Styles mit hardcoded Hex-Werten haben höchste Spezifität
+3. Keine Abhängigkeit von CSS-Variable-Unterstützung oder -Überschreibung
+4. Fallback-Werte garantieren Funktion auch ohne Theme-Customization
+
+**NICHT verwenden:**
+```css
+/* CSS-Variablen werden oft überschrieben - VERMEIDEN */
+background: var(--color-ui-surface, #e24614) !important;
+```
+
+**Auch für andere Elemente anwenden:**
+- Toolbar-Hintergründe: `$color_ui_surface_light`
+- Hover-States: `$color_ui_surface_dark`
+- Icons innerhalb von Buttons: explizit `color: #fff !important; background: transparent !important;`
+- Text-Spans innerhalb von Buttons: explizit stylen, nicht vererben lassen
+
+### Iframe Sandbox-Attribut (WICHTIG!)
+
+**Problem:** Das `sandbox`-Attribut auf iframes blockiert viele Funktionen wie PDF-Export, Downloads, und andere JavaScript-Features - selbst mit vielen `allow-*` Werten.
+
+**Lösung für whitelisted/vertrauenswürdige URLs:** Kein `sandbox`-Attribut verwenden!
+
+```php
+// NICHT verwenden für vertrauenswürdige URLs:
+// $sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
+// 'sandbox' => $sandbox,
+
+// Stattdessen: Kein sandbox-Attribut
+$iframe_attrs = [
+    'src' => esc_url($url),
+    'class' => 'iframe-whitelist-frame',
+    'loading' => 'lazy',
+    // KEIN 'sandbox' => ...
+];
+```
+
+**Begründung:**
+- URLs sind bereits durch Whitelist geprüft = vertrauenswürdig
+- `sandbox` mit allen `allow-*` Werten funktioniert trotzdem nicht zuverlässig
+- PDF-Export, Downloads, komplexe JavaScript-Apps brauchen volle Berechtigungen
+- Sicherheit wird durch die Whitelist gewährleistet, nicht durch sandbox
+
 ## Security Considerations
 
 - All admin functions check `current_user_can('manage_options')`

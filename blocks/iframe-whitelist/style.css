@@ -65,50 +65,82 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: #f5ede9 !important;
-    background: var(--color-ui-surface-light, #f5ede9) !important;
+    background-color: #f5ede9 !important;
+    background-color: var(--color-ui-surface-light, #f5ede9) !important;
     border: 1px solid #ddd;
     border-bottom: none;
     border-radius: 4px 4px 0 0;
 }
 
-.iframe-toolbar-button,
-.iframe-toolbar-button:link,
-.iframe-toolbar-button:visited {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
+/* Button styles with high specificity to override WordPress defaults */
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar button.iframe-toolbar-button,
+.iframe-whitelist-toolbar .iframe-toolbar-button,
+.iframe-whitelist-toolbar a.iframe-toolbar-button,
+.iframe-whitelist-toolbar button.iframe-toolbar-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 16px !important;
     border: none !important;
-    border-radius: 4px;
-    background: #e24614 !important;
+    border-radius: 4px !important;
     background: var(--color-ui-surface, #e24614) !important;
+    background-color: var(--color-ui-surface, #e24614) !important;
     color: #fff !important;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
     text-decoration: none !important;
-    transition: background 0.2s, transform 0.1s;
+    transition: background-color 0.2s, transform 0.1s !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-.iframe-toolbar-button:hover,
-.iframe-toolbar-button:active {
-    background: #c93d12 !important;
+/* Link states */
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button:link,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button:visited,
+.iframe-whitelist-toolbar a.iframe-toolbar-button:link,
+.iframe-whitelist-toolbar a.iframe-toolbar-button:visited {
+    background: var(--color-ui-surface, #e24614) !important;
+    background-color: var(--color-ui-surface, #e24614) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+}
+
+/* Hover and active states */
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button:hover,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button:active,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button:hover,
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar button.iframe-toolbar-button:hover,
+.iframe-whitelist-toolbar .iframe-toolbar-button:hover,
+.iframe-whitelist-toolbar .iframe-toolbar-button:active,
+.iframe-whitelist-toolbar a.iframe-toolbar-button:hover,
+.iframe-whitelist-toolbar button.iframe-toolbar-button:hover {
     background: var(--color-ui-surface-dark, #c93d12) !important;
+    background-color: var(--color-ui-surface-dark, #c93d12) !important;
     color: #fff !important;
     text-decoration: none !important;
     transform: translateY(-1px);
 }
 
-.iframe-toolbar-button:focus {
-    outline: 2px solid var(--color-ui-surface, #e24614);
-    outline-offset: 2px;
+/* Focus state */
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button:focus,
+.iframe-whitelist-toolbar .iframe-toolbar-button:focus {
+    outline: 2px solid var(--color-ui-surface, #e24614) !important;
+    outline-offset: 2px !important;
+    background: var(--color-ui-surface, #e24614) !important;
+    background-color: var(--color-ui-surface, #e24614) !important;
 }
 
-.iframe-toolbar-button .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+/* Dashicons inside buttons */
+.wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button .dashicons,
+.iframe-whitelist-toolbar .iframe-toolbar-button .dashicons {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #fff !important;
+    background: transparent !important;
 }
 
 /* Border variant */
