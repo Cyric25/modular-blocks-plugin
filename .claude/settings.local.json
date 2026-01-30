@@ -11,7 +11,14 @@
       "Bash(unzip:*)",
       "Bash(git checkout:*)",
       "Bash(php -l:*)",
-      "Bash(npm run plugin-zip:*)"
+      "Bash(npm run plugin-zip:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(install.cmd)",
+      "Bash(del install.cmd)",
+      "Bash(bash:*)"
     ],
     "deny": [],
     "ask": []

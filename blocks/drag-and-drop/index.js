@@ -240,24 +240,84 @@
                 return el('div', {
                     key: index,
                     className: `draggable-item ${isExpanded ? 'expanded' : 'collapsed'}`,
-                    style: { borderLeftColor: draggable.color }
+                    style: {
+                        borderLeft: `4px solid ${draggable.color}`,
+                        background: '#ffffff',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        overflow: 'hidden',
+                        opacity: 1,
+                        pointerEvents: 'auto',
+                        display: 'block'
+                    }
                 },
                     el('div', {
                         className: 'item-header',
-                        onClick: () => setSelectedDraggable(isExpanded ? null : index)
+                        onClick: () => setSelectedDraggable(isExpanded ? null : index),
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '12px',
+                            cursor: 'pointer',
+                            background: isExpanded ? '#f8f9fa' : 'transparent',
+                            opacity: 1,
+                            pointerEvents: 'auto'
+                        }
                     },
                         el('span', {
                             className: 'item-color-indicator',
-                            style: { backgroundColor: draggable.color }
+                            style: {
+                                display: 'inline-block',
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                backgroundColor: draggable.color,
+                                marginRight: '8px',
+                                flexShrink: 0
+                            }
                         }),
-                        el('span', { className: 'item-title' },
+                        el('span', {
+                            className: 'item-title',
+                            style: {
+                                flex: 1,
+                                fontWeight: 500,
+                                color: '#1e1e1e',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }
+                        },
                             draggable.content || __('Element', 'modular-blocks-plugin') + ' ' + (index + 1)
                         ),
-                        draggable.infinite && el('span', { className: 'badge infinite' }, '∞'),
-                        el('span', { className: 'expand-icon' }, isExpanded ? '▼' : '▶')
+                        draggable.infinite && el('span', {
+                            className: 'badge infinite',
+                            style: {
+                                background: '#e0e0e0',
+                                padding: '2px 6px',
+                                borderRadius: '3px',
+                                fontSize: '12px',
+                                marginRight: '8px'
+                            }
+                        }, '∞'),
+                        el('span', {
+                            className: 'expand-icon',
+                            style: {
+                                fontSize: '12px',
+                                color: '#666'
+                            }
+                        }, isExpanded ? '▼' : '▶')
                     ),
 
-                    isExpanded && el('div', { className: 'item-content' },
+                    isExpanded && el('div', {
+                        className: 'item-content',
+                        style: {
+                            padding: '16px',
+                            borderTop: '1px solid #e0e0e0',
+                            opacity: 1,
+                            pointerEvents: 'auto',
+                            display: 'block'
+                        }
+                    },
                         el(SelectControl, {
                             label: __('Typ', 'modular-blocks-plugin'),
                             value: draggable.type,
@@ -301,16 +361,103 @@
                             })
                         ),
 
-                        el('div', { className: 'color-size-row' },
-                            el('div', { className: 'color-control' },
-                                el('label', {}, __('Farbe', 'modular-blocks-plugin')),
-                                el(ColorPalette, {
-                                    colors: colorPalette,
-                                    value: draggable.color,
-                                    onChange: value => updateDraggable(index, { color: value || '#0073aa' }),
-                                    disableCustomColors: false,
-                                    clearable: false
-                                })
+                        el('div', {
+                            className: 'color-size-row',
+                            style: {
+                                display: 'flex',
+                                gap: '16px',
+                                flexWrap: 'wrap',
+                                marginBottom: '12px',
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
+                            el('div', {
+                                className: 'color-control',
+                                style: {
+                                    flex: '1 1 200px',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
+                            },
+                                el('label', {
+                                    style: {
+                                        display: 'block',
+                                        marginBottom: '8px',
+                                        fontWeight: 500,
+                                        color: '#1e1e1e'
+                                    }
+                                }, __('Farbe', 'modular-blocks-plugin')),
+                                // Custom color picker using divs instead of buttons (CDB CSS affects buttons)
+                                el('div', {
+                                    className: 'custom-color-picker',
+                                    style: {
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        marginTop: '8px'
+                                    }
+                                },
+                                    colorPalette.map((colorItem, colorIndex) =>
+                                        el('div', {
+                                            key: colorIndex,
+                                            role: 'button',
+                                            tabIndex: 0,
+                                            title: colorItem.name,
+                                            onClick: () => updateDraggable(index, { color: colorItem.color }),
+                                            onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') updateDraggable(index, { color: colorItem.color }); },
+                                            className: 'color-swatch-item',
+                                            style: {
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '50%',
+                                                border: draggable.color === colorItem.color ? '3px solid #1e1e1e' : '2px solid rgba(0,0,0,0.15)',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxSizing: 'border-box',
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }
+                                        },
+                                            // Inner color circle - use ref to set background with !important
+                                            el('span', {
+                                                ref: (spanEl) => {
+                                                    if (spanEl) {
+                                                        spanEl.style.setProperty('position', 'absolute', 'important');
+                                                        spanEl.style.setProperty('top', '2px', 'important');
+                                                        spanEl.style.setProperty('left', '2px', 'important');
+                                                        spanEl.style.setProperty('right', '2px', 'important');
+                                                        spanEl.style.setProperty('bottom', '2px', 'important');
+                                                        spanEl.style.setProperty('border-radius', '50%', 'important');
+                                                        spanEl.style.setProperty('background-color', colorItem.color, 'important');
+                                                    }
+                                                },
+                                                className: 'color-swatch-color'
+                                            }),
+                                            // Checkmark for selected
+                                            draggable.color === colorItem.color && el('svg', {
+                                                width: 16,
+                                                height: 16,
+                                                viewBox: '0 0 24 24',
+                                                fill: colorItem.color === '#1e1e1e' || colorItem.color === '#6b7280' ? '#fff' : '#000',
+                                                style: { position: 'relative', zIndex: 1 }
+                                            },
+                                                el('path', { d: 'M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z' })
+                                            )
+                                        )
+                                    ),
+                                    // Show current color name
+                                    el('div', {
+                                        style: {
+                                            width: '100%',
+                                            marginTop: '8px',
+                                            fontSize: '12px',
+                                            color: '#666'
+                                        }
+                                    }, colorPalette.find(c => c.color === draggable.color)?.name || 'Individuell', ': ', draggable.color || '#0073aa')
+                                )
                             ),
                             el(SelectControl, {
                                 label: __('Größe', 'modular-blocks-plugin'),
@@ -394,22 +541,82 @@
                 return el('div', {
                     key: index,
                     className: `dropzone-item ${isExpanded ? 'expanded' : 'collapsed'}`,
-                    style: { borderLeftColor: zone.borderColor }
+                    style: {
+                        borderLeft: `4px solid ${zone.borderColor}`,
+                        background: '#ffffff',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        overflow: 'hidden',
+                        opacity: 1,
+                        pointerEvents: 'auto',
+                        display: 'block'
+                    }
                 },
                     el('div', {
                         className: 'item-header',
-                        onClick: () => setSelectedZone(isExpanded ? null : index)
+                        onClick: () => setSelectedZone(isExpanded ? null : index),
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '12px',
+                            cursor: 'pointer',
+                            background: isExpanded ? '#f8f9fa' : 'transparent',
+                            opacity: 1,
+                            pointerEvents: 'auto'
+                        }
                     },
                         el('span', {
                             className: 'item-color-indicator',
-                            style: { backgroundColor: zone.borderColor }
+                            style: {
+                                display: 'inline-block',
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                backgroundColor: zone.borderColor,
+                                marginRight: '8px',
+                                flexShrink: 0
+                            }
                         }),
-                        el('span', { className: 'item-title' }, zone.label),
-                        zone.acceptMultiple && el('span', { className: 'badge multiple' }, '+'),
-                        el('span', { className: 'expand-icon' }, isExpanded ? '▼' : '▶')
+                        el('span', {
+                            className: 'item-title',
+                            style: {
+                                flex: 1,
+                                fontWeight: 500,
+                                color: '#1e1e1e',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }
+                        }, zone.label),
+                        zone.acceptMultiple && el('span', {
+                            className: 'badge multiple',
+                            style: {
+                                background: '#e0e0e0',
+                                padding: '2px 6px',
+                                borderRadius: '3px',
+                                fontSize: '12px',
+                                marginRight: '8px'
+                            }
+                        }, '+'),
+                        el('span', {
+                            className: 'expand-icon',
+                            style: {
+                                fontSize: '12px',
+                                color: '#666'
+                            }
+                        }, isExpanded ? '▼' : '▶')
                     ),
 
-                    isExpanded && el('div', { className: 'item-content' },
+                    isExpanded && el('div', {
+                        className: 'item-content',
+                        style: {
+                            padding: '16px',
+                            borderTop: '1px solid #e0e0e0',
+                            opacity: 1,
+                            pointerEvents: 'auto',
+                            display: 'block'
+                        }
+                    },
                         el(TextControl, {
                             label: __('ID', 'modular-blocks-plugin'),
                             value: zone.id,
@@ -438,15 +645,92 @@
                             onChange: value => updateDropZone(index, { showLabel: value })
                         }),
 
-                        el('div', { className: 'color-control' },
-                            el('label', {}, __('Rahmenfarbe', 'modular-blocks-plugin')),
-                            el(ColorPalette, {
-                                colors: colorPalette,
-                                value: zone.borderColor,
-                                onChange: value => updateDropZone(index, { borderColor: value || '#0073aa' }),
-                                disableCustomColors: false,
-                                clearable: false
-                            })
+                        el('div', {
+                            className: 'color-control',
+                            style: {
+                                marginBottom: '16px',
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
+                            el('label', {
+                                style: {
+                                    display: 'block',
+                                    marginBottom: '8px',
+                                    fontWeight: 500,
+                                    color: '#1e1e1e'
+                                }
+                            }, __('Rahmenfarbe', 'modular-blocks-plugin')),
+                            // Custom color picker using divs instead of buttons (CDB CSS affects buttons)
+                            el('div', {
+                                className: 'custom-color-picker',
+                                style: {
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    marginTop: '8px'
+                                }
+                            },
+                                colorPalette.map((colorItem, colorIndex) =>
+                                    el('div', {
+                                        key: colorIndex,
+                                        role: 'button',
+                                        tabIndex: 0,
+                                        title: colorItem.name,
+                                        onClick: () => updateDropZone(index, { borderColor: colorItem.color }),
+                                        onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') updateDropZone(index, { borderColor: colorItem.color }); },
+                                        className: 'color-swatch-item',
+                                        style: {
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '50%',
+                                            border: zone.borderColor === colorItem.color ? '3px solid #1e1e1e' : '2px solid rgba(0,0,0,0.15)',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxSizing: 'border-box',
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }
+                                    },
+                                        // Inner color circle - use ref to set background with !important
+                                        el('span', {
+                                            ref: (spanEl) => {
+                                                if (spanEl) {
+                                                    spanEl.style.setProperty('position', 'absolute', 'important');
+                                                    spanEl.style.setProperty('top', '2px', 'important');
+                                                    spanEl.style.setProperty('left', '2px', 'important');
+                                                    spanEl.style.setProperty('right', '2px', 'important');
+                                                    spanEl.style.setProperty('bottom', '2px', 'important');
+                                                    spanEl.style.setProperty('border-radius', '50%', 'important');
+                                                    spanEl.style.setProperty('background-color', colorItem.color, 'important');
+                                                }
+                                            },
+                                            className: 'color-swatch-color'
+                                        }),
+                                        // Checkmark for selected
+                                        zone.borderColor === colorItem.color && el('svg', {
+                                            width: 16,
+                                            height: 16,
+                                            viewBox: '0 0 24 24',
+                                            fill: colorItem.color === '#1e1e1e' || colorItem.color === '#6b7280' ? '#fff' : '#000',
+                                            style: { position: 'relative', zIndex: 1 }
+                                        },
+                                            el('path', { d: 'M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z' })
+                                        )
+                                    )
+                                ),
+                                // Show current color name
+                                el('div', {
+                                    style: {
+                                        width: '100%',
+                                        marginTop: '8px',
+                                        fontSize: '12px',
+                                        color: '#666'
+                                    }
+                                }, colorPalette.find(c => c.color === zone.borderColor)?.name || 'Individuell', ': ', zone.borderColor || '#0073aa')
+                            )
                         ),
 
                         el(RangeControl, {
@@ -658,15 +942,42 @@
 
             // Render Visual Editor
             function renderVisualEditor() {
-                return el('div', { className: 'visual-editor-container' },
-                    el('div', { className: 'visual-editor-toolbar' },
-                        el('span', { className: 'toolbar-info' },
+                return el('div', {
+                    className: 'visual-editor-container',
+                    style: {
+                        display: 'block',
+                        opacity: 1,
+                        pointerEvents: 'auto'
+                    }
+                },
+                    el('div', {
+                        className: 'visual-editor-toolbar',
+                        style: {
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '12px',
+                            padding: '8px 12px',
+                            background: '#f8f9fa',
+                            borderRadius: '4px',
+                            opacity: 1,
+                            pointerEvents: 'auto'
+                        }
+                    },
+                        el('span', {
+                            className: 'toolbar-info',
+                            style: {
+                                fontSize: '13px',
+                                color: '#666'
+                            }
+                        },
                             __('Klicken Sie auf die Fläche um eine neue Zone hinzuzufügen. Ziehen Sie Zonen um sie zu verschieben.', 'modular-blocks-plugin')
                         ),
                         el(Button, {
                             isSecondary: true,
                             isSmall: true,
-                            onClick: addDropZone
+                            onClick: addDropZone,
+                            style: { opacity: 1, pointerEvents: 'auto' }
                         }, __('+ Zone hinzufügen', 'modular-blocks-plugin'))
                     ),
                     // Container for image and zones - position: relative
@@ -843,19 +1154,54 @@
                     ), // Close visual-editor-area div
 
                     // Selected zone properties panel
-                    editingZoneIndex !== null && dropZones[editingZoneIndex] && el('div', { className: 'visual-zone-properties' },
-                        el('h5', {}, __('Zone bearbeiten:', 'modular-blocks-plugin') + ' ' + dropZones[editingZoneIndex].label),
+                    editingZoneIndex !== null && dropZones[editingZoneIndex] && el('div', {
+                        className: 'visual-zone-properties',
+                        style: {
+                            marginTop: '16px',
+                            padding: '16px',
+                            background: '#f8f9fa',
+                            borderRadius: '4px',
+                            border: '1px solid #e0e0e0',
+                            opacity: 1,
+                            pointerEvents: 'auto',
+                            display: 'block'
+                        }
+                    },
+                        el('h5', {
+                            style: {
+                                margin: '0 0 12px 0',
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: '#1e1e1e'
+                            }
+                        }, __('Zone bearbeiten:', 'modular-blocks-plugin') + ' ' + dropZones[editingZoneIndex].label),
                         el(TextControl, {
                             label: __('Bezeichnung', 'modular-blocks-plugin'),
                             value: dropZones[editingZoneIndex].label,
                             onChange: value => updateDropZone(editingZoneIndex, { label: value })
                         }),
-                        el('div', { className: 'zone-position-info' },
+                        el('div', {
+                            className: 'zone-position-info',
+                            style: {
+                                display: 'flex',
+                                gap: '16px',
+                                marginBottom: '12px',
+                                fontSize: '13px',
+                                color: '#666'
+                            }
+                        },
                             el('span', {}, `X: ${Math.round(dropZones[editingZoneIndex].x)}%`),
                             el('span', {}, `Y: ${Math.round(dropZones[editingZoneIndex].y)}%`),
                             el('span', {}, `${Math.round(dropZones[editingZoneIndex].width)}×${Math.round(dropZones[editingZoneIndex].height)}px`)
                         ),
-                        el('div', { className: 'zone-quick-settings' },
+                        el('div', {
+                            className: 'zone-quick-settings',
+                            style: {
+                                marginBottom: '12px',
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
                             el(ToggleControl, {
                                 label: __('Mehrere Elemente', 'modular-blocks-plugin'),
                                 checked: dropZones[editingZoneIndex].acceptMultiple || false,
@@ -867,15 +1213,91 @@
                                 onChange: value => updateDropZone(editingZoneIndex, { showLabel: value })
                             })
                         ),
-                        el('div', { className: 'zone-color-control' },
-                            el('label', {}, __('Farbe', 'modular-blocks-plugin')),
-                            el(ColorPalette, {
-                                colors: colorPalette,
-                                value: dropZones[editingZoneIndex].borderColor,
-                                onChange: value => updateDropZone(editingZoneIndex, { borderColor: value || '#0073aa' }),
-                                disableCustomColors: false,
-                                clearable: false
-                            })
+                        el('div', {
+                            className: 'zone-color-control',
+                            style: {
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
+                            el('label', {
+                                style: {
+                                    display: 'block',
+                                    marginBottom: '8px',
+                                    fontWeight: 500,
+                                    color: '#1e1e1e'
+                                }
+                            }, __('Farbe', 'modular-blocks-plugin')),
+                            // Custom color picker using divs instead of buttons (CDB CSS affects buttons)
+                            el('div', {
+                                className: 'custom-color-picker',
+                                style: {
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    marginTop: '8px'
+                                }
+                            },
+                                colorPalette.map((colorItem, colorIndex) =>
+                                    el('div', {
+                                        key: colorIndex,
+                                        role: 'button',
+                                        tabIndex: 0,
+                                        title: colorItem.name,
+                                        onClick: () => updateDropZone(editingZoneIndex, { borderColor: colorItem.color }),
+                                        onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') updateDropZone(editingZoneIndex, { borderColor: colorItem.color }); },
+                                        className: 'color-swatch-item',
+                                        style: {
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '50%',
+                                            border: dropZones[editingZoneIndex].borderColor === colorItem.color ? '3px solid #1e1e1e' : '2px solid rgba(0,0,0,0.15)',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxSizing: 'border-box',
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }
+                                    },
+                                        // Inner color circle - use ref to set background with !important
+                                        el('span', {
+                                            ref: (spanEl) => {
+                                                if (spanEl) {
+                                                    spanEl.style.setProperty('position', 'absolute', 'important');
+                                                    spanEl.style.setProperty('top', '2px', 'important');
+                                                    spanEl.style.setProperty('left', '2px', 'important');
+                                                    spanEl.style.setProperty('right', '2px', 'important');
+                                                    spanEl.style.setProperty('bottom', '2px', 'important');
+                                                    spanEl.style.setProperty('border-radius', '50%', 'important');
+                                                    spanEl.style.setProperty('background-color', colorItem.color, 'important');
+                                                }
+                                            },
+                                            className: 'color-swatch-color'
+                                        }),
+                                        // Checkmark for selected
+                                        dropZones[editingZoneIndex].borderColor === colorItem.color && el('svg', {
+                                            width: 16,
+                                            height: 16,
+                                            viewBox: '0 0 24 24',
+                                            fill: colorItem.color === '#1e1e1e' || colorItem.color === '#6b7280' ? '#fff' : '#000',
+                                            style: { position: 'relative', zIndex: 1 }
+                                        },
+                                            el('path', { d: 'M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z' })
+                                        )
+                                    )
+                                ),
+                                // Show current color name
+                                el('div', {
+                                    style: {
+                                        width: '100%',
+                                        marginTop: '8px',
+                                        fontSize: '12px',
+                                        color: '#666'
+                                    }
+                                }, colorPalette.find(c => c.color === dropZones[editingZoneIndex].borderColor)?.name || 'Individuell', ': ', dropZones[editingZoneIndex].borderColor || '#0073aa')
+                            )
                         )
                     )
                 );
@@ -1125,81 +1547,264 @@
                     )
                 ),
 
-                // Main Editor
-                el('div', blockProps,
-                    el('div', { className: 'drag-drop-editor' },
+                // Main Editor - prevent block dragging within editor
+                el('div', {
+                    ...blockProps,
+                    draggable: false,
+                    onDragStart: (e) => { e.preventDefault(); e.stopPropagation(); },
+                    onDrag: (e) => { e.preventDefault(); e.stopPropagation(); }
+                },
+                    el('div', {
+                        className: 'drag-drop-editor',
+                        draggable: false,
+                        onDragStart: (e) => { e.preventDefault(); e.stopPropagation(); },
+                        style: {
+                            display: 'block',
+                            position: 'relative',
+                            background: '#ffffff',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            padding: '20px',
+                            boxSizing: 'border-box',
+                            opacity: 1,
+                            transform: 'none',
+                            pointerEvents: 'auto',
+                            minHeight: 'auto',
+                            zIndex: 'auto'
+                        }
+                    },
                         // Title
-                        el('div', { className: 'editor-header' },
+                        el('div', {
+                            className: 'editor-header',
+                            style: {
+                                marginBottom: '16px',
+                                opacity: 1,
+                                pointerEvents: 'auto',
+                                display: 'block'
+                            }
+                        },
                             el(RichText, {
                                 tagName: 'h3',
                                 value: title,
                                 onChange: value => setAttributes({ title: value }),
                                 placeholder: __('Titel eingeben...', 'modular-blocks-plugin'),
-                                className: 'editor-title'
+                                className: 'editor-title',
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 600,
+                                    margin: '0 0 8px 0',
+                                    color: '#1e1e1e',
+                                    opacity: 1
+                                }
                             }),
                             el(RichText, {
                                 tagName: 'p',
                                 value: description,
                                 onChange: value => setAttributes({ description: value }),
                                 placeholder: __('Beschreibung eingeben...', 'modular-blocks-plugin'),
-                                className: 'editor-description'
+                                className: 'editor-description',
+                                style: {
+                                    fontSize: '14px',
+                                    margin: 0,
+                                    color: '#666',
+                                    opacity: 1
+                                }
                             })
                         ),
 
                         // Tab Navigation
-                        el('div', { className: 'editor-tabs' },
+                        el('div', {
+                            className: 'editor-tabs',
+                            style: {
+                                display: 'flex',
+                                gap: '4px',
+                                marginBottom: '16px',
+                                borderBottom: '1px solid #e0e0e0',
+                                paddingBottom: '12px',
+                                flexWrap: 'wrap',
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
                             el(Button, {
                                 className: activeTab === 'elements' ? 'active' : '',
-                                onClick: () => setActiveTab('elements')
+                                onClick: () => setActiveTab('elements'),
+                                style: {
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    background: activeTab === 'elements' ? '#0073aa' : '#f0f0f0',
+                                    color: activeTab === 'elements' ? '#ffffff' : '#1e1e1e',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
                             }, __('Elemente', 'modular-blocks-plugin') + ` (${draggables.length})`),
                             el(Button, {
                                 className: activeTab === 'zones' ? 'active' : '',
-                                onClick: () => setActiveTab('zones')
+                                onClick: () => setActiveTab('zones'),
+                                style: {
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    background: activeTab === 'zones' ? '#0073aa' : '#f0f0f0',
+                                    color: activeTab === 'zones' ? '#ffffff' : '#1e1e1e',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
                             }, __('Zonen-Liste', 'modular-blocks-plugin') + ` (${dropZones.length})`),
                             el(Button, {
                                 className: activeTab === 'visual' ? 'active' : '',
-                                onClick: () => setActiveTab('visual')
+                                onClick: () => setActiveTab('visual'),
+                                style: {
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    background: activeTab === 'visual' ? '#0073aa' : '#f0f0f0',
+                                    color: activeTab === 'visual' ? '#ffffff' : '#1e1e1e',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
                             }, __('Visueller Editor', 'modular-blocks-plugin')),
                             el(Button, {
                                 className: activeTab === 'preview' ? 'active' : '',
-                                onClick: () => setActiveTab('preview')
+                                onClick: () => setActiveTab('preview'),
+                                style: {
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    background: activeTab === 'preview' ? '#0073aa' : '#f0f0f0',
+                                    color: activeTab === 'preview' ? '#ffffff' : '#1e1e1e',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
                             }, __('Vorschau', 'modular-blocks-plugin')),
                             el(Button, {
                                 className: activeTab === 'import' ? 'active' : '',
-                                onClick: () => setActiveTab('import')
+                                onClick: () => setActiveTab('import'),
+                                style: {
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    background: activeTab === 'import' ? '#0073aa' : '#f0f0f0',
+                                    color: activeTab === 'import' ? '#ffffff' : '#1e1e1e',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
                             }, __('H5P Import', 'modular-blocks-plugin'))
                         ),
 
                         // Tab Content
-                        el('div', { className: 'tab-content' },
-                            activeTab === 'elements' && el('div', { className: 'elements-tab' },
-                                el('div', { className: 'tab-header' },
-                                    el('h4', {}, __('Ziehbare Elemente', 'modular-blocks-plugin')),
+                        el('div', {
+                            className: 'tab-content',
+                            style: {
+                                display: 'block',
+                                opacity: 1,
+                                pointerEvents: 'auto'
+                            }
+                        },
+                            activeTab === 'elements' && el('div', {
+                                className: 'elements-tab',
+                                style: {
+                                    display: 'block',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
+                            },
+                                el('div', {
+                                    className: 'tab-header',
+                                    style: {
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '16px',
+                                        opacity: 1,
+                                        pointerEvents: 'auto'
+                                    }
+                                },
+                                    el('h4', { style: { margin: 0, fontSize: '16px', fontWeight: 600, color: '#1e1e1e' } }, __('Ziehbare Elemente', 'modular-blocks-plugin')),
                                     el(Button, {
                                         isPrimary: true,
-                                        onClick: addDraggable
+                                        onClick: addDraggable,
+                                        style: { opacity: 1, pointerEvents: 'auto' }
                                     }, __('+ Neues Element', 'modular-blocks-plugin'))
                                 ),
-                                el('div', { className: 'items-list' },
+                                el('div', {
+                                    className: 'items-list',
+                                    style: {
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        opacity: 1,
+                                        pointerEvents: 'auto'
+                                    }
+                                },
                                     draggables.length === 0
-                                        ? el('div', { className: 'empty-state' },
-                                            __('Keine Elemente vorhanden. Fügen Sie ein Element hinzu.', 'modular-blocks-plugin'))
+                                        ? el('div', {
+                                            className: 'empty-state',
+                                            style: {
+                                                padding: '24px',
+                                                textAlign: 'center',
+                                                background: '#f8f9fa',
+                                                borderRadius: '4px',
+                                                color: '#666'
+                                            }
+                                        }, __('Keine Elemente vorhanden. Fügen Sie ein Element hinzu.', 'modular-blocks-plugin'))
                                         : draggables.map((d, i) => renderDraggablePanel(d, i))
                                 )
                             ),
 
-                            activeTab === 'zones' && el('div', { className: 'zones-tab' },
-                                el('div', { className: 'tab-header' },
-                                    el('h4', {}, __('Drop-Zonen', 'modular-blocks-plugin')),
+                            activeTab === 'zones' && el('div', {
+                                className: 'zones-tab',
+                                style: {
+                                    display: 'block',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
+                            },
+                                el('div', {
+                                    className: 'tab-header',
+                                    style: {
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '16px',
+                                        opacity: 1,
+                                        pointerEvents: 'auto'
+                                    }
+                                },
+                                    el('h4', { style: { margin: 0, fontSize: '16px', fontWeight: 600, color: '#1e1e1e' } }, __('Drop-Zonen', 'modular-blocks-plugin')),
                                     el(Button, {
                                         isPrimary: true,
-                                        onClick: addDropZone
+                                        onClick: addDropZone,
+                                        style: { opacity: 1, pointerEvents: 'auto' }
                                     }, __('+ Neue Zone', 'modular-blocks-plugin'))
                                 ),
-                                el('div', { className: 'items-list' },
+                                el('div', {
+                                    className: 'items-list',
+                                    style: {
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        opacity: 1,
+                                        pointerEvents: 'auto'
+                                    }
+                                },
                                     dropZones.length === 0
-                                        ? el('div', { className: 'empty-state' },
-                                            __('Keine Drop-Zonen vorhanden. Fügen Sie eine Zone hinzu.', 'modular-blocks-plugin'))
+                                        ? el('div', {
+                                            className: 'empty-state',
+                                            style: {
+                                                padding: '24px',
+                                                textAlign: 'center',
+                                                background: '#f8f9fa',
+                                                borderRadius: '4px',
+                                                color: '#666'
+                                            }
+                                        }, __('Keine Drop-Zonen vorhanden. Fügen Sie eine Zone hinzu.', 'modular-blocks-plugin'))
                                         : dropZones.map((z, i) => renderDropZonePanel(z, i))
                                 )
                             ),
@@ -1208,10 +1813,34 @@
 
                             activeTab === 'preview' && renderPreview(),
 
-                            activeTab === 'import' && el('div', { className: 'import-tab' },
-                                el('div', { className: 'import-header' },
-                                    el('h4', {}, __('H5P Drag and Drop importieren', 'modular-blocks-plugin')),
-                                    el('p', { className: 'import-description' },
+                            activeTab === 'import' && el('div', {
+                                className: 'import-tab',
+                                style: {
+                                    display: 'block',
+                                    opacity: 1,
+                                    pointerEvents: 'auto'
+                                }
+                            },
+                                el('div', {
+                                    className: 'import-header',
+                                    style: { marginBottom: '16px' }
+                                },
+                                    el('h4', {
+                                        style: {
+                                            margin: '0 0 8px 0',
+                                            fontSize: '16px',
+                                            fontWeight: 600,
+                                            color: '#1e1e1e'
+                                        }
+                                    }, __('H5P Drag and Drop importieren', 'modular-blocks-plugin')),
+                                    el('p', {
+                                        className: 'import-description',
+                                        style: {
+                                            margin: 0,
+                                            fontSize: '14px',
+                                            color: '#666'
+                                        }
+                                    },
                                         __('Laden Sie eine H5P-Datei (.h5p) hoch, um eine bestehende Drag & Drop Übung zu importieren. Unterstützt werden H5P Drag and Drop und Drag Question Inhaltstypen.', 'modular-blocks-plugin')
                                     )
                                 ),
