@@ -4,6 +4,7 @@
     const ChemVizMoleculeViewer = {
         viewers: new Map(),
         intersectionObserver: null,
+        resizeHandlerAttached: false,
 
         init: function() {
             if (typeof window.$3Dmol === 'undefined') {
@@ -98,7 +99,7 @@
                 this.loadStructure(viewer, config, element, loadingEl);
 
                 this.viewers.set(canvas.id, viewer);
-                this.setupResizeHandler(viewer);
+                this.setupGlobalResizeHandler();
 
             } catch (error) {
                 console.error('ChemViz Viewer Error:', error);
@@ -376,18 +377,48 @@
             });
         },
 
-        setupResizeHandler: function(viewer) {
+        setupGlobalResizeHandler: function() {
+            // Only attach once for all viewers
+            if (this.resizeHandlerAttached) return;
+            this.resizeHandlerAttached = true;
+
             let resizeTimeout;
+            const self = this;
+
+            // Debounced resize for window resize events
             const debouncedResize = () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    viewer.resize();
-                    viewer.render();
-                }, 250);
+                    self.resizeAllViewers();
+                }, 150);
+            };
+
+            // Immediate resize for fullscreen changes
+            const handleFullscreenChange = () => {
+                // Use requestAnimationFrame for smooth transition
+                requestAnimationFrame(() => {
+                    // Small delay to let CSS transitions complete
+                    setTimeout(() => {
+                        self.resizeAllViewers();
+                    }, 50);
+                });
             };
 
             window.addEventListener('resize', debouncedResize);
-            document.addEventListener('fullscreenchange', debouncedResize);
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        },
+
+        resizeAllViewers: function() {
+            this.viewers.forEach((viewer) => {
+                try {
+                    viewer.resize();
+                    viewer.render();
+                } catch (e) {
+                    console.warn('ChemViz: Resize error', e);
+                }
+            });
         },
 
         setupKeyboardNav: function(element) {
