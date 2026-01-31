@@ -1,12 +1,12 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/molecule-viewer",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "title": "3D Molekül-Viewer",
     "category": "modular-blocks",
     "icon": "admin-site",
-    "description": "Interaktive 3D-Visualisierung von Molekülstrukturen mit 3Dmol.js",
-    "keywords": ["molecule", "3d", "chemistry", "structure", "pdb"],
+    "description": "Interaktive 3D-Visualisierung von Molekülstrukturen - PDB, PubChem, SMILES, AlphaFold",
+    "keywords": ["molecule", "3d", "chemistry", "structure", "pdb", "pubchem", "smiles", "alphafold", "protein"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
@@ -16,11 +16,28 @@
         "sourceType": {
             "type": "string",
             "default": "pdb",
-            "enum": ["pdb", "url", "upload"]
+            "enum": ["pdb", "pubchem", "smiles", "alphafold", "url", "upload"]
         },
         "pdbId": {
             "type": "string",
-            "default": "1YCR"
+            "default": ""
+        },
+        "pubchemQuery": {
+            "type": "string",
+            "default": ""
+        },
+        "pubchemType": {
+            "type": "string",
+            "default": "name",
+            "enum": ["name", "cid"]
+        },
+        "smilesString": {
+            "type": "string",
+            "default": ""
+        },
+        "alphafoldId": {
+            "type": "string",
+            "default": ""
         },
         "structureUrl": {
             "type": "string",
