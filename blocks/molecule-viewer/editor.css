@@ -1,18 +1,33 @@
 .molecule-viewer-editor {
     margin: 20px 0;
+    width: 100%;
+    display: block;
 }
 
 .molecule-viewer-placeholder {
     border: 2px dashed #8f98a1;
     padding: 40px;
     text-align: center;
+    min-height: 300px !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .molecule-viewer-placeholder h3 {
     margin: 0 0 8px 0;
     font-size: 18px;
+    color: #fff;
 }
 
 .molecule-viewer-placeholder p {
     margin: 4px 0;
+    color: #fff;
+}
+
+.molecule-viewer-placeholder .dashicons {
+    color: #fff;
 }
