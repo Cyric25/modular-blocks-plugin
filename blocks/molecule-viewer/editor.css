@@ -1,7 +1,10 @@
+/* Base editor styles */
 .molecule-viewer-editor {
     margin: 20px 0;
     width: 100%;
-    display: block;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .molecule-viewer-placeholder {
@@ -9,25 +12,60 @@
     padding: 40px;
     text-align: center;
     min-height: 300px !important;
+    height: auto !important;
     display: flex !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
     width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .molecule-viewer-placeholder h3 {
     margin: 0 0 8px 0;
     font-size: 18px;
-    color: #fff;
+    color: #fff !important;
 }
 
 .molecule-viewer-placeholder p {
     margin: 4px 0;
-    color: #fff;
+    color: #fff !important;
 }
 
 .molecule-viewer-placeholder .dashicons {
-    color: #fff;
+    color: #fff !important;
+    font-size: 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+}
+
+/* Ensure visibility inside CDB blocks */
+[data-type*="container-block-designer"] .wp-block-modular-blocks-molecule-viewer,
+[data-type*="container-block-designer"] .molecule-viewer-editor,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+}
+
+[data-type*="container-block-designer"] .molecule-viewer-placeholder {
+    min-height: 300px !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #1a1a1a !important;
+    border: 2px dashed #555 !important;
+}
+
+[data-type*="container-block-designer"] .molecule-viewer-placeholder h3,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder p,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder .dashicons {
+    color: #fff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
