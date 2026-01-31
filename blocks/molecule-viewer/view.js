@@ -3,6 +3,7 @@
 
     const ChemVizMoleculeViewer = {
         viewers: new Map(),
+        spinState: new Map(),  // Track spin state per viewer
         intersectionObserver: null,
         resizeHandlerAttached: false,
 
@@ -108,6 +109,9 @@
         },
 
         loadStructure: function(viewer, config, element, loadingEl) {
+            const self = this;
+            const canvas = element.querySelector('.chemviz-viewer__canvas');
+
             const hideLoading = () => {
                 if (loadingEl) {
                     loadingEl.style.display = 'none';
@@ -116,12 +120,16 @@
 
             const onSuccess = (data, format) => {
                 viewer.addModel(data, format);
-                this.applyStyle(viewer, config);
+                self.applyStyle(viewer, config);
                 viewer.zoomTo();
                 viewer.render();
 
                 if (config.enableSpin) {
                     viewer.spin(true);
+                    // Track initial spin state
+                    if (canvas && canvas.id) {
+                        self.spinState.set(canvas.id, true);
+                    }
                 }
 
                 hideLoading();
@@ -152,7 +160,7 @@
 
                 case 'smiles':
                     if (config.smiles) {
-                        this.loadFromSMILES(config.smiles, viewer, config, hideLoading, onError);
+                        this.loadFromSMILES(config.smiles, onSuccess, onError);
                     } else {
                         onError('Kein SMILES-String angegeben');
                     }
@@ -224,9 +232,8 @@
                 .catch(error => onError(`Fehler beim Laden von PubChem: ${error.message}`));
         },
 
-        loadFromSMILES: function(smiles, viewer, config, hideLoading, onError) {
-            // Use 3Dmol's built-in SMILES support or PubChem for conversion
-            // First try PubChem's SMILES to 3D conversion
+        loadFromSMILES: function(smiles, onSuccess, onError) {
+            // Use PubChem's SMILES to 3D/2D conversion
             const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/SDF?record_type=3d`;
 
             fetch(url)
@@ -243,18 +250,7 @@
                     }
                     return response.text();
                 })
-                .then(data => {
-                    viewer.addModel(data, 'sdf');
-                    this.applyStyle(viewer, config);
-                    viewer.zoomTo();
-                    viewer.render();
-
-                    if (config.enableSpin) {
-                        viewer.spin(true);
-                    }
-
-                    hideLoading();
-                })
+                .then(data => onSuccess(data, 'sdf'))
                 .catch(error => onError(`Fehler bei SMILES-Konvertierung: ${error.message}`));
         },
 
@@ -342,6 +338,7 @@
         },
 
         attachControlListeners: function(element, config) {
+            const self = this;
             const controls = element.querySelectorAll('.chemviz-viewer__button');
             const canvas = element.querySelector('.chemviz-viewer__canvas');
 
@@ -349,9 +346,14 @@
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
                     const action = button.dataset.action;
-                    const viewer = this.viewers.get(canvas.id);
 
-                    if (!viewer) return;
+                    // Get viewer at click time (ID might not exist when listener was attached)
+                    const viewer = canvas.id ? self.viewers.get(canvas.id) : null;
+
+                    if (!viewer) {
+                        console.warn('ChemViz: Viewer not ready yet');
+                        return;
+                    }
 
                     switch (action) {
                         case 'reset':
@@ -359,9 +361,11 @@
                             viewer.render();
                             break;
                         case 'spin':
-                            const isSpinning = viewer.isAnimated();
-                            viewer.spin(!isSpinning);
-                            button.textContent = isSpinning ? 'Drehen' : 'Stop';
+                            const currentlySpinning = self.spinState.get(canvas.id) || false;
+                            const newSpinState = !currentlySpinning;
+                            viewer.spin(newSpinState);
+                            self.spinState.set(canvas.id, newSpinState);
+                            button.textContent = newSpinState ? 'Stop' : 'Drehen';
                             break;
                         case 'fullscreen':
                             if (element.requestFullscreen) {
