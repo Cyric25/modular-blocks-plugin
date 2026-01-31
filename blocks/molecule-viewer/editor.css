@@ -1,71 +1,101 @@
-/* Base editor styles */
-.molecule-viewer-editor {
-    margin: 20px 0;
-    width: 100%;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
+/**
+ * Molecule Viewer Block Editor Styles
+ * Gutenberg Editor specific styling
+ */
 
-.molecule-viewer-placeholder {
-    border: 2px dashed #8f98a1;
-    padding: 40px;
-    text-align: center;
-    min-height: 300px !important;
-    height: auto !important;
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: 100%;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.molecule-viewer-placeholder h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-    color: #fff !important;
-}
-
-.molecule-viewer-placeholder p {
-    margin: 4px 0;
-    color: #fff !important;
-}
-
-.molecule-viewer-placeholder .dashicons {
-    color: #fff !important;
-    font-size: 48px !important;
-    width: 48px !important;
-    height: 48px !important;
-}
-
-/* Ensure visibility inside CDB blocks */
-[data-type*="container-block-designer"] .wp-block-modular-blocks-molecule-viewer,
+/* ============================================
+   CDB CONTAINER COMPATIBILITY
+   These rules ensure styles work inside CDB containers
+   Using same pattern as drag-and-drop block
+   ============================================ */
+.molecule-viewer-editor.molecule-viewer-editor,
+.wp-block-modular-blocks-molecule-viewer.wp-block-modular-blocks-molecule-viewer,
 [data-type*="container-block-designer"] .molecule-viewer-editor,
-[data-type*="container-block-designer"] .molecule-viewer-placeholder {
+[data-type*="container-block-designer"] .wp-block-modular-blocks-molecule-viewer,
+[data-type*="container-block-designer"] .cbd-block-content .molecule-viewer-editor,
+[data-type*="container-block-designer"] .cbd-block-content .wp-block-modular-blocks-molecule-viewer,
+.cbd-block-content .molecule-viewer-editor,
+.cbd-block-content .wp-block-modular-blocks-molecule-viewer {
     display: block !important;
-    visibility: visible !important;
+    margin: 20px 0 !important;
+    width: 100% !important;
     opacity: 1 !important;
+    visibility: visible !important;
     position: relative !important;
+    z-index: auto !important;
+    min-height: 300px !important;
+    box-sizing: border-box !important;
 }
 
-[data-type*="container-block-designer"] .molecule-viewer-placeholder {
-    min-height: 300px !important;
-    height: auto !important;
+/* ============================================
+   PLACEHOLDER STYLING
+   ============================================ */
+.molecule-viewer-placeholder.molecule-viewer-placeholder,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder,
+[data-type*="container-block-designer"] .cbd-block-content .molecule-viewer-placeholder,
+.cbd-block-content .molecule-viewer-placeholder {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    min-height: 300px !important;
+    padding: 40px !important;
+    text-align: center !important;
+    border: 2px dashed #555555 !important;
+    border-radius: 8px !important;
     background-color: #1a1a1a !important;
-    border: 2px dashed #555 !important;
+    box-sizing: border-box !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
 }
 
+/* Text elements inside placeholder */
+.molecule-viewer-placeholder h3,
 [data-type*="container-block-designer"] .molecule-viewer-placeholder h3,
-[data-type*="container-block-designer"] .molecule-viewer-placeholder p,
-[data-type*="container-block-designer"] .molecule-viewer-placeholder .dashicons {
-    color: #fff !important;
-    visibility: visible !important;
+[data-type*="container-block-designer"] .cbd-block-content .molecule-viewer-placeholder h3,
+.cbd-block-content .molecule-viewer-placeholder h3 {
+    margin: 0 0 8px 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
     opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.molecule-viewer-placeholder p,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder p,
+[data-type*="container-block-designer"] .cbd-block-content .molecule-viewer-placeholder p,
+.cbd-block-content .molecule-viewer-placeholder p {
+    margin: 4px 0 !important;
+    font-size: 14px !important;
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+    visibility: visible !important;
+}
+
+/* Dashicon inside placeholder */
+.molecule-viewer-placeholder .dashicons,
+.molecule-viewer-placeholder span.dashicons,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder .dashicons,
+[data-type*="container-block-designer"] .molecule-viewer-placeholder span.dashicons,
+[data-type*="container-block-designer"] .cbd-block-content .molecule-viewer-placeholder .dashicons,
+.cbd-block-content .molecule-viewer-placeholder .dashicons {
+    display: inline-block !important;
+    font-size: 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+    line-height: 48px !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-bottom: 16px !important;
+}
+
+/* Reset box-sizing for all children */
+.molecule-viewer-editor *,
+.wp-block-modular-blocks-molecule-viewer *,
+[data-type*="container-block-designer"] .molecule-viewer-editor *,
+[data-type*="container-block-designer"] .wp-block-modular-blocks-molecule-viewer * {
+    box-sizing: border-box !important;
 }
