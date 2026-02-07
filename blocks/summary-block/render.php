@@ -1,6 +1,9 @@
 <?php
 /**
- * Summary Block Render Template
+ * Summary Block Render Template (H5P-Style)
+ *
+ * Renders a summary quiz where users select correct statements from groups.
+ * Correct statements build up a summary of the topic.
  *
  * @var array $block_attributes Block attributes
  * @var string $block_content Block content
@@ -12,96 +15,128 @@ if (!defined('ABSPATH')) {
 }
 
 // Extract attributes with defaults
-$title = $block_attributes['title'] ?? 'Wählen Sie die drei wichtigsten Aussagen aus und bringen Sie sie in die richtige Reihenfolge.';
-$description = $block_attributes['description'] ?? 'Klicken Sie auf drei Aussagen und ziehen Sie sie in die korrekte Reihenfolge.';
-$statements = $block_attributes['statements'] ?? [];
-$required_selections = $block_attributes['requiredSelections'] ?? 3;
+$title = $block_attributes['title'] ?? 'Zusammenfassung erstellen';
+$description = $block_attributes['description'] ?? 'Wählen Sie aus jeder Gruppe die richtige(n) Aussage(n) aus.';
+$statement_groups = $block_attributes['statementGroups'] ?? [];
+$progressive_reveal = $block_attributes['progressiveReveal'] ?? true;
 $show_feedback = $block_attributes['showFeedback'] ?? true;
 $show_retry = $block_attributes['showRetry'] ?? true;
 $show_solution = $block_attributes['showSolution'] ?? true;
-$allow_reordering = $block_attributes['allowReordering'] ?? true;
-$score_for_selection = $block_attributes['scoreForSelection'] ?? 1;
-$score_for_order = $block_attributes['scoreForOrder'] ?? 1;
-$pass_percentage = $block_attributes['passPercentage'] ?? 80;
-$instruction_text = $block_attributes['instructionText'] ?? 'Wählen Sie @count Aussagen aus:';
-$order_text = $block_attributes['orderText'] ?? 'Bringen Sie die ausgewählten Aussagen in die richtige Reihenfolge:';
-$success_text = $block_attributes['successText'] ?? 'Ausgezeichnet! Sie haben die richtigen Aussagen in der korrekten Reihenfolge gewählt.';
-$partial_success_text = $block_attributes['partialSuccessText'] ?? 'Gut gemacht! Einige Ihrer Auswahlen und Anordnungen sind korrekt.';
-$fail_text = $block_attributes['failText'] ?? 'Versuchen Sie es noch einmal. Achten Sie sowohl auf die Auswahl als auch auf die Reihenfolge.';
+$shuffle_statements = $block_attributes['shuffleStatements'] ?? true;
+$shuffle_groups = $block_attributes['shuffleGroups'] ?? false;
+$penalty_per_wrong = $block_attributes['penaltyPerWrongAnswer'] ?? 1;
+$success_text = $block_attributes['successText'] ?? 'Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden.';
+$partial_success_text = $block_attributes['partialSuccessText'] ?? 'Gut gemacht! Sie haben die meisten richtigen Aussagen gefunden.';
+$fail_text = $block_attributes['failText'] ?? 'Versuchen Sie es noch einmal.';
+$correct_feedback = $block_attributes['correctFeedback'] ?? 'Richtig! Diese Aussage wurde zur Zusammenfassung hinzugefügt.';
+$incorrect_feedback = $block_attributes['incorrectFeedback'] ?? 'Falsch. Versuchen Sie eine andere Aussage.';
+$summary_title = $block_attributes['summaryTitle'] ?? 'Ihre Zusammenfassung:';
 
 // Sanitize attributes
 $title = wp_kses_post($title);
 $description = wp_kses_post($description);
-$required_selections = max(1, min(count($statements), intval($required_selections)));
-$pass_percentage = max(0, min(100, intval($pass_percentage)));
+$penalty_per_wrong = max(0, min(10, intval($penalty_per_wrong)));
 
-// Validate statements
-if (empty($statements) || !is_array($statements)) {
-    return '<div class="summary-error"><p>' . __('Keine Aussagen konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
+// Validate statement groups
+if (empty($statement_groups) || !is_array($statement_groups)) {
+    return '<div class="summary-error"><p>' . __('Keine Aussagen-Gruppen konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
 }
 
 // Generate unique ID for this block instance
 $block_id = 'summary-block-' . wp_unique_id();
 
-// Get correct statements and shuffle all statements
-$correct_statements = array_filter($statements, fn($stmt) => $stmt['isCorrect'] ?? false);
-$correct_count = count($correct_statements);
+// Count correct statements per group and total
+$total_correct = 0;
+$groups_data = [];
 
-// Sort correct statements by their correct position
-usort($correct_statements, function($a, $b) {
-    return ($a['correctPosition'] ?? 0) - ($b['correctPosition'] ?? 0);
-});
+foreach ($statement_groups as $group_index => $group) {
+    $statements = $group['statements'] ?? [];
+    $correct_in_group = 0;
 
-// Shuffle statements for display
-$display_statements = $statements;
-shuffle($display_statements);
+    foreach ($statements as $statement) {
+        if (!empty($statement['isCorrect'])) {
+            $correct_in_group++;
+            $total_correct++;
+        }
+    }
+
+    $groups_data[] = [
+        'id' => $group['id'] ?? 'group' . $group_index,
+        'statements' => $statements,
+        'correctCount' => $correct_in_group
+    ];
+}
+
+// Shuffle groups if enabled
+if ($shuffle_groups) {
+    shuffle($groups_data);
+}
 
 // Build CSS classes
 $css_classes = [
     'wp-block-modular-blocks-summary-block',
-    $allow_reordering ? 'allow-reordering' : '',
+    $progressive_reveal ? 'progressive-reveal' : 'show-all-groups',
     $show_feedback ? 'has-feedback' : ''
 ];
 
 $css_classes = array_filter($css_classes);
 $css_class = implode(' ', $css_classes);
 
+// Get theme colors for buttons
+$color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
+$color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
+
 // Prepare data for JavaScript
 $summary_data = [
-    'requiredSelections' => $required_selections,
+    'groups' => $groups_data,
+    'totalCorrect' => $total_correct,
+    'progressiveReveal' => $progressive_reveal,
     'showFeedback' => $show_feedback,
     'showRetry' => $show_retry,
     'showSolution' => $show_solution,
-    'allowReordering' => $allow_reordering,
-    'scoreForSelection' => $score_for_selection,
-    'scoreForOrder' => $score_for_order,
-    'passPercentage' => $pass_percentage,
-    'correctCount' => $correct_count,
-    'instructionText' => str_replace('@count', $required_selections, $instruction_text),
-    'orderText' => $order_text,
+    'shuffleStatements' => $shuffle_statements,
+    'penaltyPerWrong' => $penalty_per_wrong,
     'successText' => $success_text,
     'partialSuccessText' => $partial_success_text,
     'failText' => $fail_text,
-    'correctStatements' => $correct_statements,
+    'correctFeedback' => $correct_feedback,
+    'incorrectFeedback' => $incorrect_feedback,
+    'summaryTitle' => $summary_title,
     'strings' => [
+        'group' => __('Frage', 'modular-blocks-plugin'),
+        'of' => __('von', 'modular-blocks-plugin'),
         'check' => __('Prüfen', 'modular-blocks-plugin'),
         'retry' => __('Wiederholen', 'modular-blocks-plugin'),
         'showSolution' => __('Lösung anzeigen', 'modular-blocks-plugin'),
-        'selectRequired' => sprintf(__('Bitte wählen Sie genau %d Aussagen aus.', 'modular-blocks-plugin'), $required_selections),
-        'dragToReorder' => __('Ziehen Sie die Aussagen, um sie neu zu ordnen', 'modular-blocks-plugin'),
-        'position' => __('Position', 'modular-blocks-plugin'),
-        'correct' => __('Richtig', 'modular-blocks-plugin'),
-        'incorrect' => __('Falsch', 'modular-blocks-plugin'),
-        'wrongPosition' => __('Falsche Position', 'modular-blocks-plugin'),
-        'shouldNotSelect' => __('Nicht auswählen', 'modular-blocks-plugin')
+        'continue' => __('Weiter', 'modular-blocks-plugin'),
+        'correct' => __('Richtig!', 'modular-blocks-plugin'),
+        'incorrect' => __('Falsch!', 'modular-blocks-plugin'),
+        'score' => __('Punkte', 'modular-blocks-plugin'),
+        'completed' => __('Abgeschlossen', 'modular-blocks-plugin'),
+        'selectCorrect' => __('Wählen Sie die richtige(n) Aussage(n):', 'modular-blocks-plugin')
     ]
 ];
+
+// Button styles
+$button_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
+                'padding: 10px 20px; border: none; border-radius: 4px; ' .
+                'background: ' . esc_attr($color_ui_surface) . '; ' .
+                'color: #fff; cursor: pointer; font-size: 14px; font-weight: 500; ' .
+                'transition: background 0.2s ease;';
+
+$button_secondary_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
+                          'padding: 10px 20px; border: 2px solid ' . esc_attr($color_ui_surface) . '; ' .
+                          'border-radius: 4px; background: transparent; ' .
+                          'color: ' . esc_attr($color_ui_surface) . '; cursor: pointer; ' .
+                          'font-size: 14px; font-weight: 500; transition: all 0.2s ease;';
 ?>
 
-<div id="<?php echo esc_attr($block_id); ?>" class="<?php echo esc_attr($css_class); ?>" data-summary="<?php echo esc_attr(json_encode($summary_data)); ?>">
-    <div class="summary-container">
+<div id="<?php echo esc_attr($block_id); ?>"
+     class="<?php echo esc_attr($css_class); ?>"
+     data-summary='<?php echo esc_attr(json_encode($summary_data)); ?>'>
 
-        <!-- Title and Description -->
+    <div class="summary-container">
+        <!-- Header -->
         <div class="summary-header">
             <?php if (!empty($title)): ?>
                 <h3 class="summary-title"><?php echo $title; ?></h3>
@@ -112,98 +147,140 @@ $summary_data = [
             <?php endif; ?>
         </div>
 
-        <!-- Instructions -->
-        <div class="summary-instructions">
-            <div class="instruction-step active" data-step="select">
-                <span class="step-number">1</span>
-                <span class="step-text"><?php echo str_replace('@count', $required_selections, $instruction_text); ?></span>
+        <!-- Progress indicator -->
+        <div class="summary-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%;"></div>
             </div>
-
-            <?php if ($allow_reordering): ?>
-                <div class="instruction-step" data-step="order">
-                    <span class="step-number">2</span>
-                    <span class="step-text"><?php echo esc_html($order_text); ?></span>
-                </div>
-            <?php endif; ?>
+            <div class="progress-text">
+                <span class="current-group">1</span> / <span class="total-groups"><?php echo count($groups_data); ?></span>
+            </div>
         </div>
 
-        <!-- Available Statements -->
-        <div class="statements-pool">
-            <?php foreach ($display_statements as $index => $statement): ?>
+        <!-- Groups Container -->
+        <div class="summary-groups">
+            <?php foreach ($groups_data as $group_index => $group): ?>
                 <?php
-                $statement_text = wp_kses_post($statement['text'] ?? '');
-                $statement_feedback = wp_kses_post($statement['feedback'] ?? '');
-                $is_correct = $statement['isCorrect'] ?? false;
-                $correct_position = $statement['correctPosition'] ?? 0;
-                $statement_id = $block_id . '-statement-' . $index;
+                $statements = $group['statements'];
+                // Shuffle statements within group if enabled (for display)
+                if ($shuffle_statements) {
+                    shuffle($statements);
+                }
+                $is_first = ($group_index === 0);
                 ?>
-                <div class="statement-item"
-                     data-index="<?php echo esc_attr($index); ?>"
-                     data-correct="<?php echo $is_correct ? 'true' : 'false'; ?>"
-                     data-position="<?php echo esc_attr($correct_position); ?>"
-                     data-feedback="<?php echo esc_attr($statement_feedback); ?>">
-                    <div class="statement-content">
-                        <div class="statement-text"><?php echo $statement_text; ?></div>
-                        <div class="statement-controls">
-                            <button type="button" class="statement-select" aria-label="<?php _e('Aussage auswählen', 'modular-blocks-plugin'); ?>">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20,6 9,17 4,12"/>
-                                </svg>
-                            </button>
-                        </div>
+                <div class="summary-group <?php echo $is_first && $progressive_reveal ? 'active' : ''; ?>"
+                     data-group-index="<?php echo esc_attr($group_index); ?>"
+                     data-group-id="<?php echo esc_attr($group['id']); ?>"
+                     data-correct-count="<?php echo esc_attr($group['correctCount']); ?>"
+                     style="<?php echo !$is_first && $progressive_reveal ? 'display: none;' : ''; ?>">
+
+                    <div class="group-header">
+                        <span class="group-label">
+                            <?php echo esc_html__('Frage', 'modular-blocks-plugin'); ?>
+                            <?php echo ($group_index + 1); ?>
+                            <?php echo esc_html__('von', 'modular-blocks-plugin'); ?>
+                            <?php echo count($groups_data); ?>
+                        </span>
+                        <span class="group-instruction">
+                            <?php
+                            if ($group['correctCount'] > 1) {
+                                printf(
+                                    esc_html__('Wählen Sie %d richtige Aussagen:', 'modular-blocks-plugin'),
+                                    $group['correctCount']
+                                );
+                            } else {
+                                echo esc_html__('Wählen Sie die richtige Aussage:', 'modular-blocks-plugin');
+                            }
+                            ?>
+                        </span>
                     </div>
 
-                    <!-- Feedback (hidden initially) -->
-                    <?php if ($show_feedback && !empty($statement_feedback)): ?>
-                        <div class="statement-feedback" style="display: none;">
-                            <div class="feedback-content"><?php echo $statement_feedback; ?></div>
-                        </div>
-                    <?php endif; ?>
+                    <div class="group-statements">
+                        <?php foreach ($statements as $stmt_index => $statement): ?>
+                            <?php
+                            $stmt_id = $statement['id'] ?? $group['id'] . '-s' . $stmt_index;
+                            $stmt_text = wp_kses_post($statement['text'] ?? '');
+                            $is_correct = !empty($statement['isCorrect']);
+                            ?>
+                            <button type="button"
+                                    class="statement-option"
+                                    data-statement-id="<?php echo esc_attr($stmt_id); ?>"
+                                    data-correct="<?php echo $is_correct ? 'true' : 'false'; ?>">
+                                <span class="statement-text"><?php echo $stmt_text; ?></span>
+                                <span class="statement-icon"></span>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Group Feedback -->
+                    <div class="group-feedback" style="display: none;">
+                        <div class="feedback-message"></div>
+                    </div>
+
+                    <!-- Group Actions -->
+                    <div class="group-actions">
+                        <button type="button"
+                                class="summary-button continue-button"
+                                style="<?php echo esc_attr($button_style); ?> display: none;">
+                            <?php echo esc_html__('Weiter', 'modular-blocks-plugin'); ?>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;">
+                                <polyline points="9,18 15,12 9,6"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <!-- Selected Statements (Sortable) -->
-        <div class="selected-statements" style="display: none;">
-            <h4 class="selected-title"><?php _e('Ausgewählte Aussagen:', 'modular-blocks-plugin'); ?></h4>
-            <div class="sortable-list">
-                <!-- Selected items will be added here dynamically -->
+        <!-- Summary Section (grows as user selects correct answers) -->
+        <div class="summary-section" style="display: none;">
+            <h4 class="summary-section-title"><?php echo esc_html($summary_title); ?></h4>
+            <div class="summary-statements">
+                <!-- Correct statements will be added here -->
             </div>
         </div>
 
-        <!-- Controls -->
-        <div class="summary-controls">
-            <button type="button" class="summary-button summary-check" disabled>
-                <?php _e('Prüfen', 'modular-blocks-plugin'); ?>
-            </button>
+        <!-- Results Section -->
+        <div class="summary-results" style="display: none;">
+            <div class="results-content">
+                <div class="results-icon"></div>
+                <div class="score-display"></div>
+                <div class="result-message"></div>
+            </div>
+        </div>
 
+        <!-- Final Controls -->
+        <div class="summary-controls" style="display: none;">
             <?php if ($show_retry): ?>
-                <button type="button" class="summary-button summary-retry" style="display: none;">
-                    <?php _e('Wiederholen', 'modular-blocks-plugin'); ?>
+                <button type="button"
+                        class="summary-button retry-button"
+                        style="<?php echo esc_attr($button_secondary_style); ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    <?php echo esc_html__('Wiederholen', 'modular-blocks-plugin'); ?>
                 </button>
             <?php endif; ?>
 
             <?php if ($show_solution): ?>
-                <button type="button" class="summary-button summary-solution" style="display: none;">
-                    <?php _e('Lösung anzeigen', 'modular-blocks-plugin'); ?>
+                <button type="button"
+                        class="summary-button solution-button"
+                        style="<?php echo esc_attr($button_style); ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4"/>
+                        <path d="M12 8h.01"/>
+                    </svg>
+                    <?php echo esc_html__('Lösung anzeigen', 'modular-blocks-plugin'); ?>
                 </button>
             <?php endif; ?>
         </div>
-
-        <!-- Results -->
-        <div class="summary-results" style="display: none;">
-            <div class="results-content">
-                <div class="score-display"></div>
-                <div class="result-message"></div>
-                <div class="score-breakdown"></div>
-            </div>
-        </div>
-
     </div>
 </div>
 
 <script>
-// Initialize summary functionality when DOM is ready
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     const summaryBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
     if (summaryBlock && typeof window.initSummaryBlock === 'function') {

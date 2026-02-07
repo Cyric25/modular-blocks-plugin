@@ -1,12 +1,12 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/summary-block",
-    "version": "1.0.0",
+    "version": "2.1.0",
     "title": "Summary - Zusammenfassung",
     "category": "modular-blocks",
     "icon": "list-view",
-    "description": "Erstellen Sie ein Summary-Quiz bei dem Nutzer drei Aussagen auswählen und in die richtige Reihenfolge bringen müssen. Inspiriert von H5P Summary.",
-    "keywords": ["summary", "zusammenfassung", "reihenfolge", "sortieren", "h5p", "quiz"],
+    "description": "Erstellen Sie ein Summary-Quiz im H5P-Stil. Nutzer wählen aus jeder Gruppe die richtige(n) Aussage(n). Die korrekten Aussagen bilden am Ende eine Zusammenfassung des Themas.",
+    "keywords": ["summary", "zusammenfassung", "h5p", "quiz", "aussagen", "wahr", "falsch", "csv"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
@@ -15,50 +15,55 @@
     "attributes": {
         "title": {
             "type": "string",
-            "default": "Wählen Sie die drei wichtigsten Aussagen aus und bringen Sie sie in die richtige Reihenfolge."
+            "default": "Zusammenfassung erstellen"
         },
         "description": {
             "type": "string",
-            "default": "Klicken Sie auf drei Aussagen und ziehen Sie sie in die korrekte Reihenfolge."
+            "default": "Wählen Sie aus jeder Gruppe die richtige(n) Aussage(n) aus. Die korrekten Aussagen bilden eine Zusammenfassung des Themas."
         },
-        "statements": {
+        "statementGroups": {
             "type": "array",
             "default": [
                 {
-                    "text": "Erste wichtige Aussage zum Thema",
-                    "isCorrect": true,
-                    "correctPosition": 1,
-                    "feedback": "Das ist richtig - diese Aussage gehört an die erste Stelle."
+                    "id": "group1",
+                    "statements": [
+                        {
+                            "id": "s1",
+                            "text": "Die Primärstruktur beschreibt die lineare Abfolge der Aminosäuren.",
+                            "isCorrect": true
+                        },
+                        {
+                            "id": "s2",
+                            "text": "Die Primärstruktur beschreibt die räumliche Faltung.",
+                            "isCorrect": false
+                        },
+                        {
+                            "id": "s3",
+                            "text": "Die Primärstruktur wird durch Wasserstoffbrücken stabilisiert.",
+                            "isCorrect": false
+                        }
+                    ]
                 },
                 {
-                    "text": "Zweite wichtige Aussage zum Thema",
-                    "isCorrect": true,
-                    "correctPosition": 2,
-                    "feedback": "Richtig - diese Aussage gehört an die zweite Stelle."
-                },
-                {
-                    "text": "Dritte wichtige Aussage zum Thema",
-                    "isCorrect": true,
-                    "correctPosition": 3,
-                    "feedback": "Perfekt - diese Aussage gehört an die dritte Stelle."
-                },
-                {
-                    "text": "Unwichtige Aussage die nicht ausgewählt werden sollte",
-                    "isCorrect": false,
-                    "correctPosition": 0,
-                    "feedback": "Diese Aussage sollte nicht ausgewählt werden."
-                },
-                {
-                    "text": "Weitere unwichtige Aussage",
-                    "isCorrect": false,
-                    "correctPosition": 0,
-                    "feedback": "Diese Aussage ist nicht relevant für die Zusammenfassung."
+                    "id": "group2",
+                    "statements": [
+                        {
+                            "id": "s4",
+                            "text": "Die Sekundärstruktur umfasst Alpha-Helix und Beta-Faltblatt.",
+                            "isCorrect": true
+                        },
+                        {
+                            "id": "s5",
+                            "text": "Die Sekundärstruktur beschreibt die Aminosäuresequenz.",
+                            "isCorrect": false
+                        }
+                    ]
                 }
             ]
         },
-        "requiredSelections": {
-            "type": "number",
-            "default": 3
+        "progressiveReveal": {
+            "type": "boolean",
+            "default": true
         },
         "showFeedback": {
             "type": "boolean",
@@ -72,41 +77,41 @@
             "type": "boolean",
             "default": true
         },
-        "allowReordering": {
+        "shuffleStatements": {
             "type": "boolean",
             "default": true
         },
-        "scoreForSelection": {
+        "shuffleGroups": {
+            "type": "boolean",
+            "default": false
+        },
+        "penaltyPerWrongAnswer": {
             "type": "number",
             "default": 1
-        },
-        "scoreForOrder": {
-            "type": "number",
-            "default": 1
-        },
-        "passPercentage": {
-            "type": "number",
-            "default": 80
-        },
-        "instructionText": {
-            "type": "string",
-            "default": "Wählen Sie @count Aussagen aus:"
-        },
-        "orderText": {
-            "type": "string",
-            "default": "Bringen Sie die ausgewählten Aussagen in die richtige Reihenfolge:"
         },
         "successText": {
             "type": "string",
-            "default": "Ausgezeichnet! Sie haben die richtigen Aussagen in der korrekten Reihenfolge gewählt."
+            "default": "Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden."
         },
         "partialSuccessText": {
             "type": "string",
-            "default": "Gut gemacht! Einige Ihrer Auswahlen und Anordnungen sind korrekt."
+            "default": "Gut gemacht! Sie haben die meisten richtigen Aussagen gefunden."
         },
         "failText": {
             "type": "string",
-            "default": "Versuchen Sie es noch einmal. Achten Sie sowohl auf die Auswahl als auch auf die Reihenfolge."
+            "default": "Versuchen Sie es noch einmal."
+        },
+        "correctFeedback": {
+            "type": "string",
+            "default": "Richtig! Diese Aussage wurde zur Zusammenfassung hinzugefügt."
+        },
+        "incorrectFeedback": {
+            "type": "string",
+            "default": "Falsch. Versuchen Sie eine andere Aussage."
+        },
+        "summaryTitle": {
+            "type": "string",
+            "default": "Ihre Zusammenfassung:"
         }
     },
     "supports": {
@@ -119,31 +124,22 @@
     },
     "example": {
         "attributes": {
-            "title": "Die wichtigsten Schritte beim Lernen",
-            "statements": [
+            "title": "Proteinstrukturen - Zusammenfassung",
+            "statementGroups": [
                 {
-                    "text": "Information aufnehmen und verstehen",
-                    "isCorrect": true,
-                    "correctPosition": 1,
-                    "feedback": "Richtig - zuerst müssen wir Informationen aufnehmen."
-                },
-                {
-                    "text": "Das Gelernte praktisch anwenden",
-                    "isCorrect": true,
-                    "correctPosition": 2,
-                    "feedback": "Genau - Anwendung festigt das Gelernte."
-                },
-                {
-                    "text": "Regelmäßig wiederholen und reflektieren",
-                    "isCorrect": true,
-                    "correctPosition": 3,
-                    "feedback": "Perfekt - Wiederholung ist der Schlüssel zum Erfolg."
-                },
-                {
-                    "text": "Sofort alles vergessen",
-                    "isCorrect": false,
-                    "correctPosition": 0,
-                    "feedback": "Das wäre nicht hilfreich beim Lernen!"
+                    "id": "ex1",
+                    "statements": [
+                        {
+                            "id": "ex1s1",
+                            "text": "Die Primärstruktur beschreibt die lineare Abfolge der Aminosäuren in der Peptidkette.",
+                            "isCorrect": true
+                        },
+                        {
+                            "id": "ex1s2",
+                            "text": "Die Sekundärstruktur wird durch Disulfidbrücken stabilisiert.",
+                            "isCorrect": false
+                        }
+                    ]
                 }
             ]
         }

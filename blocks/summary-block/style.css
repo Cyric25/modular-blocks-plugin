@@ -1,4 +1,597 @@
-/* Summary Block - Frontend Styles */
+/**
+ * Summary Block - Frontend Styles (H5P-Style)
+ * Based on H5P Summary design patterns
+ */
+
 .wp-block-modular-blocks-summary-block {
-    padding: 20px;
+    --summary-primary: #1a73e8;
+    --summary-primary-hover: #1557b0;
+    --summary-success: #0f9d58;
+    --summary-danger: #ea4335;
+    --summary-bg: #f8f9fa;
+    --summary-border: #dadce0;
+    --summary-text: #202124;
+    --summary-text-light: #5f6368;
+
+    font-family: 'Google Sans', 'Segoe UI', Roboto, Arial, sans-serif;
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 0;
+    color: var(--summary-text);
+}
+
+/* Container */
+.wp-block-modular-blocks-summary-block .summary-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    overflow: hidden;
+}
+
+/* Header */
+.wp-block-modular-blocks-summary-block .summary-header {
+    padding: 32px 32px 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--summary-border);
+}
+
+.wp-block-modular-blocks-summary-block .summary-title {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--summary-text);
+    letter-spacing: -0.5px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-description {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--summary-text-light);
+}
+
+/* Progress */
+.wp-block-modular-blocks-summary-block .summary-progress {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 32px;
+    background: var(--summary-bg);
+    border-bottom: 1px solid var(--summary-border);
+}
+
+.wp-block-modular-blocks-summary-block .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.wp-block-modular-blocks-summary-block .progress-fill {
+    height: 100%;
+    background: var(--summary-primary);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.wp-block-modular-blocks-summary-block .progress-text {
+    font-size: 13px;
+    color: var(--summary-text-light);
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* Groups */
+.wp-block-modular-blocks-summary-block .summary-groups {
+    padding: 24px 32px 32px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-group {
+    margin-bottom: 32px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-group:last-child {
+    margin-bottom: 0;
+}
+
+.wp-block-modular-blocks-summary-block .group-header {
+    margin-bottom: 16px;
+}
+
+.wp-block-modular-blocks-summary-block .group-label {
+    display: block;
+    font-size: 12px;
+    color: var(--summary-text-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+}
+
+.wp-block-modular-blocks-summary-block .group-instruction {
+    font-size: 16px;
+    color: var(--summary-text);
+    font-weight: 400;
+    line-height: 24px;
+}
+
+/* Statements - H5P Style */
+.wp-block-modular-blocks-summary-block .group-statements {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 2px solid var(--summary-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    text-align: left;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--summary-text);
+    position: relative;
+    min-height: 56px;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option:hover:not(:disabled) {
+    border-color: var(--summary-primary);
+    background: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option:focus {
+    outline: none;
+    border-color: var(--summary-primary);
+    box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+}
+
+.wp-block-modular-blocks-summary-block .statement-text {
+    flex: 1;
+}
+
+.wp-block-modular-blocks-summary-block .statement-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--summary-border);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option:hover:not(:disabled) .statement-icon {
+    border-color: var(--summary-primary);
+}
+
+/* Statement States */
+.wp-block-modular-blocks-summary-block .statement-option.correct {
+    border-color: var(--summary-success);
+    background: #e6f4ea;
+    pointer-events: none;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.correct .statement-icon {
+    background: var(--summary-success);
+    border-color: var(--summary-success);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.correct .statement-icon::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.incorrect {
+    border-color: var(--summary-danger);
+    background: #fce8e6;
+    animation: shakeError 0.4s ease;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.incorrect .statement-icon {
+    background: var(--summary-danger);
+    border-color: var(--summary-danger);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.incorrect .statement-icon::before,
+.wp-block-modular-blocks-summary-block .statement-option.incorrect .statement-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    background: #fff;
+    border-radius: 1px;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.incorrect .statement-icon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.incorrect .statement-icon::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.disabled,
+.wp-block-modular-blocks-summary-block .statement-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Solution States */
+.wp-block-modular-blocks-summary-block .statement-option.solution-correct {
+    border-color: var(--summary-success);
+    background: #e6f4ea;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.solution-correct .statement-icon {
+    background: var(--summary-success);
+    border-color: var(--summary-success);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.solution-correct .statement-icon::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.solution-incorrect {
+    border-color: #e0e0e0;
+    background: #f5f5f5;
+    opacity: 0.6;
+}
+
+/* Group Feedback */
+.wp-block-modular-blocks-summary-block .group-feedback {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    animation: slideDown 0.3s ease;
+}
+
+.wp-block-modular-blocks-summary-block .group-feedback.feedback-correct {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.wp-block-modular-blocks-summary-block .group-feedback.feedback-incorrect {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+/* Group Actions */
+.wp-block-modular-blocks-summary-block .group-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Summary Section - H5P Style */
+.wp-block-modular-blocks-summary-block .summary-section {
+    padding: 24px 32px;
+    background: #f8f9fa;
+    border-top: 1px solid var(--summary-border);
+}
+
+.wp-block-modular-blocks-summary-block .summary-section-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--summary-text);
+}
+
+.wp-block-modular-blocks-summary-block .summary-statements {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--summary-border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.wp-block-modular-blocks-summary-block .summary-bullet {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--summary-success);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.wp-block-modular-blocks-summary-block .summary-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--summary-text);
+}
+
+/* Results Section - H5P Style */
+.wp-block-modular-blocks-summary-block .summary-results {
+    padding: 40px 32px;
+    text-align: center;
+    background: #fff;
+    border-top: 1px solid var(--summary-border);
+}
+
+.wp-block-modular-blocks-summary-block .results-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.wp-block-modular-blocks-summary-block .results-icon {
+    margin-bottom: 8px;
+}
+
+.wp-block-modular-blocks-summary-block .results-icon svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.wp-block-modular-blocks-summary-block .score-display {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--summary-text);
+    letter-spacing: -1px;
+}
+
+.wp-block-modular-blocks-summary-block .result-message {
+    font-size: 16px;
+    line-height: 24px;
+    max-width: 400px;
+    color: var(--summary-text-light);
+}
+
+.wp-block-modular-blocks-summary-block .result-message.success {
+    color: var(--summary-success);
+    font-weight: 500;
+}
+
+.wp-block-modular-blocks-summary-block .result-message.partial {
+    color: #f9ab00;
+    font-weight: 500;
+}
+
+.wp-block-modular-blocks-summary-block .result-message.fail {
+    color: var(--summary-danger);
+    font-weight: 500;
+}
+
+/* Controls - H5P Style */
+.wp-block-modular-blocks-summary-block .summary-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px 32px 32px;
+    border-top: 1px solid var(--summary-border);
+    flex-wrap: wrap;
+}
+
+.wp-block-modular-blocks-summary-block .summary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    text-decoration: none;
+    border: none;
+    min-height: 40px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-button:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wp-block-modular-blocks-summary-block .summary-button:active {
+    transform: scale(0.98);
+}
+
+.wp-block-modular-blocks-summary-block .summary-button svg {
+    flex-shrink: 0;
+}
+
+.wp-block-modular-blocks-summary-block .continue-button {
+    background: var(--summary-primary);
+    color: #fff;
+}
+
+.wp-block-modular-blocks-summary-block .continue-button:hover {
+    background: var(--summary-primary-hover);
+}
+
+/* Error State */
+.wp-block-modular-blocks-summary-block .summary-error {
+    padding: 24px;
+    background: #fce8e6;
+    border: 1px solid var(--summary-danger);
+    border-radius: 8px;
+    color: #c5221f;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .wp-block-modular-blocks-summary-block {
+        margin: 1rem;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-header {
+        padding: 24px 20px 20px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-title {
+        font-size: 20px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-groups {
+        padding: 20px 16px 24px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-progress {
+        padding: 12px 20px;
+    }
+
+    .wp-block-modular-blocks-summary-block .statement-option {
+        padding: 14px 16px;
+        font-size: 14px;
+        min-height: 48px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-section {
+        padding: 20px 16px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-controls {
+        flex-direction: column;
+        padding: 20px 16px 24px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-button {
+        width: 100%;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-results {
+        padding: 32px 20px;
+    }
+
+    .wp-block-modular-blocks-summary-block .score-display {
+        font-size: 28px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .wp-block-modular-blocks-summary-block .summary-controls,
+    .wp-block-modular-blocks-summary-block .group-actions {
+        display: none;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-group {
+        display: block !important;
+    }
+
+    .wp-block-modular-blocks-summary-block .statement-option.solution-correct {
+        border-color: #000;
+        background: #f0f0f0;
+    }
+}
+
+/* Accessibility */
+.wp-block-modular-blocks-summary-block .statement-option:focus-visible {
+    outline: 2px solid var(--summary-primary);
+    outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .wp-block-modular-blocks-summary-block {
+        --summary-bg: #202124;
+        --summary-border: #3c4043;
+        --summary-text: #e8eaed;
+        --summary-text-light: #9aa0a6;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-container {
+        background: #292a2d;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-header,
+    .wp-block-modular-blocks-summary-block .summary-results {
+        background: #292a2d;
+    }
+
+    .wp-block-modular-blocks-summary-block .statement-option {
+        background: #292a2d;
+        border-color: #3c4043;
+    }
+
+    .wp-block-modular-blocks-summary-block .statement-option:hover:not(:disabled) {
+        background: #35363a;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-item {
+        background: #292a2d;
+        border-color: #3c4043;
+    }
 }
