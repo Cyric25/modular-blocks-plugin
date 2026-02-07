@@ -8,6 +8,9 @@
  *
  * (empty line separates groups)
  */
+import './style.css';
+import './editor.css';
+
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import {
