@@ -1,7 +1,7 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/summary-block",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "title": "Summary - Zusammenfassung",
     "category": "modular-blocks",
     "icon": "list-view",

@@ -164,6 +164,7 @@ registerBlockType('modular-blocks/summary-block', {
         const [csvInput, setCsvInput] = useState('');
         const [importError, setImportError] = useState('');
         const [importSuccess, setImportSuccess] = useState('');
+        const [editingStatement, setEditingStatement] = useState(null); // {groupIndex, statementIndex}
         const fileInputRef = useRef(null);
 
         // Handle CSV import
@@ -556,7 +557,16 @@ registerBlockType('modular-blocks/summary-block', {
 
                     {/* Groups Preview */}
                     <div style={{ marginTop: '20px' }}>
-                        <h4>{__('Vorschau der Gruppen:', 'modular-blocks-plugin')}</h4>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h4 style={{ margin: 0 }}>{__('Vorschau der Gruppen:', 'modular-blocks-plugin')}</h4>
+                            <Button
+                                onClick={addGroup}
+                                variant="secondary"
+                                isSmall
+                            >
+                                {__('+ Neue Gruppe', 'modular-blocks-plugin')}
+                            </Button>
+                        </div>
                         {statementGroups.map((group, groupIndex) => (
                             <div key={group.id} style={{
                                 marginBottom: '15px',
@@ -565,29 +575,119 @@ registerBlockType('modular-blocks/summary-block', {
                                 borderRadius: '4px',
                                 borderLeft: '4px solid #007cba'
                             }}>
-                                <strong style={{ color: '#007cba' }}>
-                                    {__('Gruppe', 'modular-blocks-plugin')} {groupIndex + 1}
-                                </strong>
-                                {group.statements.map((statement, sIndex) => (
-                                    <div key={statement.id} style={{
-                                        marginTop: '8px',
-                                        padding: '8px 12px',
-                                        backgroundColor: statement.isCorrect ? '#d4edda' : '#fff',
-                                        border: '1px solid ' + (statement.isCorrect ? '#28a745' : '#ddd'),
-                                        borderRadius: '4px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px'
-                                    }}>
-                                        <span style={{
-                                            fontSize: '16px',
-                                            color: statement.isCorrect ? '#28a745' : '#dc3545'
-                                        }}>
-                                            {statement.isCorrect ? '✓' : '✗'}
-                                        </span>
-                                        <span>{statement.text}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                    <strong style={{ color: '#007cba' }}>
+                                        {__('Gruppe', 'modular-blocks-plugin')} {groupIndex + 1}
+                                    </strong>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <Button
+                                            onClick={() => addStatement(groupIndex)}
+                                            variant="secondary"
+                                            isSmall
+                                        >
+                                            {__('+ Aussage', 'modular-blocks-plugin')}
+                                        </Button>
+                                        <Button
+                                            onClick={() => {
+                                                if (confirm(__('Möchten Sie diese Gruppe wirklich löschen?', 'modular-blocks-plugin'))) {
+                                                    removeGroup(groupIndex);
+                                                }
+                                            }}
+                                            variant="secondary"
+                                            isSmall
+                                            isDestructive
+                                        >
+                                            {__('Löschen', 'modular-blocks-plugin')}
+                                        </Button>
                                     </div>
-                                ))}
+                                </div>
+                                {group.statements.map((statement, sIndex) => {
+                                    const isEditing = editingStatement?.groupIndex === groupIndex && editingStatement?.statementIndex === sIndex;
+
+                                    return (
+                                        <div key={statement.id} style={{
+                                            marginTop: '8px',
+                                            padding: '8px 12px',
+                                            backgroundColor: statement.isCorrect ? '#d4edda' : '#fff',
+                                            border: '1px solid ' + (statement.isCorrect ? '#28a745' : '#ddd'),
+                                            borderRadius: '4px'
+                                        }}>
+                                            {isEditing ? (
+                                                // Edit Mode
+                                                <div>
+                                                    <TextareaControl
+                                                        value={statement.text}
+                                                        onChange={(value) => updateStatement(groupIndex, sIndex, 'text', value)}
+                                                        rows={2}
+                                                        style={{ marginBottom: '8px' }}
+                                                    />
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <ToggleControl
+                                                            label={__('Richtig', 'modular-blocks-plugin')}
+                                                            checked={statement.isCorrect}
+                                                            onChange={(value) => updateStatement(groupIndex, sIndex, 'isCorrect', value)}
+                                                        />
+                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                            <Button
+                                                                onClick={() => setEditingStatement(null)}
+                                                                variant="primary"
+                                                                isSmall
+                                                            >
+                                                                {__('Fertig', 'modular-blocks-plugin')}
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => {
+                                                                    if (confirm(__('Möchten Sie diese Aussage wirklich löschen?', 'modular-blocks-plugin'))) {
+                                                                        removeStatement(groupIndex, sIndex);
+                                                                        setEditingStatement(null);
+                                                                    }
+                                                                }}
+                                                                variant="secondary"
+                                                                isSmall
+                                                                isDestructive
+                                                            >
+                                                                {__('Löschen', 'modular-blocks-plugin')}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                // View Mode
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <span style={{
+                                                        fontSize: '16px',
+                                                        color: statement.isCorrect ? '#28a745' : '#dc3545',
+                                                        flexShrink: 0
+                                                    }}>
+                                                        {statement.isCorrect ? '✓' : '✗'}
+                                                    </span>
+                                                    <span style={{ flex: 1 }}>{statement.text}</span>
+                                                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                                        <Button
+                                                            onClick={() => setEditingStatement({ groupIndex, statementIndex: sIndex })}
+                                                            variant="secondary"
+                                                            isSmall
+                                                        >
+                                                            {__('Bearbeiten', 'modular-blocks-plugin')}
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => {
+                                                                if (confirm(__('Möchten Sie diese Aussage wirklich löschen?', 'modular-blocks-plugin'))) {
+                                                                    removeStatement(groupIndex, sIndex);
+                                                                }
+                                                            }}
+                                                            variant="secondary"
+                                                            isSmall
+                                                            isDestructive
+                                                        >
+                                                            {__('×', 'modular-blocks-plugin')}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ))}
                     </div>
