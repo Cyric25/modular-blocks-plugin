@@ -1,12 +1,12 @@
 {
     "apiVersion": 3,
     "name": "modular-blocks/summary-block",
-    "version": "2.1.2",
+    "version": "2.2.0",
     "title": "Summary - Zusammenfassung",
     "category": "modular-blocks",
     "icon": "list-view",
     "description": "Erstellen Sie ein Summary-Quiz im H5P-Stil. Nutzer wählen aus jeder Gruppe die richtige(n) Aussage(n). Die korrekten Aussagen bilden am Ende eine Zusammenfassung des Themas.",
-    "keywords": ["summary", "zusammenfassung", "h5p", "quiz", "aussagen", "wahr", "falsch", "csv"],
+    "keywords": ["summary", "zusammenfassung", "h5p", "quiz", "aussagen", "wahr", "falsch", "csv", "pdf"],
     "textdomain": "modular-blocks-plugin",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
@@ -84,6 +84,14 @@
         "shuffleGroups": {
             "type": "boolean",
             "default": false
+        },
+        "deferredFeedback": {
+            "type": "boolean",
+            "default": false
+        },
+        "enablePdfDownload": {
+            "type": "boolean",
+            "default": true
         },
         "penaltyPerWrongAnswer": {
             "type": "number",

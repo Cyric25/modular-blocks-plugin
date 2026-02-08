@@ -24,6 +24,8 @@ $show_retry = $block_attributes['showRetry'] ?? true;
 $show_solution = $block_attributes['showSolution'] ?? true;
 $shuffle_statements = $block_attributes['shuffleStatements'] ?? true;
 $shuffle_groups = $block_attributes['shuffleGroups'] ?? false;
+$deferred_feedback = $block_attributes['deferredFeedback'] ?? false;
+$enable_pdf_download = $block_attributes['enablePdfDownload'] ?? true;
 $penalty_per_wrong = $block_attributes['penaltyPerWrongAnswer'] ?? 1;
 $success_text = $block_attributes['successText'] ?? 'Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden.';
 $partial_success_text = $block_attributes['partialSuccessText'] ?? 'Gut gemacht! Sie haben die meisten richtigen Aussagen gefunden.';
@@ -95,6 +97,8 @@ $summary_data = [
     'showRetry' => $show_retry,
     'showSolution' => $show_solution,
     'shuffleStatements' => $shuffle_statements,
+    'deferredFeedback' => $deferred_feedback,
+    'enablePdfDownload' => $enable_pdf_download,
     'penaltyPerWrong' => $penalty_per_wrong,
     'successText' => $success_text,
     'partialSuccessText' => $partial_success_text,
@@ -113,7 +117,8 @@ $summary_data = [
         'incorrect' => __('Falsch!', 'modular-blocks-plugin'),
         'score' => __('Punkte', 'modular-blocks-plugin'),
         'completed' => __('Abgeschlossen', 'modular-blocks-plugin'),
-        'selectCorrect' => __('Wählen Sie die richtige(n) Aussage(n):', 'modular-blocks-plugin')
+        'selectCorrect' => __('Wählen Sie die richtige(n) Aussage(n):', 'modular-blocks-plugin'),
+        'downloadPdf' => __('Als PDF herunterladen', 'modular-blocks-plugin')
     ]
 ];
 
@@ -260,6 +265,19 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                         <path d="M3 3v5h5"/>
                     </svg>
                     <?php echo esc_html__('Wiederholen', 'modular-blocks-plugin'); ?>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($enable_pdf_download): ?>
+                <button type="button"
+                        class="summary-button pdf-download-button"
+                        style="<?php echo esc_attr($button_style); ?> display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <?php echo esc_html__('Als PDF herunterladen', 'modular-blocks-plugin'); ?>
                 </button>
             <?php endif; ?>
 

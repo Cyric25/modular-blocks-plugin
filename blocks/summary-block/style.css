@@ -242,6 +242,29 @@
     pointer-events: none;
 }
 
+/* Selected State (Deferred Feedback Mode) */
+.wp-block-modular-blocks-summary-block .statement-option.selected {
+    border-color: var(--summary-primary);
+    background: #e8f0fe;
+    pointer-events: none;
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.selected .statement-icon {
+    background: var(--summary-primary);
+    border-color: var(--summary-primary);
+}
+
+.wp-block-modular-blocks-summary-block .statement-option.selected .statement-icon::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
 /* Solution States */
 .wp-block-modular-blocks-summary-block .statement-option.solution-correct {
     border-color: var(--summary-success);

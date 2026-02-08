@@ -152,6 +152,8 @@ registerBlockType('modular-blocks/summary-block', {
             showSolution,
             shuffleStatements,
             shuffleGroups,
+            deferredFeedback,
+            enablePdfDownload,
             penaltyPerWrongAnswer,
             successText,
             partialSuccessText,
@@ -414,6 +416,18 @@ registerBlockType('modular-blocks/summary-block', {
                             label={__('Lösung anzeigen', 'modular-blocks-plugin')}
                             checked={showSolution}
                             onChange={(value) => setAttributes({ showSolution: value })}
+                        />
+                        <ToggleControl
+                            label={__('Verzögertes Feedback', 'modular-blocks-plugin')}
+                            help={__('Aussagen werden immer hinzugefügt, Feedback erst am Ende', 'modular-blocks-plugin')}
+                            checked={deferredFeedback}
+                            onChange={(value) => setAttributes({ deferredFeedback: value })}
+                        />
+                        <ToggleControl
+                            label={__('PDF-Download aktivieren', 'modular-blocks-plugin')}
+                            help={__('Ermöglicht PDF-Download bei 100% Erfolg', 'modular-blocks-plugin')}
+                            checked={enablePdfDownload}
+                            onChange={(value) => setAttributes({ enablePdfDownload: value })}
                         />
                         <RangeControl
                             label={__('Punktabzug pro Fehler', 'modular-blocks-plugin')}

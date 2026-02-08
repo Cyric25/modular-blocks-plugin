@@ -25,7 +25,8 @@
       "Bash(done)",
       "Bash(npm run zip:*)",
       "WebSearch",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(do php -l \"$file\")"
     ],
     "deny": [],
     "ask": []

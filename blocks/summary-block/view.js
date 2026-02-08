@@ -3,10 +3,41 @@
  *
  * Interactive summary quiz where users select correct statements from groups.
  * Correct statements build up a summary of the topic.
+ *
+ * Features:
+ * - Regular mode: Immediate feedback on correctness
+ * - Deferred feedback mode: All statements added to summary, feedback only at end
+ * - PDF export: Download summary as PDF (only at 100% success)
  */
 
 (function() {
     'use strict';
+
+    // Load jsPDF from CDN for PDF export
+    let jsPDFLoaded = false;
+    function loadJsPDF(callback) {
+        if (typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined') {
+            jsPDFLoaded = true;
+            callback();
+            return;
+        }
+
+        if (jsPDFLoaded) {
+            callback();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = function() {
+            jsPDFLoaded = true;
+            callback();
+        };
+        script.onerror = function() {
+            console.error('Failed to load jsPDF library');
+        };
+        document.head.appendChild(script);
+    }
 
     /**
      * Initialize a summary block
@@ -23,6 +54,8 @@
             totalCorrect = 0,
             progressiveReveal = true,
             showFeedback = true,
+            deferredFeedback = false,
+            enablePdfDownload = true,
             penaltyPerWrong = 1,
             successText = '',
             partialSuccessText = '',
@@ -36,7 +69,9 @@
         let currentGroupIndex = 0;
         let score = totalCorrect; // Start with max score, deduct for wrong answers
         let wrongAttempts = 0;
-        let correctSelections = [];
+        let correctSelections = []; // Tracks correct statement texts
+        let wrongSelections = []; // Tracks wrong statement texts (for deferred mode)
+        let allSelections = []; // All selected statement objects (for deferred mode)
         let isCompleted = false;
 
         // DOM elements
@@ -50,6 +85,7 @@
         const controlsSection = block.querySelector('.summary-controls');
         const retryButton = block.querySelector('.retry-button');
         const solutionButton = block.querySelector('.solution-button');
+        const pdfButton = block.querySelector('.pdf-download-button');
 
         /**
          * Update progress bar
@@ -65,22 +101,24 @@
         }
 
         /**
-         * Show feedback for a statement selection
+         * Show feedback for a statement selection (regular mode only)
          * @param {HTMLElement} statementEl - The statement element
          * @param {boolean} isCorrect - Whether the selection was correct
          */
         function showStatementFeedback(statementEl, isCorrect) {
             const groupEl = statementEl.closest('.summary-group');
             const feedbackEl = groupEl.querySelector('.group-feedback');
-            const feedbackMessage = feedbackEl.querySelector('.feedback-message');
+            const feedbackMessage = feedbackEl ? feedbackEl.querySelector('.feedback-message') : null;
 
             statementEl.classList.add(isCorrect ? 'correct' : 'incorrect');
             statementEl.disabled = true;
 
-            if (showFeedback && feedbackEl) {
+            if (showFeedback && !deferredFeedback && feedbackEl) {
                 feedbackEl.style.display = 'block';
                 feedbackEl.className = 'group-feedback ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect');
-                feedbackMessage.textContent = isCorrect ? correctFeedback : incorrectFeedback;
+                if (feedbackMessage) {
+                    feedbackMessage.textContent = isCorrect ? correctFeedback : incorrectFeedback;
+                }
 
                 // Auto-hide incorrect feedback after 2 seconds
                 if (!isCorrect) {
@@ -92,10 +130,11 @@
         }
 
         /**
-         * Add correct statement to summary
+         * Add statement to summary
          * @param {string} text - The statement text
+         * @param {boolean} isCorrect - Whether statement is correct (for styling in deferred mode)
          */
-        function addToSummary(text) {
+        function addToSummary(text, isCorrect = true) {
             if (!summarySection || !summaryStatements) return;
 
             // Show summary section if hidden
@@ -104,10 +143,20 @@
             // Create summary item
             const item = document.createElement('div');
             item.className = 'summary-item';
-            item.innerHTML = `
-                <span class="summary-bullet">✓</span>
-                <span class="summary-text">${text}</span>
-            `;
+
+            // In deferred mode, don't show checkmark yet - mark correct/incorrect after evaluation
+            if (deferredFeedback) {
+                item.setAttribute('data-correct', isCorrect ? 'true' : 'false');
+                item.innerHTML = `
+                    <span class="summary-bullet">•</span>
+                    <span class="summary-text">${text}</span>
+                `;
+            } else {
+                item.innerHTML = `
+                    <span class="summary-bullet">✓</span>
+                    <span class="summary-text">${text}</span>
+                `;
+            }
 
             // Animate in
             item.style.opacity = '0';
@@ -125,14 +174,44 @@
         }
 
         /**
+         * Update summary items after deferred feedback evaluation
+         */
+        function updateSummaryAfterEvaluation() {
+            const items = summaryStatements.querySelectorAll('.summary-item');
+            items.forEach(item => {
+                const isCorrect = item.getAttribute('data-correct') === 'true';
+                const bullet = item.querySelector('.summary-bullet');
+                const text = item.querySelector('.summary-text');
+
+                if (isCorrect) {
+                    bullet.textContent = '✓';
+                    bullet.style.color = '#0f9d58';
+                    text.style.color = '#333';
+                } else {
+                    bullet.textContent = '✗';
+                    bullet.style.color = '#ea4335';
+                    text.style.textDecoration = 'line-through';
+                    text.style.color = '#999';
+                }
+            });
+        }
+
+        /**
          * Check if group is completed
          * @param {HTMLElement} groupEl - The group element
          * @returns {boolean}
          */
         function isGroupCompleted(groupEl) {
-            const correctCount = parseInt(groupEl.dataset.correctCount || '1', 10);
-            const correctSelected = groupEl.querySelectorAll('.statement-option.correct').length;
-            return correctSelected >= correctCount;
+            if (deferredFeedback) {
+                // In deferred mode, group is completed when at least one statement is selected
+                const anySelected = groupEl.querySelectorAll('.statement-option.correct, .statement-option.incorrect').length > 0;
+                return anySelected;
+            } else {
+                // In regular mode, need all correct statements
+                const correctCount = parseInt(groupEl.dataset.correctCount || '1', 10);
+                const correctSelected = groupEl.querySelectorAll('.statement-option.correct').length;
+                return correctSelected >= correctCount;
+            }
         }
 
         /**
@@ -175,14 +254,125 @@
         }
 
         /**
+         * Calculate final score
+         */
+        function calculateFinalScore() {
+            if (deferredFeedback) {
+                // In deferred mode: check if ALL correct statements selected and NO wrong statements
+                let allCorrectSelected = true;
+                let noWrongSelected = true;
+
+                groups.forEach(group => {
+                    group.statements.forEach(stmt => {
+                        const selected = allSelections.find(s => s.id === stmt.id);
+                        if (stmt.isCorrect && !selected) {
+                            allCorrectSelected = false;
+                        }
+                        if (!stmt.isCorrect && selected) {
+                            noWrongSelected = false;
+                        }
+                    });
+                });
+
+                // 100% only if all correct and no wrong
+                return (allCorrectSelected && noWrongSelected) ? totalCorrect : 0;
+            } else {
+                // Regular mode: use accumulated score
+                return Math.max(0, score);
+            }
+        }
+
+        /**
+         * Generate PDF of summary
+         */
+        function generatePDF() {
+            loadJsPDF(() => {
+                try {
+                    const { jsPDF } = window.jspdf || window;
+                    if (!jsPDF) {
+                        alert('PDF library not loaded. Please try again.');
+                        return;
+                    }
+
+                    const doc = new jsPDF();
+
+                    // Get block title
+                    const titleEl = block.querySelector('.summary-title');
+                    const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
+
+                    // Add title
+                    doc.setFontSize(18);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(title, 20, 20);
+
+                    // Add summary title
+                    const summaryTitleEl = block.querySelector('.summary-section-title');
+                    const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
+                    doc.setFontSize(14);
+                    doc.text(summaryTitle, 20, 35);
+
+                    // Add statements (only correct ones)
+                    const items = summaryStatements.querySelectorAll('.summary-item');
+                    let yPosition = 45;
+                    const pageHeight = doc.internal.pageSize.height;
+                    const margin = 20;
+                    const lineHeight = 8;
+
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'normal');
+
+                    items.forEach((item, index) => {
+                        const isCorrect = item.getAttribute('data-correct') !== 'false';
+                        if (!isCorrect && deferredFeedback) return; // Skip wrong items in deferred mode
+
+                        const text = item.querySelector('.summary-text')?.textContent || '';
+
+                        // Check if we need a new page
+                        if (yPosition > pageHeight - margin) {
+                            doc.addPage();
+                            yPosition = margin;
+                        }
+
+                        // Add bullet and text
+                        const bulletText = `${index + 1}. `;
+                        const wrappedText = doc.splitTextToSize(text, 170);
+
+                        doc.text(bulletText, margin, yPosition);
+                        doc.text(wrappedText, margin + 10, yPosition);
+
+                        yPosition += wrappedText.length * lineHeight;
+                    });
+
+                    // Add date
+                    const today = new Date().toLocaleDateString('de-DE');
+                    doc.setFontSize(9);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                    // Save PDF
+                    const filename = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+                    doc.save(filename);
+                } catch (error) {
+                    console.error('PDF generation error:', error);
+                    alert('Fehler beim Erstellen der PDF-Datei.');
+                }
+            });
+        }
+
+        /**
          * Show final results
          */
         function showResults() {
             isCompleted = true;
 
-            // Calculate final score (ensure minimum of 0)
-            const finalScore = Math.max(0, score);
+            // Calculate final score
+            const finalScore = calculateFinalScore();
             const percentage = totalCorrect > 0 ? Math.round((finalScore / totalCorrect) * 100) : 0;
+
+            // In deferred mode, update summary with correct/incorrect marks
+            if (deferredFeedback) {
+                updateSummaryAfterEvaluation();
+            }
 
             // Update progress to 100%
             if (progressBar) {
@@ -205,7 +395,7 @@
                 const messageEl = resultsSection.querySelector('.result-message');
 
                 if (iconEl) {
-                    iconEl.innerHTML = percentage >= 80
+                    iconEl.innerHTML = percentage === 100
                         ? '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>'
                         : percentage >= 50
                             ? '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>'
@@ -217,7 +407,7 @@
                 }
 
                 if (messageEl) {
-                    if (percentage >= 80) {
+                    if (percentage === 100) {
                         messageEl.textContent = successText;
                         messageEl.className = 'result-message success';
                     } else if (percentage >= 50) {
@@ -228,6 +418,11 @@
                         messageEl.className = 'result-message fail';
                     }
                 }
+            }
+
+            // Show PDF button only if 100% and enabled
+            if (pdfButton && enablePdfDownload && percentage === 100) {
+                pdfButton.style.display = 'inline-flex';
             }
 
             // Show controls
@@ -248,7 +443,7 @@
             groups.forEach(group => {
                 group.statements.forEach(stmt => {
                     if (stmt.isCorrect) {
-                        addToSummary(stmt.text);
+                        addToSummary(stmt.text, true);
                     }
                 });
             });
@@ -271,6 +466,11 @@
             if (solutionButton) {
                 solutionButton.style.display = 'none';
             }
+
+            // Update summary display
+            if (deferredFeedback) {
+                updateSummaryAfterEvaluation();
+            }
         }
 
         /**
@@ -282,6 +482,8 @@
             score = totalCorrect;
             wrongAttempts = 0;
             correctSelections = [];
+            wrongSelections = [];
+            allSelections = [];
             isCompleted = false;
 
             // Reset UI
@@ -315,10 +517,11 @@
                 summarySection.style.display = 'none';
             }
 
-            // Hide results and controls
+            // Hide results, controls, and PDF button
             if (resultsSection) resultsSection.style.display = 'none';
             if (controlsSection) controlsSection.style.display = 'none';
             if (solutionButton) solutionButton.style.display = 'inline-flex';
+            if (pdfButton) pdfButton.style.display = 'none';
 
             // Reset progress
             updateProgress();
@@ -339,38 +542,83 @@
 
             const groupEl = statementEl.closest('.summary-group');
             const isCorrect = statementEl.dataset.correct === 'true';
+            const statementId = statementEl.dataset.statementId;
             const statementText = statementEl.querySelector('.statement-text').textContent;
 
-            if (isCorrect) {
-                // Correct answer
-                showStatementFeedback(statementEl, true);
-                correctSelections.push(statementText);
-                addToSummary(statementText);
+            if (deferredFeedback) {
+                // DEFERRED FEEDBACK MODE
+                // Add ALL selected statements to summary (no immediate feedback)
+                statementEl.classList.add('selected');
+                statementEl.disabled = true;
 
-                // Check if group is completed
+                // Track selection
+                allSelections.push({
+                    id: statementId,
+                    text: statementText,
+                    isCorrect: isCorrect
+                });
+
+                if (isCorrect) {
+                    correctSelections.push(statementText);
+                } else {
+                    wrongSelections.push(statementText);
+                }
+
+                // Add to summary (no checkmark yet)
+                addToSummary(statementText, isCorrect);
+
+                // Check if group has at least one selection
                 if (isGroupCompleted(groupEl)) {
-                    // Disable remaining statements in this group
-                    const remainingStatements = groupEl.querySelectorAll('.statement-option:not(.correct):not(.incorrect)');
+                    // Disable remaining statements
+                    const remainingStatements = groupEl.querySelectorAll('.statement-option:not(.selected)');
                     remainingStatements.forEach(stmt => {
                         stmt.disabled = true;
                         stmt.classList.add('disabled');
                     });
 
-                    // Show continue button (if progressive) or auto-advance
+                    // Show continue button or advance
                     if (progressiveReveal) {
                         if (currentGroupIndex < groups.length - 1) {
                             showContinueButton(groupEl);
                         } else {
-                            // Last group - show results after short delay
-                            setTimeout(showResults, 1000);
+                            // Last group - show results
+                            setTimeout(showResults, 500);
                         }
                     }
                 }
             } else {
-                // Wrong answer
-                showStatementFeedback(statementEl, false);
-                wrongAttempts++;
-                score -= penaltyPerWrong;
+                // REGULAR MODE (immediate feedback)
+                if (isCorrect) {
+                    // Correct answer
+                    showStatementFeedback(statementEl, true);
+                    correctSelections.push(statementText);
+                    addToSummary(statementText, true);
+
+                    // Check if group is completed
+                    if (isGroupCompleted(groupEl)) {
+                        // Disable remaining statements in this group
+                        const remainingStatements = groupEl.querySelectorAll('.statement-option:not(.correct):not(.incorrect)');
+                        remainingStatements.forEach(stmt => {
+                            stmt.disabled = true;
+                            stmt.classList.add('disabled');
+                        });
+
+                        // Show continue button (if progressive) or auto-advance
+                        if (progressiveReveal) {
+                            if (currentGroupIndex < groups.length - 1) {
+                                showContinueButton(groupEl);
+                            } else {
+                                // Last group - show results after short delay
+                                setTimeout(showResults, 1000);
+                            }
+                        }
+                    }
+                } else {
+                    // Wrong answer
+                    showStatementFeedback(statementEl, false);
+                    wrongAttempts++;
+                    score -= penaltyPerWrong;
+                }
             }
         }
 
@@ -397,6 +645,10 @@
 
         if (solutionButton) {
             solutionButton.addEventListener('click', showSolution);
+        }
+
+        if (pdfButton) {
+            pdfButton.addEventListener('click', generatePDF);
         }
 
         // Initialize
