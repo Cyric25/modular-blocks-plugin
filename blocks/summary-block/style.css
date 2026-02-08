@@ -561,37 +561,3 @@
     outline: 2px solid var(--summary-primary);
     outline-offset: 2px;
 }
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .wp-block-modular-blocks-summary-block {
-        --summary-bg: #202124;
-        --summary-border: #3c4043;
-        --summary-text: #e8eaed;
-        --summary-text-light: #9aa0a6;
-    }
-
-    .wp-block-modular-blocks-summary-block .summary-container {
-        background: #292a2d;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-
-    .wp-block-modular-blocks-summary-block .summary-header,
-    .wp-block-modular-blocks-summary-block .summary-results {
-        background: #292a2d;
-    }
-
-    .wp-block-modular-blocks-summary-block .statement-option {
-        background: #292a2d;
-        border-color: #3c4043;
-    }
-
-    .wp-block-modular-blocks-summary-block .statement-option:hover:not(:disabled) {
-        background: #35363a;
-    }
-
-    .wp-block-modular-blocks-summary-block .summary-item {
-        background: #292a2d;
-        border-color: #3c4043;
-    }
-}
