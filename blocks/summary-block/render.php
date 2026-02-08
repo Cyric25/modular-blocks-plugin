@@ -157,6 +157,14 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
             </div>
         </div>
 
+        <!-- Summary Section (grows as user selects correct answers) -->
+        <div class="summary-section" style="display: none;">
+            <h4 class="summary-section-title"><?php echo esc_html($summary_title); ?></h4>
+            <div class="summary-statements">
+                <!-- Correct statements will be added here -->
+            </div>
+        </div>
+
         <!-- Groups Container -->
         <div class="summary-groups">
             <?php foreach ($groups_data as $group_index => $group): ?>
@@ -230,14 +238,6 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                     </div>
                 </div>
             <?php endforeach; ?>
-        </div>
-
-        <!-- Summary Section (grows as user selects correct answers) -->
-        <div class="summary-section" style="display: none;">
-            <h4 class="summary-section-title"><?php echo esc_html($summary_title); ?></h4>
-            <div class="summary-statements">
-                <!-- Correct statements will be added here -->
-            </div>
         </div>
 
         <!-- Results Section -->

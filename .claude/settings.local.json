@@ -18,7 +18,14 @@
       "Bash(curl:*)",
       "Bash(install.cmd)",
       "Bash(del install.cmd)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(for file in *.php includes/*.php)",
+      "Bash(do echo \"Checking $file...\")",
+      "Bash(exit 1)",
+      "Bash(done)",
+      "Bash(npm run zip:*)",
+      "WebSearch",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
