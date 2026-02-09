@@ -103,3 +103,191 @@
 .editor-styles-wrapper .wp-block-modular-blocks-summary-block {
     margin: 20px 0;
 }
+
+/* Groups Preview Section */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div:has(h4) {
+    margin-bottom: 15px;
+}
+
+/* Group Container */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div[style*="borderLeft"] {
+    margin-bottom: 15px;
+    transition: box-shadow 0.2s ease;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div[style*="borderLeft"]:hover {
+    box-shadow: 0 2px 8px rgba(0, 124, 186, 0.15);
+}
+
+/* Group Header with Buttons */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Button Groups */
+.wp-block-modular-blocks-summary-block .summary-block-editor button.components-button {
+    height: auto;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor button.components-button.is-small {
+    height: auto;
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor button.components-button:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor button.components-button.is-destructive {
+    color: #cc1818;
+    border-color: #cc1818;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor button.components-button.is-destructive:not(:disabled):hover {
+    background: #cc1818;
+    color: #fff;
+}
+
+/* Statement Items */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div:not(:first-child) {
+    margin-top: 8px;
+}
+
+/* Statement View Mode */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div[style*="display: flex"][style*="alignItems: center"] {
+    gap: 10px;
+    align-items: center !important;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div > span:first-child {
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div > span:nth-child(2) {
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Statement Edit Mode */
+.wp-block-modular-blocks-summary-block .summary-block-editor .components-textarea-control__input {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 12px;
+    border: 1px solid #949494;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    transition: border-color 0.2s ease;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor .components-textarea-control__input:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 1px #007cba;
+    outline: none;
+}
+
+/* Toggle Control in Edit Mode */
+.wp-block-modular-blocks-summary-block .summary-block-editor .components-toggle-control {
+    margin: 0;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor .components-toggle-control .components-base-control__field {
+    margin-bottom: 0;
+}
+
+/* Button Container in Statement Items */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div > div:last-child {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Statistics Section */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 12px 16px;
+    background: #f0f7fc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div:first-child > span {
+    font-size: 13px;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div:first-child strong {
+    font-weight: 600;
+    color: #007cba;
+}
+
+/* CSV Import Section */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div[style*="backgroundColor"] h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+/* Groups Preview Header */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div[style*="display: flex"][style*="justifyContent: space-between"] h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 782px) {
+    .wp-block-modular-blocks-summary-block .summary-block-editor button.components-button {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div[style*="display: flex"] {
+        flex-wrap: wrap;
+    }
+
+    .wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div > div > div:last-child {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+}
+
+/* Notice/Help Text */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > p[style*="fontStyle: italic"] {
+    margin-top: 20px;
+    padding: 12px;
+    background: #f0f7fc;
+    border-left: 4px solid #007cba;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Success/Error Colors */
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div[style*="#d4edda"] {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.wp-block-modular-blocks-summary-block .summary-block-editor > div > div > div > div[style*="#fff"][style*="border: 1px solid #ddd"] {
+    background-color: #fff !important;
+    border-color: #ddd !important;
+}
