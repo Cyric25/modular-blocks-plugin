@@ -2,9 +2,9 @@
  * Summary Block - Editor (H5P-Style)
  *
  * Supports CSV import with format:
- * Aussage,Richtig
- * Text der Aussage,true
- * Falsche Aussage,false
+ * Aussage;Richtig
+ * Text der Aussage;true
+ * Falsche Aussage;false
  *
  * (empty line separates groups)
  */
@@ -27,7 +27,7 @@ import { useState, useRef } from '@wordpress/element';
 
 /**
  * Parse CSV content into statement groups
- * Format: Aussage,Richtig (with empty lines separating groups)
+ * Format: Aussage;Richtig (with empty lines separating groups)
  */
 function parseCSV(csvContent) {
     const lines = csvContent.split('\n');
@@ -119,15 +119,15 @@ function parseCSVLine(line) {
  * Generate CSV from statement groups
  */
 function generateCSV(groups) {
-    let csv = 'Aussage,Richtig\n';
+    let csv = 'Aussage;Richtig\n';
 
     groups.forEach((group, groupIndex) => {
         group.statements.forEach(statement => {
             // Escape quotes in text
-            const text = statement.text.includes(',') || statement.text.includes('"')
+            const text = statement.text.includes(';') || statement.text.includes('"')
                 ? `"${statement.text.replace(/"/g, '""')}"`
                 : statement.text;
-            csv += `${text},${statement.isCorrect ? 'true' : 'false'}\n`;
+            csv += `${text};${statement.isCorrect ? 'true' : 'false'}\n`;
         });
 
         // Add empty line between groups (except after last)
@@ -180,7 +180,7 @@ registerBlockType('modular-blocks/summary-block', {
             const groups = parseCSV(csvInput);
 
             if (groups.length === 0) {
-                setImportError(__('Keine gültigen Aussagen gefunden. Format: Aussage,Richtig', 'modular-blocks-plugin'));
+                setImportError(__('Keine gültigen Aussagen gefunden. Format: Aussage;Richtig', 'modular-blocks-plugin'));
                 return;
             }
 
@@ -330,7 +330,7 @@ registerBlockType('modular-blocks/summary-block', {
 
                 <TextareaControl
                     label={__('CSV-Daten einfügen', 'modular-blocks-plugin')}
-                    help={__('Format: Aussage,Richtig (true/false). Leerzeilen trennen Gruppen.', 'modular-blocks-plugin')}
+                    help={__('Format: Aussage;Richtig (true/false). Leerzeilen trennen Gruppen.', 'modular-blocks-plugin')}
                     value={csvInput}
                     onChange={setCsvInput}
                     rows={inBlock ? 8 : 6}
