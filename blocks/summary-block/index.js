@@ -1,10 +1,9 @@
 /**
  * Summary Block - Editor (H5P-Style)
  *
- * Supports CSV import with format:
- * Aussage;Richtig
- * Text der Aussage;true
- * Falsche Aussage;false
+ * Supports MD import with format:
+ * Aussage $$ Richtig
+ * Falsche Aussage $$ Falsch
  *
  * (empty line separates groups)
  */
@@ -26,26 +25,17 @@ import { __ } from '@wordpress/i18n';
 import { useState, useRef } from '@wordpress/element';
 
 /**
- * Parse CSV content into statement groups
- * Format: Aussage;Richtig (with empty lines separating groups)
+ * Parse MD content into statement groups
+ * Format: Aussage $$ Richtig (with empty lines separating groups)
  */
-function parseCSV(csvContent) {
-    const lines = csvContent.split('\n');
+function parseMD(content) {
+    const lines = content.split('\n');
     const groups = [];
     let currentGroup = [];
     let groupIndex = 0;
     let statementIndex = 0;
 
-    // Skip header if present
-    let startIndex = 0;
-    if (lines.length > 0) {
-        const firstLine = lines[0].toLowerCase().trim();
-        if (firstLine.includes('aussage') || firstLine.includes('richtig') || firstLine.includes('statement') || firstLine.includes('correct')) {
-            startIndex = 1;
-        }
-    }
-
-    for (let i = startIndex; i < lines.length; i++) {
+    for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
 
         // Empty line = new group
@@ -61,21 +51,21 @@ function parseCSV(csvContent) {
             continue;
         }
 
-        // Parse CSV line (handle quoted strings)
-        const parts = parseCSVLine(line);
-        if (parts.length >= 2) {
-            const text = parts[0].trim();
-            const isCorrectStr = parts[1].trim().toLowerCase();
-            const isCorrect = isCorrectStr === 'true' || isCorrectStr === '1' || isCorrectStr === 'ja' || isCorrectStr === 'yes' || isCorrectStr === 'wahr';
+        // Parse line with $$ delimiter
+        const separatorIndex = line.indexOf('$$');
+        if (separatorIndex === -1) continue;
 
-            if (text) {
-                currentGroup.push({
-                    id: `s${statementIndex}`,
-                    text: text,
-                    isCorrect: isCorrect
-                });
-                statementIndex++;
-            }
+        const text = line.substring(0, separatorIndex).trim();
+        const valueStr = line.substring(separatorIndex + 2).trim().toLowerCase();
+        const isCorrect = valueStr === 'richtig' || valueStr === 'true' || valueStr === 'wahr' || valueStr === 'ja';
+
+        if (text) {
+            currentGroup.push({
+                id: `s${statementIndex}`,
+                text: text,
+                isCorrect: isCorrect
+            });
+            statementIndex++;
         }
     }
 
@@ -91,52 +81,23 @@ function parseCSV(csvContent) {
 }
 
 /**
- * Parse a single CSV line, handling quoted strings
+ * Generate MD content from statement groups
  */
-function parseCSVLine(line) {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if ((char === ',' || char === ';') && !inQuotes) {
-            result.push(current);
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-
-    result.push(current);
-    return result;
-}
-
-/**
- * Generate CSV from statement groups
- */
-function generateCSV(groups) {
-    let csv = 'Aussage;Richtig\n';
+function generateMD(groups) {
+    let md = '';
 
     groups.forEach((group, groupIndex) => {
         group.statements.forEach(statement => {
-            // Escape quotes in text
-            const text = statement.text.includes(';') || statement.text.includes('"')
-                ? `"${statement.text.replace(/"/g, '""')}"`
-                : statement.text;
-            csv += `${text};${statement.isCorrect ? 'true' : 'false'}\n`;
+            md += `${statement.text} $$ ${statement.isCorrect ? 'Richtig' : 'Falsch'}\n`;
         });
 
         // Add empty line between groups (except after last)
         if (groupIndex < groups.length - 1) {
-            csv += '\n';
+            md += '\n';
         }
     });
 
-    return csv;
+    return md;
 }
 
 registerBlockType('modular-blocks/summary-block', {
@@ -161,26 +122,26 @@ registerBlockType('modular-blocks/summary-block', {
             summaryTitle
         } = attributes;
 
-        const [csvInput, setCsvInput] = useState('');
+        const [mdInput, setMdInput] = useState('');
         const [importError, setImportError] = useState('');
         const [importSuccess, setImportSuccess] = useState('');
         const [editingStatement, setEditingStatement] = useState(null); // {groupIndex, statementIndex}
         const fileInputRef = useRef(null);
 
-        // Handle CSV import
-        const handleCsvImport = () => {
+        // Handle MD import
+        const handleMdImport = () => {
             setImportError('');
             setImportSuccess('');
 
-            if (!csvInput.trim()) {
-                setImportError(__('Bitte fügen Sie CSV-Daten ein.', 'modular-blocks-plugin'));
+            if (!mdInput.trim()) {
+                setImportError(__('Bitte fügen Sie MD-Daten ein.', 'modular-blocks-plugin'));
                 return;
             }
 
-            const groups = parseCSV(csvInput);
+            const groups = parseMD(mdInput);
 
             if (groups.length === 0) {
-                setImportError(__('Keine gültigen Aussagen gefunden. Format: Aussage;Richtig', 'modular-blocks-plugin'));
+                setImportError(__('Keine gültigen Aussagen gefunden. Format: Aussage $$ Richtig', 'modular-blocks-plugin'));
                 return;
             }
 
@@ -195,7 +156,7 @@ registerBlockType('modular-blocks/summary-block', {
                 `${__('mit', 'modular-blocks-plugin')} ${totalStatements} ${__('Aussagen importiert', 'modular-blocks-plugin')} ` +
                 `(${correctStatements} ${__('richtig', 'modular-blocks-plugin')}, ${totalStatements - correctStatements} ${__('falsch', 'modular-blocks-plugin')}).`
             );
-            setCsvInput('');
+            setMdInput('');
         };
 
         // Handle file upload
@@ -207,13 +168,13 @@ registerBlockType('modular-blocks/summary-block', {
             setImportSuccess('');
 
             // Validate file type
-            const validTypes = ['text/csv', 'text/plain', 'application/csv', 'text/comma-separated-values'];
+            const validTypes = ['text/markdown', 'text/plain', 'text/x-markdown'];
             const isValidType = validTypes.includes(file.type) ||
-                               file.name.endsWith('.csv') ||
+                               file.name.endsWith('.md') ||
                                file.name.endsWith('.txt');
 
             if (!isValidType) {
-                setImportError(__('Bitte wählen Sie eine CSV- oder TXT-Datei.', 'modular-blocks-plugin'));
+                setImportError(__('Bitte wählen Sie eine MD- oder TXT-Datei.', 'modular-blocks-plugin'));
                 event.target.value = ''; // Reset file input
                 return;
             }
@@ -222,8 +183,8 @@ registerBlockType('modular-blocks/summary-block', {
 
             reader.onload = (e) => {
                 const content = e.target.result;
-                setCsvInput(content);
-                setImportSuccess(__('Datei geladen. Klicken Sie auf "CSV importieren" um fortzufahren.', 'modular-blocks-plugin'));
+                setMdInput(content);
+                setImportSuccess(__('Datei geladen. Klicken Sie auf "MD importieren" um fortzufahren.', 'modular-blocks-plugin'));
             };
 
             reader.onerror = () => {
@@ -236,13 +197,13 @@ registerBlockType('modular-blocks/summary-block', {
             event.target.value = '';
         };
 
-        // Handle CSV export
-        const handleCsvExport = () => {
-            const csv = generateCSV(statementGroups);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        // Handle MD export
+        const handleMdExport = () => {
+            const md = generateMD(statementGroups);
+            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'summary-statements.csv';
+            link.download = 'summary-statements.md';
             link.click();
         };
 
@@ -295,20 +256,20 @@ registerBlockType('modular-blocks/summary-block', {
         const correctStatements = statementGroups.reduce((sum, g) =>
             sum + g.statements.filter(s => s.isCorrect).length, 0);
 
-        // CSV Import Component (reusable)
-        const CsvImportSection = ({ inBlock = false }) => (
+        // MD Import Component (reusable)
+        const MdImportSection = ({ inBlock = false }) => (
             <div style={{
                 marginTop: inBlock ? '20px' : '0',
                 padding: inBlock ? '15px' : '0',
                 backgroundColor: inBlock ? '#f0f0f0' : 'transparent',
                 borderRadius: inBlock ? '4px' : '0'
             }}>
-                {inBlock && <h4 style={{ marginTop: 0 }}>{__('CSV Import', 'modular-blocks-plugin')}</h4>}
+                {inBlock && <h4 style={{ marginTop: 0 }}>{__('MD Import', 'modular-blocks-plugin')}</h4>}
 
                 <div style={{ marginBottom: '10px' }}>
                     <input
                         type="file"
-                        accept=".csv,.txt,text/csv,text/plain,application/csv,text/comma-separated-values"
+                        accept=".md,.txt,text/markdown,text/plain,text/x-markdown"
                         ref={fileInputRef}
                         onChange={handleFileUpload}
                         style={{ display: 'none' }}
@@ -318,30 +279,30 @@ registerBlockType('modular-blocks/summary-block', {
                         variant="secondary"
                         style={{ marginRight: '10px' }}
                     >
-                        {__('CSV-Datei wählen', 'modular-blocks-plugin')}
+                        {__('MD-Datei wählen', 'modular-blocks-plugin')}
                     </Button>
                     <Button
-                        onClick={handleCsvExport}
+                        onClick={handleMdExport}
                         variant="secondary"
                     >
-                        {__('Als CSV exportieren', 'modular-blocks-plugin')}
+                        {__('Als MD exportieren', 'modular-blocks-plugin')}
                     </Button>
                 </div>
 
                 <TextareaControl
-                    label={__('CSV-Daten einfügen', 'modular-blocks-plugin')}
-                    help={__('Format: Aussage;Richtig (true/false). Leerzeilen trennen Gruppen.', 'modular-blocks-plugin')}
-                    value={csvInput}
-                    onChange={setCsvInput}
+                    label={__('MD-Daten einfügen', 'modular-blocks-plugin')}
+                    help={__('Format: Aussage $$ Richtig/Falsch. Leerzeilen trennen Gruppen.', 'modular-blocks-plugin')}
+                    value={mdInput}
+                    onChange={setMdInput}
                     rows={inBlock ? 8 : 6}
                 />
 
                 <Button
-                    onClick={handleCsvImport}
+                    onClick={handleMdImport}
                     variant="primary"
-                    disabled={!csvInput.trim()}
+                    disabled={!mdInput.trim()}
                 >
-                    {__('CSV importieren', 'modular-blocks-plugin')}
+                    {__('MD importieren', 'modular-blocks-plugin')}
                 </Button>
 
                 {importError && (
@@ -361,9 +322,9 @@ registerBlockType('modular-blocks/summary-block', {
         return (
             <div {...blockProps}>
                 <InspectorControls>
-                    {/* CSV Import Panel */}
-                    <PanelBody title={__('CSV Import/Export', 'modular-blocks-plugin')} initialOpen={true}>
-                        <CsvImportSection inBlock={false} />
+                    {/* MD Import Panel */}
+                    <PanelBody title={__('MD Import/Export', 'modular-blocks-plugin')} initialOpen={true}>
+                        <MdImportSection inBlock={false} />
                     </PanelBody>
 
                     {/* General Settings */}
@@ -552,8 +513,8 @@ registerBlockType('modular-blocks/summary-block', {
                         <span style={{ color: '#dc3545' }}><strong>{totalStatements - correctStatements}</strong> {__('falsch', 'modular-blocks-plugin')}</span>
                     </div>
 
-                    {/* CSV Import in Block */}
-                    <CsvImportSection inBlock={true} />
+                    {/* MD Import in Block */}
+                    <MdImportSection inBlock={true} />
 
                     {/* Groups Preview */}
                     <div style={{ marginTop: '20px' }}>
