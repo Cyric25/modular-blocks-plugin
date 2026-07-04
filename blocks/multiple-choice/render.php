@@ -180,12 +180,4 @@ $quiz_data = [
     </div>
 </div>
 
-<script>
-// Initialize quiz functionality when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const quizBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (quizBlock && typeof window.initMultipleChoice === 'function') {
-        window.initMultipleChoice(quizBlock);
-    }
-});
-</script>
+<?php /* Inline-Bootstrap entfernt (AP20): view.js initialisiert alle Bloecke selbst (Auto-Init + MutationObserver); der doppelte Aufruf band Event-Handler zweimal. */ ?>

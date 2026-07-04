@@ -14,8 +14,8 @@
     --summary-text-light: #5f6368;
 
     font-family: 'Google Sans', 'Segoe UI', Roboto, Arial, sans-serif;
-    max-width: 720px;
-    margin: 2rem auto;
+    max-width: 100%;
+    margin: 2rem 0;
     padding: 0;
     color: var(--summary-text);
 }

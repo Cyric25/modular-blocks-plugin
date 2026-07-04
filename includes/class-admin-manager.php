@@ -475,6 +475,8 @@ class ModularBlocks_Admin_Manager {
         $created_files = $this->create_block_files($block_dir, $slug, $title, $description, $category, $icon, $dynamic);
 
         if ($created_files) {
+            ModularBlocks_Block_Manager::clear_discovery_cache();
+
             wp_send_json_success([
                 'message' => sprintf(__('Block "%s" erfolgreich erstellt!', 'modular-blocks-plugin'), $title),
                 'block' => $slug
@@ -671,6 +673,8 @@ if (!defined('ABSPATH')) {
             });
             update_option('modular_blocks_enabled_blocks', array_values($enabled_blocks));
 
+            ModularBlocks_Block_Manager::clear_discovery_cache();
+
             wp_send_json_success([
                 'message' => __('Block erfolgreich gelöscht.', 'modular-blocks-plugin')
             ]);
@@ -862,6 +866,8 @@ if (!defined('ABSPATH')) {
 
         // Clean up temp directory
         $this->delete_directory($temp_dir);
+
+        ModularBlocks_Block_Manager::clear_discovery_cache();
 
         // Different message depending on whether it was new or replaced
         $message = $block_existed

@@ -1,0 +1,46 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/svg-drawing",
+    "title": "SVG-Zeichnung",
+    "category": "modular-blocks",
+    "icon": "art",
+    "description": "Zeichenfläche: direkt zeichnen oder Zeichnung aus OneNote/Zwischenablage einfügen. Speichert als SVG-Vektorgrafik.",
+    "keywords": ["zeichnen", "svg", "vektor", "onenote", "grafik", "drawing"],
+    "attributes": {
+        "svgContent": {
+            "type": "string",
+            "default": ""
+        },
+        "fabricJSON": {
+            "type": "string",
+            "default": ""
+        },
+        "canvasWidth": {
+            "type": "number",
+            "default": 800
+        },
+        "canvasHeight": {
+            "type": "number",
+            "default": 450
+        },
+        "strokeColor": {
+            "type": "string",
+            "default": "#000000"
+        },
+        "strokeWidth": {
+            "type": "number",
+            "default": 3
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "#ffffff"
+        },
+        "altText": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "editorScript": "file:./index.js",
+    "style": "file:./style.css",
+    "editorStyle": "file:./editor.css"
+}

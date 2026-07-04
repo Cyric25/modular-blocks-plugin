@@ -115,6 +115,8 @@ registerBlockType('modular-blocks/summary-block', {
             shuffleGroups,
             deferredFeedback,
             enablePdfDownload,
+            pdfDownloadThreshold,
+            pdfMessage,
             penaltyPerWrongAnswer,
             successText,
             partialSuccessText,
@@ -387,10 +389,30 @@ registerBlockType('modular-blocks/summary-block', {
                         />
                         <ToggleControl
                             label={__('PDF-Download aktivieren', 'modular-blocks-plugin')}
-                            help={__('Ermöglicht PDF-Download bei 100% Erfolg', 'modular-blocks-plugin')}
+                            help={__('Ermöglicht PDF-Download ab dem eingestellten Schwellenwert', 'modular-blocks-plugin')}
                             checked={enablePdfDownload}
                             onChange={(value) => setAttributes({ enablePdfDownload: value })}
                         />
+                        {enablePdfDownload && (
+                            <RangeControl
+                                label={__('PDF-Download ab (%)', 'modular-blocks-plugin')}
+                                help={__('Mindestprozentsatz für PDF-Download', 'modular-blocks-plugin')}
+                                value={pdfDownloadThreshold}
+                                onChange={(value) => setAttributes({ pdfDownloadThreshold: value })}
+                                min={0}
+                                max={100}
+                                step={10}
+                            />
+                        )}
+                        {enablePdfDownload && (
+                            <TextareaControl
+                                label={__('PDF-Nachricht', 'modular-blocks-plugin')}
+                                help={__('Optionale Nachricht die am Ende des PDFs angezeigt wird', 'modular-blocks-plugin')}
+                                value={pdfMessage}
+                                onChange={(value) => setAttributes({ pdfMessage: value })}
+                                rows={3}
+                            />
+                        )}
                         <RangeControl
                             label={__('Punktabzug pro Fehler', 'modular-blocks-plugin')}
                             value={penaltyPerWrongAnswer}

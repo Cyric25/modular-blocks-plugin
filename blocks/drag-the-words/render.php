@@ -214,12 +214,4 @@ $drag_words_data = [
     </div>
 </div>
 
-<script>
-// Initialize drag the words functionality when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const dragWordsBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (dragWordsBlock && typeof window.initDragTheWords === 'function') {
-        window.initDragTheWords(dragWordsBlock);
-    }
-});
-</script>
+<?php /* Inline-Bootstrap entfernt (AP20): view.js initialisiert alle Bloecke selbst (Auto-Init + MutationObserver); der doppelte Aufruf band Event-Handler zweimal. */ ?>

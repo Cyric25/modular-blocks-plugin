@@ -253,12 +253,4 @@ $connector_data = [
     </div>
 </div>
 
-<script>
-// Initialize statement connector functionality when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const connectorBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (connectorBlock && typeof window.initStatementConnector === 'function') {
-        window.initStatementConnector(connectorBlock);
-    }
-});
-</script>
+<?php /* Inline-Bootstrap entfernt (AP20): view.js initialisiert alle Bloecke selbst (Auto-Init + MutationObserver); der doppelte Aufruf band Event-Handler zweimal. */ ?>

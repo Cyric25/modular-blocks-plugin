@@ -93,6 +93,14 @@
             "type": "boolean",
             "default": true
         },
+        "pdfDownloadThreshold": {
+            "type": "number",
+            "default": 100
+        },
+        "pdfMessage": {
+            "type": "string",
+            "default": ""
+        },
         "penaltyPerWrongAnswer": {
             "type": "number",
             "default": 1

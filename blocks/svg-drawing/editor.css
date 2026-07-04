@@ -1,0 +1,54 @@
+/* Editor styles for SVG-Zeichnung block */
+
+.svg-drawing-block-editor {
+    position: relative;
+}
+
+.svg-drawing-canvas-wrapper {
+    display: inline-block;
+    border: 2px solid #007cba;
+    border-radius: 2px;
+    overflow: auto;
+    max-width: 100%;
+    cursor: crosshair;
+    outline: none;
+    background: #fff;
+}
+
+.svg-drawing-canvas-wrapper:focus {
+    border-color: #135e96;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.3);
+}
+
+/* fabric.js generates .lower-canvas and .upper-canvas */
+.svg-drawing-canvas-wrapper canvas {
+    display: block;
+}
+
+.svg-drawing-status-hint {
+    font-size: 12px;
+    color: #757575;
+    margin: 4px 0 0;
+    padding: 0;
+    line-height: 1.4;
+}
+
+.svg-drawing-empty-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #aaa;
+    pointer-events: none;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.svg-drawing-empty-hint p {
+    margin: 2px 0;
+}
+
+.svg-drawing-notice {
+    margin-bottom: 6px;
+}

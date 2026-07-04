@@ -193,6 +193,11 @@ class ModularBlocksPlugin {
         // Create default options
         add_option('modular_blocks_enabled_blocks', []);
 
+        // Discovery-Cache invalidieren (Blockbestand kann sich geändert haben)
+        if (class_exists('ModularBlocks_Block_Manager')) {
+            ModularBlocks_Block_Manager::clear_discovery_cache();
+        }
+
         // Flush rewrite rules
         flush_rewrite_rules();
     }
@@ -212,10 +217,4 @@ class ModularBlocksPlugin {
 }
 
 // Initialize plugin
-if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-    error_log('Modular Blocks Plugin: Initializing plugin instance...');
-}
 ModularBlocksPlugin::get_instance();
-if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-    error_log('Modular Blocks Plugin: Plugin instance created');
-}

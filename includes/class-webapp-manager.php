@@ -259,8 +259,12 @@ HTACCESS;
 
     /**
      * Get list of all web-apps
+     *
+     * @param bool $with_size Verzeichnisgröße mitberechnen (rekursiver
+     *                        Filesystem-Walk — nur für die Admin-Übersicht
+     *                        nötig, NICHT für den Block-Editor-Payload, AP24)
      */
-    public function list_webapps() {
+    public function list_webapps($with_size = false) {
         $webapps_dir = $this->get_webapps_dir();
         $apps = [];
 
@@ -281,7 +285,7 @@ HTACCESS;
                     'name' => $dir,
                     'path' => $app_path,
                     'url' => $this->get_webapp_url($dir),
-                    'size' => $this->get_directory_size($app_path),
+                    'size' => $with_size ? $this->get_directory_size($app_path) : 0,
                     'created' => filectime($app_path)
                 ];
             }

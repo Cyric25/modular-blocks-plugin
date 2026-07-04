@@ -12,7 +12,9 @@
      * @param {HTMLElement} element - The quiz block element
      */
     function initMultipleChoice(element) {
-        if (!element) return;
+        // Guard gegen Doppel-Initialisierung (Auto-Init + evtl. weitere Aufrufe)
+        if (!element || element.dataset.initialized === 'true') return;
+        element.dataset.initialized = 'true';
 
         const quizData = JSON.parse(element.dataset.quiz || '{}');
         const container = element.querySelector('.multiple-choice-container');

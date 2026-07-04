@@ -56,6 +56,8 @@
             showFeedback = true,
             deferredFeedback = false,
             enablePdfDownload = true,
+            pdfDownloadThreshold = 100,
+            pdfMessage = '',
             penaltyPerWrong = 1,
             successText = '',
             partialSuccessText = '',
@@ -169,8 +171,7 @@
                 item.style.transform = 'translateY(0)';
             });
 
-            // Scroll to show new item
-            summarySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // No scroll - stay at current position
         }
 
         /**
@@ -246,8 +247,8 @@
                 groupElements[currentGroupIndex].style.display = 'block';
                 groupElements[currentGroupIndex].classList.add('active');
 
-                // Scroll to new group
-                groupElements[currentGroupIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Scroll group to center of viewport
+                groupElements[currentGroupIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
             updateProgress();
@@ -343,6 +344,21 @@
                         yPosition += wrappedText.length * lineHeight;
                     });
 
+                    // Add custom message if set
+                    if (pdfMessage) {
+                        yPosition += 10;
+                        if (yPosition > pageHeight - margin - 20) {
+                            doc.addPage();
+                            yPosition = margin;
+                        }
+                        doc.setFontSize(11);
+                        doc.setTextColor(80, 80, 80);
+                        doc.setFont(undefined, 'italic');
+                        const wrappedMessage = doc.splitTextToSize(pdfMessage, 170);
+                        doc.text(wrappedMessage, margin, yPosition);
+                        doc.setFont(undefined, 'normal');
+                    }
+
                     // Add date
                     const today = new Date().toLocaleDateString('de-DE');
                     doc.setFontSize(9);
@@ -420,8 +436,8 @@
                 }
             }
 
-            // Show PDF button only if 100% and enabled
-            if (pdfButton && enablePdfDownload && percentage === 100) {
+            // Show PDF button if threshold reached and enabled
+            if (pdfButton && enablePdfDownload && percentage >= pdfDownloadThreshold) {
                 pdfButton.style.display = 'inline-flex';
             }
 
@@ -603,14 +619,15 @@
                             stmt.classList.add('disabled');
                         });
 
-                        // Show continue button (if progressive) or auto-advance
+                        // Auto-advance to next group after short delay
                         if (progressiveReveal) {
-                            if (currentGroupIndex < groups.length - 1) {
-                                showContinueButton(groupEl);
-                            } else {
-                                // Last group - show results after short delay
-                                setTimeout(showResults, 1000);
-                            }
+                            setTimeout(() => {
+                                if (currentGroupIndex < groups.length - 1) {
+                                    goToNextGroup();
+                                } else {
+                                    showResults();
+                                }
+                            }, 800);
                         }
                     }
                 } else {

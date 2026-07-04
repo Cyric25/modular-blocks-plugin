@@ -98,6 +98,10 @@
         "responsiveHeight": {
             "type": "boolean",
             "default": true
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {

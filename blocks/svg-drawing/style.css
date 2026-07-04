@@ -1,0 +1,35 @@
+/* Frontend styles for SVG-Zeichnung block */
+
+.wp-block-modular-blocks-svg-drawing {
+    margin: 0;
+    padding: 0;
+}
+
+.wp-block-modular-blocks-svg-drawing .svg-drawing-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.wp-block-modular-blocks-svg-drawing .svg-drawing-wrapper svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.wp-block-modular-blocks-svg-drawing .svg-drawing-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ccc;
+    background: #f9f9f9;
+    color: #999;
+    font-size: 14px;
+}
+
+.wp-block-modular-blocks-svg-drawing figcaption {
+    text-align: center;
+    font-size: 0.875em;
+    color: #666;
+    margin-top: 6px;
+}

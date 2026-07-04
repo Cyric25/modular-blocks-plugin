@@ -17,14 +17,40 @@
 .cbd-block-content .molecule-viewer-editor,
 .cbd-block-content .wp-block-modular-blocks-molecule-viewer {
     display: block !important;
-    margin: 20px 0 !important;
-    width: 100% !important;
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
     opacity: 1 !important;
     visibility: visible !important;
     position: relative !important;
     z-index: auto !important;
     min-height: 300px !important;
     box-sizing: border-box !important;
+}
+
+/* ============================================
+   ALIGNMENT IN EDITOR
+   ============================================ */
+.molecule-viewer-editor.aligncenter,
+.wp-block-modular-blocks-molecule-viewer.aligncenter,
+[data-type="modular-blocks/molecule-viewer"][data-align="center"] .molecule-viewer-editor {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.molecule-viewer-editor.alignleft,
+.wp-block-modular-blocks-molecule-viewer.alignleft,
+[data-type="modular-blocks/molecule-viewer"][data-align="left"] .molecule-viewer-editor {
+    float: left !important;
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+}
+
+.molecule-viewer-editor.alignright,
+.wp-block-modular-blocks-molecule-viewer.alignright,
+[data-type="modular-blocks/molecule-viewer"][data-align="right"] .molecule-viewer-editor {
+    float: right !important;
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
 }
 
 /* ============================================

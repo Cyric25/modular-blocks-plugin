@@ -46,40 +46,24 @@ class ModularBlocks_ChemViz_Shortcodes {
             'label' => '3D Molekülstruktur'
         ), $atts, 'chemviz_molecule');
 
-        // Enqueue 3Dmol.js if not already loaded
-        if (!wp_script_is('chemviz-3dmol', 'enqueued')) {
-            wp_enqueue_script('jquery');
+        // 3Dmol.js über die zentrale Enqueue-Logik laden (AP35 — vorher
+        // existierte die Lokal/CDN-Fallback-Logik hier ein drittes Mal)
+        ModularBlocks_ChemViz_Enqueue::enqueue_3dmol();
 
-            $use_cdn = apply_filters('modular_blocks_use_cdn', false);
-            $local_path = MODULAR_BLOCKS_PLUGIN_PATH . 'assets/js/vendor/3Dmol-min.js';
-
-            if (!$use_cdn && file_exists($local_path)) {
-                wp_enqueue_script(
-                    'chemviz-3dmol',
-                    MODULAR_BLOCKS_PLUGIN_URL . 'assets/js/vendor/3Dmol-min.js',
-                    array('jquery'),
-                    '2.0.3',
-                    true
-                );
-            } else {
-                wp_enqueue_script(
-                    'chemviz-3dmol',
-                    'https://3dmol.csb.pitt.edu/build/3Dmol-min.js',
-                    array('jquery'),
-                    '2.0.3',
-                    true
-                );
-            }
+        // Block view script: bevorzugt den vom Block registrierten Handle
+        // wiederverwenden — sonst lädt dieselbe Datei doppelt, wenn Block
+        // UND Shortcode auf einer Seite liegen (AP32)
+        if (wp_script_is('modular-blocks-molecule-viewer-view-script', 'registered')) {
+            wp_enqueue_script('modular-blocks-molecule-viewer-view-script');
+        } else {
+            wp_enqueue_script(
+                'chemviz-molecule-viewer',
+                MODULAR_BLOCKS_PLUGIN_URL . 'blocks/molecule-viewer/view.js',
+                array('chemviz-3dmol'),
+                MODULAR_BLOCKS_PLUGIN_VERSION,
+                true
+            );
         }
-
-        // Enqueue block view script
-        wp_enqueue_script(
-            'chemviz-molecule-viewer',
-            MODULAR_BLOCKS_PLUGIN_URL . 'blocks/molecule-viewer/view.js',
-            array('chemviz-3dmol'),
-            MODULAR_BLOCKS_PLUGIN_VERSION,
-            true
-        );
 
         // Enqueue styles
         wp_enqueue_style(
@@ -166,6 +150,29 @@ class ModularBlocks_ChemViz_Shortcodes {
      * @return string HTML output
      */
     public function chart_shortcode($atts) {
+        // AUSSER FUNKTION (Zusatzfund AP32/AP35): Dieser Shortcode enqueued
+        // bisher blocks/chart-block/view.js und style.css — den chart-block
+        // gibt es nicht mehr (ersetzt durch interactive-data-chart, dessen
+        // view.js ein inkompatibles Tabellen-Markup erwartet). Das erzeugte
+        // Markup (data-chemviz-chart) wird von keinem Script im Projekt
+        // verarbeitet; Besucher sahen nur einen ewigen Lade-Spinner plus 404s.
+        //
+        // Graceful Degradation statt kaputter Ausgabe: Redakteure sehen einen
+        // Hinweis, Besucher nichts. Wiederbelebung: eigenes view.js für das
+        // data-chemviz-chart-Markup schreiben und hier enqueuen.
+        if (current_user_can('edit_posts')) {
+            return '<div style="border: 2px dashed #dc3545; padding: 12px; color: #721c24; background: #fee;">'
+                . esc_html__('[chemviz_chart] ist derzeit ohne Funktion — bitte den Block „Interaktives Datendiagramm" verwenden. (Hinweis nur für Redakteure sichtbar)', 'modular-blocks-plugin')
+                . '</div>';
+        }
+        return '<!-- chemviz_chart: Shortcode derzeit ohne Funktion (siehe VERBESSERUNGSPLAN-3.md) -->';
+    }
+
+    /**
+     * Ursprüngliche Chart-Shortcode-Implementierung — deaktiviert, bis ein
+     * Frontend-Script für das data-chemviz-chart-Markup existiert.
+     */
+    private function chart_shortcode_disabled($atts) {
         $atts = shortcode_atts(array(
             'template' => '',
             'type' => 'scatter',
@@ -178,55 +185,8 @@ class ModularBlocks_ChemViz_Shortcodes {
             'height' => 600
         ), $atts, 'chemviz_chart');
 
-        // Enqueue Plotly.js if not already loaded
-        if (!wp_script_is('chemviz-plotly', 'enqueued')) {
-            $use_cdn = apply_filters('modular_blocks_use_cdn', false);
-            $local_path = MODULAR_BLOCKS_PLUGIN_PATH . 'assets/js/vendor/plotly-2.27.1.min.js';
-
-            if (!$use_cdn && file_exists($local_path)) {
-                wp_enqueue_script(
-                    'chemviz-plotly',
-                    MODULAR_BLOCKS_PLUGIN_URL . 'assets/js/vendor/plotly-2.27.1.min.js',
-                    array(),
-                    '2.27.1',
-                    true
-                );
-            } else {
-                wp_enqueue_script(
-                    'chemviz-plotly',
-                    'https://cdn.plot.ly/plotly-2.27.1.min.js',
-                    array(),
-                    '2.27.1',
-                    true
-                );
-            }
-
-            // Enqueue chart templates
-            wp_enqueue_script(
-                'chemviz-chart-templates',
-                MODULAR_BLOCKS_PLUGIN_URL . 'assets/js/chart-templates.js',
-                array('chemviz-plotly'),
-                MODULAR_BLOCKS_PLUGIN_VERSION,
-                true
-            );
-        }
-
-        // Enqueue block view script
-        wp_enqueue_script(
-            'chemviz-chart-creator',
-            MODULAR_BLOCKS_PLUGIN_URL . 'blocks/chart-block/view.js',
-            array('chemviz-plotly', 'chemviz-chart-templates'),
-            MODULAR_BLOCKS_PLUGIN_VERSION,
-            true
-        );
-
-        // Enqueue styles
-        wp_enqueue_style(
-            'chemviz-chart',
-            MODULAR_BLOCKS_PLUGIN_URL . 'blocks/chart-block/style.css',
-            array(),
-            MODULAR_BLOCKS_PLUGIN_VERSION
-        );
+        // Plotly + Chart-Templates über die zentrale Enqueue-Logik (AP35)
+        ModularBlocks_ChemViz_Enqueue::enqueue_plotly();
 
         // Sanitize attributes
         $template = sanitize_text_field($atts['template']);

@@ -32,25 +32,31 @@ class ModularBlocks_ChemViz_Enqueue {
             return;
         }
 
+        // Wiederverwendbare Blöcke (core/block) sind für has_block() unsichtbar
+        // — bei deren Vorkommen konservativ laden (gleiches Muster wie CDB).
+        $has_reusable = strpos($post->post_content, '<!-- wp:block ') !== false;
+
         $has_molecule_viewer = has_block('modular-blocks/molecule-viewer', $post);
-        $has_chart_block = has_block('modular-blocks/chart-block', $post);
         $has_interactive_data_chart = has_block('modular-blocks/interactive-data-chart', $post);
 
         // Enqueue 3Dmol.js for molecule viewer
-        if ($has_molecule_viewer) {
-            $this->enqueue_3dmol();
+        if ($has_molecule_viewer || $has_reusable) {
+            self::enqueue_3dmol();
         }
 
         // Enqueue Plotly.js for chart blocks
-        if ($has_chart_block || $has_interactive_data_chart) {
-            $this->enqueue_plotly();
+        if ($has_interactive_data_chart || $has_reusable) {
+            self::enqueue_plotly();
         }
     }
 
     /**
      * Enqueue 3Dmol.js library
+     *
+     * public static (AP35): wird auch von den Shortcodes genutzt —
+     * vorher existierte die Lokal/CDN-Fallback-Logik dreifach.
      */
-    private function enqueue_3dmol() {
+    public static function enqueue_3dmol() {
         $use_cdn = apply_filters('modular_blocks_use_cdn', false);
 
         if ($use_cdn) {
@@ -88,8 +94,10 @@ class ModularBlocks_ChemViz_Enqueue {
 
     /**
      * Enqueue Plotly.js library
+     *
+     * public static (AP35): wird auch von den Shortcodes genutzt.
      */
-    private function enqueue_plotly() {
+    public static function enqueue_plotly() {
         $use_cdn = apply_filters('modular_blocks_use_cdn', false);
 
         if ($use_cdn) {
@@ -150,9 +158,21 @@ class ModularBlocks_ChemViz_Enqueue {
 
         global $post;
         if ($post && use_block_editor_for_post_type($post->post_type)) {
-            // Enqueue libraries for block preview in editor
-            $this->enqueue_3dmol();
-            $this->enqueue_plotly();
+            // Nur laden, wenn der Beitrag die Blöcke tatsächlich enthält.
+            // Wiederverwendbare Blöcke (core/block) sind für has_block() unsichtbar,
+            // daher bei deren Vorkommen konservativ laden.
+            // Hinweis: Beim ERSTEN Einfügen eines ChemViz-Blocks ist die Library
+            // erst nach dem Speichern/Neuladen des Editors verfügbar.
+            $content = $post->post_content ?? '';
+            $has_reusable = strpos($content, '<!-- wp:block ') !== false;
+
+            if (has_block('modular-blocks/molecule-viewer', $post) || $has_reusable) {
+                self::enqueue_3dmol();
+            }
+
+            if (has_block('modular-blocks/interactive-data-chart', $post) || $has_reusable) {
+                self::enqueue_plotly();
+            }
         }
     }
 
@@ -164,7 +184,7 @@ class ModularBlocks_ChemViz_Enqueue {
 
         $chemviz_blocks = [
             'modular-blocks/molecule-viewer',
-            'modular-blocks/chart-block'
+            'modular-blocks/interactive-data-chart'
         ];
 
         foreach ($chemviz_blocks as $block_name) {

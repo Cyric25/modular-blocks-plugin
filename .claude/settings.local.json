@@ -26,7 +26,8 @@
       "Bash(npm run zip:*)",
       "WebSearch",
       "Bash(ls:*)",
-      "Bash(do php -l \"$file\")"
+      "Bash(do php -l \"$file\")",
+      "Bash(for file in blocks/*/block.json)"
     ],
     "deny": [],
     "ask": []

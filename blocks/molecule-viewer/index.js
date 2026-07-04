@@ -1,7 +1,8 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, TextControl, TextareaControl, RangeControl, ToggleControl, Button, ColorPicker, ExternalLink, Notice } from '@wordpress/components';
+import { PanelBody, SelectControl, TextControl, TextareaControl, RangeControl, ToggleControl, Button, ColorPicker, ExternalLink, Notice, ResizableBox } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import './editor.css';
 import './style.css';
 
@@ -23,12 +24,44 @@ registerBlockType('modular-blocks/molecule-viewer', {
             showControls,
             enableSpin,
             ariaLabel,
-            description
+            description,
+            align
         } = attributes;
 
+        const blockRef = useRef(null);
+        const [containerWidth, setContainerWidth] = useState(1200);
+
         const blockProps = useBlockProps({
-            className: 'molecule-viewer-editor'
+            className: 'molecule-viewer-editor',
+            ref: blockRef,
         });
+
+        // Measure parent container width
+        useEffect(() => {
+            const measure = () => {
+                if (blockRef.current) {
+                    const parentWidth = blockRef.current.parentElement?.clientWidth || blockRef.current.clientWidth;
+                    if (parentWidth > 0) {
+                        setContainerWidth(parentWidth);
+                    }
+                }
+            };
+            measure();
+            window.addEventListener('resize', measure);
+            // Re-measure after a short delay (editor layout may shift)
+            const timer = setTimeout(measure, 500);
+            return () => {
+                window.removeEventListener('resize', measure);
+                clearTimeout(timer);
+            };
+        }, []);
+
+        // Clamp width to container on mount or when container changes
+        useEffect(() => {
+            if (width > containerWidth) {
+                setAttributes({ width: containerWidth });
+            }
+        }, [containerWidth]);
 
         // Helper to get source description
         const getSourceDescription = () => {
@@ -101,7 +134,7 @@ registerBlockType('modular-blocks/molecule-viewer', {
                                     onChange={(value) => setAttributes({ pubchemQuery: value })}
                                     placeholder={pubchemType === 'name' ? 'Aspirin, Glucose, Ethanol' : '2244'}
                                     help={pubchemType === 'name'
-                                        ? __('Englischer Molekülname', 'modular-blocks-plugin')
+                                        ? __('Deutscher oder englischer Molekülname', 'modular-blocks-plugin')
                                         : __('Numerische Compound ID', 'modular-blocks-plugin')
                                     }
                                 />
@@ -243,15 +276,16 @@ registerBlockType('modular-blocks/molecule-viewer', {
                             label={__('Breite (px)', 'modular-blocks-plugin')}
                             value={width}
                             onChange={(value) => setAttributes({ width: value })}
-                            min={300}
-                            max={1200}
+                            min={200}
+                            max={containerWidth}
+                            help={`${__('Max. Container-Breite:', 'modular-blocks-plugin')} ${containerWidth}px`}
                         />
 
                         <RangeControl
                             label={__('Höhe (px)', 'modular-blocks-plugin')}
                             value={height}
                             onChange={(value) => setAttributes({ height: value })}
-                            min={300}
+                            min={150}
                             max={1200}
                         />
                     </PanelBody>
@@ -287,23 +321,59 @@ registerBlockType('modular-blocks/molecule-viewer', {
                 </InspectorControls>
 
                 <div {...blockProps}>
-                    <div className="molecule-viewer-placeholder" style={{
-                        backgroundColor: backgroundColor,
-                        minHeight: '400px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                        color: '#fff',
-                        borderRadius: '8px'
-                    }}>
-                        <span className="dashicons dashicons-admin-site" style={{ fontSize: '48px', marginBottom: '16px' }}></span>
-                        <h3>{__('3D Molekül-Viewer', 'modular-blocks-plugin')}</h3>
-                        <p style={{ opacity: 0.8 }}>{getSourceDescription()}</p>
-                        <p style={{ opacity: 0.6, fontSize: '14px' }}>
-                            {__('Stil:', 'modular-blocks-plugin')} {displayStyle} | {__('Farbe:', 'modular-blocks-plugin')} {colorScheme}
-                        </p>
-                    </div>
+                    <ResizableBox
+                        size={{
+                            width: Math.min(width, containerWidth),
+                            height: height,
+                        }}
+                        minWidth={200}
+                        minHeight={150}
+                        maxWidth={containerWidth}
+                        style={{
+                            marginLeft: align === 'center' ? 'auto' : undefined,
+                            marginRight: align === 'center' ? 'auto' : undefined,
+                            float: align === 'left' ? 'left' : align === 'right' ? 'right' : undefined,
+                        }}
+                        enable={{
+                            top: false,
+                            right: true,
+                            bottom: true,
+                            left: false,
+                            topRight: false,
+                            bottomRight: true,
+                            bottomLeft: false,
+                            topLeft: false,
+                        }}
+                        onResizeStop={(event, direction, elt, delta) => {
+                            setAttributes({
+                                width: width + delta.width,
+                                height: height + delta.height,
+                            });
+                        }}
+                        showHandle={true}
+                    >
+                        <div className="molecule-viewer-placeholder" style={{
+                            backgroundColor: backgroundColor,
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column',
+                            color: '#fff',
+                            borderRadius: '8px'
+                        }}>
+                            <span className="dashicons dashicons-admin-site" style={{ fontSize: '48px', marginBottom: '16px' }}></span>
+                            <h3>{__('3D Molekül-Viewer', 'modular-blocks-plugin')}</h3>
+                            <p style={{ opacity: 0.8 }}>{getSourceDescription()}</p>
+                            <p style={{ opacity: 0.6, fontSize: '14px' }}>
+                                {__('Stil:', 'modular-blocks-plugin')} {displayStyle} | {__('Farbe:', 'modular-blocks-plugin')} {colorScheme}
+                            </p>
+                            <p style={{ opacity: 0.4, fontSize: '12px' }}>
+                                {width} × {height} px
+                            </p>
+                        </div>
+                    </ResizableBox>
                 </div>
             </>
         );

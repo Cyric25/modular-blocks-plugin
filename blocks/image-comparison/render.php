@@ -173,12 +173,4 @@ $inline_style = implode(' ', $inline_styles);
     </div>
 </div>
 
-<script>
-// Initialize image comparison functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const comparisonBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (comparisonBlock && typeof window.initImageComparison === 'function') {
-        window.initImageComparison(comparisonBlock);
-    }
-});
-</script>
+<?php /* Inline-Bootstrap entfernt (AP20): view.js initialisiert alle Bloecke selbst (Auto-Init + MutationObserver); der doppelte Aufruf band Event-Handler zweimal. */ ?>

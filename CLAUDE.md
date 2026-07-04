@@ -157,15 +157,19 @@ blocks/my-block/
 The plugin includes several interactive educational blocks:
 
 **General Education Blocks:**
-- **demo-card**: Simple card with title, text, button, and color customization
 - **image-comparison**: Interactive before/after image slider
 - **multiple-choice**: Quiz-style multiple choice questions with feedback
 - **summary-block**: Expandable/collapsible content sections
+- **statement-summary**: Summary/statement exercise block
 - **image-overlay**: Images with clickable hotspots and info popups
 - **point-of-interest**: Interactive points on images with tooltips
 - **statement-connector**: Drag-and-drop matching exercise connecting statements
 - **drag-the-words**: Fill-in-the-blank with draggable words
 - **drag-and-drop**: General drag-and-drop sorting/categorization
+- **svg-drawing**: Drawing/annotation block (fabric.js)
+
+**Embedding Blocks:**
+- **iframe-whitelist**: Embeds external tools from a whitelisted URL list
 
 **ChemViz Chemistry Blocks:**
 - **molecule-viewer**: Interactive 3D molecular visualization using 3Dmol.js
@@ -174,11 +178,14 @@ The plugin includes several interactive educational blocks:
   - Color schemes (default, carbon, spectrum, chain, secondary structure)
   - Interactive controls (rotate, zoom, spin, fullscreen)
   - Keyboard navigation support
-- **chart-block**: Scientific charts and diagrams using Plotly.js
+- **interactive-data-chart**: Scientific charts and diagrams using Plotly.js
   - Predefined chemistry templates (titration curves, kinetics, phase diagrams, IR spectra, Lineweaver-Burk)
   - Custom data support via JSON
   - Interactive and responsive charts
   - Export capabilities
+
+Hinweis: Früher dokumentierte Blöcke `demo-card`, `html-sandbox` und `chart-block`
+existieren nicht mehr (chart-block wurde durch interactive-data-chart ersetzt).
 
 Most blocks have both `index.js` (editor) and `view.js` (frontend interactivity).
 
@@ -248,7 +255,7 @@ registerBlockType('modular-blocks/my-block', {
 The admin interface uses AJAX (`wp_ajax_modular_blocks_toggle_block`) to enable/disable blocks:
 - Updates `modular_blocks_enabled_blocks` option (array of enabled block names)
 - Changes take effect immediately without page reload
-- Blocks are identified by directory name (e.g., "demo-card")
+- Blocks are identified by directory name (e.g., "multiple-choice")
 
 ### Asset Enqueuing
 
@@ -353,7 +360,7 @@ ChemViz blocks require external JavaScript libraries for 3D visualization and ch
 
 **Plotly.js** (v2.27.1+)
 - License: MIT
-- Used by: `chart-block`
+- Used by: `interactive-data-chart`
 - Location: `assets/js/vendor/plotly-2.27.1.min.js` or CDN
 - Documentation: https://plotly.com/javascript/
 
@@ -385,6 +392,11 @@ Two shortcodes are available for backward compatibility and flexible content int
 [chemviz_chart type="scatter" data='[{"x":[1,2,3],"y":[4,5,6]}]' title="Custom Chart"]
 ```
 
+**ACHTUNG:** `[chemviz_chart]` ist derzeit AUSSER FUNKTION — er referenzierte den
+entfernten chart-block und sein Markup wird von keinem Script verarbeitet.
+Redakteure sehen einen Hinweis, Besucher nichts. Stattdessen den Block
+„Interaktives Datendiagramm" verwenden. Details: VERBESSERUNGSPLAN-3.md (AP32/AP35).
+
 Implementation in `includes/class-chemviz-shortcodes.php`.
 
 ### Example Structures
@@ -404,7 +416,7 @@ Users can upload their own PDB, SDF, MOL, XYZ, or CIF files via WordPress Media 
 - Fullscreen API support with vendor prefixes
 - ARIA labels for accessibility
 
-**chart-block:**
+**interactive-data-chart:**
 - `view.js` initializes Plotly charts with template or custom data
 - Responsive resizing with debounced handler
 - Template system loads predefined chemistry diagrams
@@ -412,8 +424,8 @@ Users can upload their own PDB, SDF, MOL, XYZ, or CIF files via WordPress Media 
 
 ## Development Notes
 
-- The plugin uses verbose error logging in `class-block-manager.php` (check `/wp-content/debug.log` if WP_DEBUG is enabled)
-- Block discovery happens on every `init` hook - no caching
+- Debug-Logging läuft über `modular_blocks_debug_log()` (nur bei WP_DEBUG + WP_DEBUG_LOG aktiv); echte Fehler werden immer geloggt
+- Block discovery ist per Transient gecacht (`modular_blocks_dir_cache`, 12h); Invalidierung bei Block-Upload/-Löschung/-Anlage und Plugin-Aktivierung
 - Admin interface instantiates a fresh Block_Manager to get current block list
 - ChemViz libraries can be downloaded via npm scripts or will fall back to CDN
 - For production, download libraries locally with `npm run download-libs` to ensure GDPR compliance and offline functionality

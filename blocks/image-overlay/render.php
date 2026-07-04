@@ -39,6 +39,7 @@ $button_style = $block_attributes['buttonStyle'] ?? 'tabs';
 $button_position = $block_attributes['buttonPosition'] ?? 'top';
 $button_size = $block_attributes['buttonSize'] ?? 'medium';
 $responsive_height = $block_attributes['responsiveHeight'] ?? true;
+$background_color = $block_attributes['backgroundColor'] ?? '';
 
 // Sanitize attributes
 $title = wp_kses_post($title);
@@ -49,11 +50,9 @@ $button_style = sanitize_text_field($button_style);
 $button_position = sanitize_text_field($button_position);
 $button_size = sanitize_text_field($button_size);
 $responsive_height = filter_var($responsive_height, FILTER_VALIDATE_BOOLEAN);
+$background_color = sanitize_text_field($background_color);
 
-// Check if base image is available
-if (empty($base_image['url'])) {
-    return '<div class="image-overlay-placeholder"><p>' . __('Bitte laden Sie ein Basis-Bild hoch.', 'modular-blocks-plugin') . '</p></div>';
-}
+$has_base_image = !empty($base_image['url']);
 
 // Filter out layers without images
 $valid_layers = array_filter($layers, function($layer) {
@@ -75,6 +74,7 @@ $css_classes = [
     'button-size-' . $button_size,
     'display-mode-' . $display_mode,
     $responsive_height ? 'responsive-height' : 'fixed-height',
+    $has_base_image ? '' : 'no-base-image',
     $show_labels ? 'has-labels' : '',
     $show_descriptions ? 'has-descriptions' : '',
     $allow_multiple_visible ? 'multiple-visible' : 'single-visible'
@@ -207,7 +207,17 @@ $overlay_data = [
                 </div>
             <?php endif; ?>
 
-            <div class="image-stack">
+            <?php
+            // Determine background: explicit color > white (no base image) > transparent
+            $stack_bg = '';
+            if (!empty($background_color)) {
+                $stack_bg = $background_color;
+            } elseif (!$has_base_image) {
+                $stack_bg = '#ffffff';
+            }
+            ?>
+            <div class="image-stack"<?php if (!empty($stack_bg)) : ?> style="background-color: <?php echo esc_attr($stack_bg); ?>;"<?php endif; ?>>
+                <?php if ($has_base_image) : ?>
                 <!-- Base Image -->
                 <div class="base-layer">
                     <img
@@ -217,6 +227,7 @@ $overlay_data = [
                         draggable="false"
                     />
                 </div>
+                <?php endif; ?>
 
                 <!-- Overlay Layers -->
                 <?php foreach ($valid_layers as $index => $layer): ?>

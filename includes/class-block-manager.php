@@ -11,6 +11,13 @@ if (!defined('ABSPATH')) {
 
 class ModularBlocks_Block_Manager {
 
+    /**
+     * Transient-Key für die gecachte Block-Verzeichnisliste.
+     * Wird beim Block-Upload/-Löschen/-Anlegen sowie über den
+     * "Cache leeren"-Button im Admin invalidiert.
+     */
+    const DISCOVERY_CACHE_KEY = 'modular_blocks_dir_cache';
+
     private $blocks_path;
     private $enabled_blocks;
 
@@ -48,42 +55,45 @@ class ModularBlocks_Block_Manager {
      * Dynamically discover and register blocks from the blocks directory
      */
     public function register_blocks() {
-        error_log('Modular Blocks Plugin: Starting block registration...');
-
         $block_directories = $this->scan_block_directories();
-        error_log('Modular Blocks Plugin: Found ' . count($block_directories) . ' block directories');
+        modular_blocks_debug_log('Found ' . count($block_directories) . ' block directories');
 
         foreach ($block_directories as $block_dir) {
             $block_name = basename($block_dir);
-            error_log("Modular Blocks Plugin: Processing block: {$block_name}");
 
             // Check if block is enabled in admin settings
             if (!$this->is_block_enabled($block_name)) {
-                error_log("Modular Blocks Plugin: Block {$block_name} is disabled, skipping");
+                modular_blocks_debug_log("Block {$block_name} is disabled, skipping");
                 continue;
             }
 
-            error_log("Modular Blocks Plugin: Registering block: {$block_name}");
             $this->register_single_block($block_dir, $block_name);
         }
-
-        error_log('Modular Blocks Plugin: Block registration completed');
     }
 
     /**
      * Scan the blocks directory for available blocks
      */
     private function scan_block_directories() {
-        error_log("Modular Blocks Plugin: Scanning blocks path: {$this->blocks_path}");
-
         if (!is_dir($this->blocks_path)) {
-            error_log("Modular Blocks Plugin: Blocks path does not exist: {$this->blocks_path}");
+            modular_blocks_debug_log("Blocks path does not exist: {$this->blocks_path}");
             return [];
+        }
+
+        // Gecachte Liste verwenden (spart Filesystem-Scans bei jedem init).
+        // Fehlende Verzeichnisse sind unkritisch: register_single_block()
+        // prüft block.json erneut und überspringt still.
+        $cached = get_transient(self::DISCOVERY_CACHE_KEY);
+        if (is_array($cached)) {
+            $directories = [];
+            foreach ($cached as $item) {
+                $directories[] = $this->blocks_path . $item;
+            }
+            return $directories;
         }
 
         $directories = [];
         $items = scandir($this->blocks_path);
-        error_log('Modular Blocks Plugin: Found items in blocks directory: ' . implode(', ', $items));
 
         foreach ($items as $item) {
             if ($item === '.' || $item === '..') {
@@ -91,18 +101,23 @@ class ModularBlocks_Block_Manager {
             }
 
             $full_path = $this->blocks_path . $item;
-            error_log("Modular Blocks Plugin: Checking item: {$item} at path: {$full_path}");
 
             if (is_dir($full_path) && $this->is_valid_block_directory($full_path)) {
-                error_log("Modular Blocks Plugin: Valid block directory found: {$item}");
                 $directories[] = $full_path;
-            } else {
-                error_log("Modular Blocks Plugin: Invalid block directory: {$item}");
             }
         }
 
-        error_log('Modular Blocks Plugin: Valid block directories: ' . implode(', ', array_map('basename', $directories)));
+        set_transient(self::DISCOVERY_CACHE_KEY, array_map('basename', $directories), 12 * HOUR_IN_SECONDS);
+
         return $directories;
+    }
+
+    /**
+     * Invalidiert die gecachte Block-Verzeichnisliste
+     * (nach Block-Upload, -Löschung oder -Anlage aufrufen).
+     */
+    public static function clear_discovery_cache() {
+        delete_transient(self::DISCOVERY_CACHE_KEY);
     }
 
     /**
@@ -118,7 +133,6 @@ class ModularBlocks_Block_Manager {
      */
     private function register_single_block($block_dir, $block_name) {
         $block_json_path = $block_dir . '/block.json';
-        error_log("Modular Blocks Plugin: Attempting to register block from: {$block_json_path}");
 
         if (!file_exists($block_json_path)) {
             error_log("Modular Blocks Plugin: block.json not found for {$block_name}");
@@ -132,7 +146,7 @@ class ModularBlocks_Block_Manager {
             $use_build_dir = is_dir($build_dir);
 
             if ($use_build_dir) {
-                error_log("Modular Blocks Plugin: Using build directory for {$block_name}");
+                modular_blocks_debug_log("Using build directory for {$block_name}");
                 // Development mode - read block.json and override with build paths
                 $block_data = json_decode(file_get_contents($block_json_path), true);
 
@@ -160,21 +174,19 @@ class ModularBlocks_Block_Manager {
                 $result = register_block_type($block_dir, $block_data);
 
             } else {
-                error_log("Modular Blocks Plugin: Using production mode for {$block_name} (no build dir)");
                 // Production mode - WordPress will automatically load assets from block directory
                 // Just need to add render callback if render.php exists
                 $args = [];
 
                 $render_file = $block_dir . '/render.php';
                 if (file_exists($render_file)) {
-                    error_log("Modular Blocks Plugin: Setting up render callback for {$block_name}");
                     $args['render_callback'] = function($attributes, $content, $block) use ($render_file, $block_name) {
                         return $this->render_dynamic_block($render_file, $attributes, $content, $block, $block_name);
                     };
                 }
 
                 // For chart blocks, register viewScript with Plotly dependency
-                $chart_blocks = ['chart-block', 'interactive-data-chart'];
+                $chart_blocks = ['interactive-data-chart'];
                 if (in_array($block_name, $chart_blocks)) {
                     $view_js = $block_dir . '/view.js';
                     if (file_exists($view_js)) {
@@ -194,9 +206,8 @@ class ModularBlocks_Block_Manager {
                 $result = register_block_type($block_dir, $args);
             }
 
-            if ($result) {
-                error_log("Modular Blocks Plugin: Successfully registered block: {$block_name}");
-            } else {
+            if (!$result) {
+                // Echter Fehlerfall: bewusst ungegatet loggen
                 error_log("Modular Blocks Plugin: Failed to register block: {$block_name}");
             }
 
@@ -220,7 +231,7 @@ class ModularBlocks_Block_Manager {
                 $asset_data = file_exists($asset_file) ? include($asset_file) : ['dependencies' => [], 'version' => filemtime($build_view)];
 
                 // Add Plotly dependency for chart blocks
-                $chart_blocks = ['chart-block', 'interactive-data-chart'];
+                $chart_blocks = ['interactive-data-chart'];
                 if (in_array($block_slug, $chart_blocks)) {
                     $asset_data['dependencies'][] = 'chemviz-plotly';
                 }
@@ -311,7 +322,10 @@ class ModularBlocks_Block_Manager {
 
         try {
             include $render_file;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+            // Throwable fängt auch PHP-Errors (z. B. TypeError in render.php)
+            // ab — sonst gäbe es einen White-Screen statt eines Log-Eintrags.
+            ob_end_clean();
             error_log("Modular Blocks Plugin: Error rendering block {$block_name}: " . $e->getMessage());
             return '';
         }
@@ -323,18 +337,12 @@ class ModularBlocks_Block_Manager {
      * Check if a block is enabled in admin settings
      */
     private function is_block_enabled($block_name) {
-        error_log("Modular Blocks Plugin: Checking if block '{$block_name}' is enabled");
-        error_log("Modular Blocks Plugin: Enabled blocks array: " . print_r($this->enabled_blocks, true));
-
         // If no blocks are specifically enabled, enable all by default
         if (empty($this->enabled_blocks)) {
-            error_log("Modular Blocks Plugin: No blocks enabled, enabling all by default");
             return true;
         }
 
-        $is_enabled = in_array($block_name, $this->enabled_blocks);
-        error_log("Modular Blocks Plugin: Block '{$block_name}' enabled status: " . ($is_enabled ? 'YES' : 'NO'));
-        return $is_enabled;
+        return in_array($block_name, $this->enabled_blocks);
     }
 
     /**

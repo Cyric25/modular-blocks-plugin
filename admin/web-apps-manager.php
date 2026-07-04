@@ -56,7 +56,7 @@ if (isset($_POST['delete_webapp']) && isset($_POST['app_name'])) {
 }
 
 // Get list of web-apps
-$webapps = $webapp_manager->list_webapps();
+$webapps = $webapp_manager->list_webapps(true); // mit Größe für die Übersicht
 ?>
 
 <div class="wrap">

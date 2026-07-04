@@ -12,7 +12,9 @@
      * @param {HTMLElement} element - The POI block element
      */
     function initPointOfInterest(element) {
-        if (!element) return;
+        // Guard gegen Doppel-Initialisierung (Auto-Init + evtl. weitere Aufrufe)
+        if (!element || element.dataset.initialized === 'true') return;
+        element.dataset.initialized = 'true';
 
         const poiData = JSON.parse(element.dataset.poi || '{}');
         const container = element.querySelector('.poi-container');

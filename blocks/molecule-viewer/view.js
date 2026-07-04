@@ -43,6 +43,12 @@
         },
 
         initSingleViewer: function(element) {
+            // DOM-Guard gegen Doppel-Initialisierung: wenn die Datei zweimal
+            // lädt (Block + Shortcode auf einer Seite), läuft das IIFE erneut —
+            // Map-basierte Guards überleben das nicht.
+            if (element.dataset.initialized === 'true') return;
+            element.dataset.initialized = 'true';
+
             const config = this.parseConfig(element);
 
             if (this.intersectionObserver) {
@@ -200,15 +206,114 @@
                 .catch(error => onError(`Fehler beim Laden von PDB ${pdbId}: ${error.message}`));
         },
 
+        // German to English molecule name translation
+        moleculeTranslations: {
+            // Grundchemikalien
+            'wasser': 'water', 'schwefelsäure': 'sulfuric acid', 'salzsäure': 'hydrochloric acid',
+            'salpetersäure': 'nitric acid', 'phosphorsäure': 'phosphoric acid',
+            'kohlensäure': 'carbonic acid', 'flusssäure': 'hydrofluoric acid',
+            'blausäure': 'hydrogen cyanide', 'natronlauge': 'sodium hydroxide',
+            'kalilauge': 'potassium hydroxide', 'ammoniak': 'ammonia',
+            'wasserstoffperoxid': 'hydrogen peroxide', 'kochsalz': 'sodium chloride',
+            'natriumchlorid': 'sodium chloride', 'kaliumchlorid': 'potassium chloride',
+            'calciumcarbonat': 'calcium carbonate', 'natriumhydrogencarbonat': 'sodium bicarbonate',
+            'natriumcarbonat': 'sodium carbonate', 'kaliumnitrat': 'potassium nitrate',
+            'silbernitrat': 'silver nitrate', 'kupfersulfat': 'copper sulfate',
+            'eisenchlorid': 'iron chloride', 'magnesiumoxid': 'magnesium oxide',
+            'calciumoxid': 'calcium oxide', 'aluminiumoxid': 'aluminum oxide',
+            'kohlenstoffdioxid': 'carbon dioxide', 'kohlenstoffmonoxid': 'carbon monoxide',
+            'schwefeldioxid': 'sulfur dioxide', 'stickstoffdioxid': 'nitrogen dioxide',
+            'distickstoffmonoxid': 'nitrous oxide', 'lachgas': 'nitrous oxide',
+            'ozon': 'ozone', 'sauerstoff': 'oxygen', 'stickstoff': 'nitrogen',
+            'wasserstoff': 'hydrogen', 'chlor': 'chlorine', 'brom': 'bromine',
+            'iod': 'iodine', 'jod': 'iodine',
+            // Organische Chemie - Alkohole
+            'methanol': 'methanol', 'ethanol': 'ethanol', 'propanol': 'propanol',
+            'butanol': 'butanol', 'isopropanol': 'isopropanol', 'glycerin': 'glycerol',
+            'glykol': 'ethylene glycol', 'ethylenglykol': 'ethylene glycol',
+            // Organische Säuren
+            'essigsäure': 'acetic acid', 'ameisensäure': 'formic acid',
+            'zitronensäure': 'citric acid', 'milchsäure': 'lactic acid',
+            'oxalsäure': 'oxalic acid', 'weinsäure': 'tartaric acid',
+            'benzoesäure': 'benzoic acid', 'salicylsäure': 'salicylic acid',
+            'bernsteinsäure': 'succinic acid', 'buttersäure': 'butyric acid',
+            'propionsäure': 'propionic acid', 'acrylsäure': 'acrylic acid',
+            'stearinsäure': 'stearic acid', 'ölsäure': 'oleic acid',
+            'palmitinsäure': 'palmitic acid', 'linolsäure': 'linoleic acid',
+            // Ketone, Aldehyde, Ester
+            'aceton': 'acetone', 'formaldehyd': 'formaldehyde', 'acetaldehyd': 'acetaldehyde',
+            'ethylacetat': 'ethyl acetate', 'methylacetat': 'methyl acetate',
+            // Kohlenwasserstoffe
+            'methan': 'methane', 'ethan': 'ethane', 'propan': 'propane', 'butan': 'butane',
+            'pentan': 'pentane', 'hexan': 'hexane', 'heptan': 'heptane', 'oktan': 'octane',
+            'ethen': 'ethylene', 'ethylen': 'ethylene', 'propen': 'propylene',
+            'ethin': 'acetylene', 'acetylen': 'acetylene',
+            'benzol': 'benzene', 'toluol': 'toluene', 'xylol': 'xylene',
+            'naphthalin': 'naphthalene', 'anthracen': 'anthracene',
+            'cyclohexan': 'cyclohexane', 'cyclopentan': 'cyclopentane',
+            'styrol': 'styrene', 'phenol': 'phenol',
+            // Amine & Stickstoffverbindungen
+            'harnstoff': 'urea', 'anilin': 'aniline', 'pyridin': 'pyridine',
+            'histamin': 'histamine', 'serotonin': 'serotonin', 'dopamin': 'dopamine',
+            'adrenalin': 'epinephrine', 'noradrenalin': 'norepinephrine',
+            'nikotin': 'nicotine', 'koffein': 'caffeine', 'theobromin': 'theobromine',
+            // Zucker & Kohlenhydrate
+            'glukose': 'glucose', 'glucose': 'glucose', 'traubenzucker': 'glucose',
+            'fruktose': 'fructose', 'fruchtzucker': 'fructose',
+            'saccharose': 'sucrose', 'rohrzucker': 'sucrose', 'haushaltszucker': 'sucrose',
+            'maltose': 'maltose', 'malzzucker': 'maltose',
+            'laktose': 'lactose', 'milchzucker': 'lactose',
+            'galaktose': 'galactose', 'ribose': 'ribose', 'desoxyribose': 'deoxyribose',
+            'stärke': 'starch', 'zellulose': 'cellulose',
+            // Aminosäuren
+            'glycin': 'glycine', 'alanin': 'alanine', 'valin': 'valine',
+            'leucin': 'leucine', 'isoleucin': 'isoleucine', 'prolin': 'proline',
+            'phenylalanin': 'phenylalanine', 'tryptophan': 'tryptophan',
+            'methionin': 'methionine', 'serin': 'serine', 'threonin': 'threonine',
+            'cystein': 'cysteine', 'tyrosin': 'tyrosine', 'asparagin': 'asparagine',
+            'glutamin': 'glutamine', 'asparaginsäure': 'aspartic acid',
+            'glutaminsäure': 'glutamic acid', 'lysin': 'lysine',
+            'arginin': 'arginine', 'histidin': 'histidine',
+            // Nucleotide & Basen
+            'adenin': 'adenine', 'guanin': 'guanine', 'cytosin': 'cytosine',
+            'thymin': 'thymine', 'uracil': 'uracil',
+            // Vitamine
+            'ascorbinsäure': 'ascorbic acid', 'retinol': 'retinol',
+            'cholecalciferol': 'cholecalciferol', 'tocopherol': 'tocopherol',
+            'riboflavin': 'riboflavin', 'thiamin': 'thiamine',
+            'folsäure': 'folic acid', 'biotin': 'biotin',
+            'pantothensäure': 'pantothenic acid', 'niacin': 'niacin',
+            // Medikamente & bekannte Substanzen
+            'aspirin': 'aspirin', 'paracetamol': 'acetaminophen', 'ibuprofen': 'ibuprofen',
+            'penicillin': 'penicillin', 'insulin': 'insulin', 'morphin': 'morphine',
+            'codein': 'codeine', 'atropin': 'atropine', 'chinin': 'quinine',
+            // Fette & Lipide
+            'cholesterin': 'cholesterol', 'cholesterol': 'cholesterol',
+            'triglycerid': 'triglyceride', 'lecithin': 'lecithin',
+            // Polymere & Sonstige
+            'ethylenoxid': 'ethylene oxide', 'propylenoxid': 'propylene oxide',
+            'dimethylsulfoxid': 'dimethyl sulfoxide', 'chloroform': 'chloroform',
+            'dichlormethan': 'dichloromethane', 'tetrachlorkohlenstoff': 'carbon tetrachloride',
+            'diethylether': 'diethyl ether', 'tetrahydrofuran': 'tetrahydrofuran',
+            'essigsäureanhydrid': 'acetic anhydride', 'glycerinaldehyd': 'glyceraldehyde',
+            'brenztraubensäure': 'pyruvic acid', 'acetessigsäure': 'acetoacetic acid',
+        },
+
+        translateMoleculeName: function(name) {
+            const lower = name.toLowerCase().trim();
+            return this.moleculeTranslations[lower] || name;
+        },
+
         loadFromPubChem: function(query, type, onSuccess, onError) {
+            // Translate German molecule name to English
+            const searchQuery = (type === 'name') ? this.translateMoleculeName(query) : query;
+
             // PubChem API URL construction
             let url;
             if (type === 'cid') {
-                // Direct CID lookup
-                url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${query}/SDF?record_type=3d`;
+                url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${searchQuery}/SDF?record_type=3d`;
             } else {
-                // Name lookup
-                url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(query)}/SDF?record_type=3d`;
+                url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(searchQuery)}/SDF?record_type=3d`;
             }
 
             fetch(url)
@@ -216,8 +321,8 @@
                     if (!response.ok) {
                         // Try 2D if 3D not available
                         const url2d = type === 'cid'
-                            ? `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${query}/SDF`
-                            : `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(query)}/SDF`;
+                            ? `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${searchQuery}/SDF`
+                            : `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(searchQuery)}/SDF`;
 
                         return fetch(url2d).then(res => {
                             if (!res.ok) {
@@ -318,6 +423,10 @@
                     stick: { radius: 0.15, colorscheme: styleConfig.colorscheme },
                     sphere: { radius: 0.4, colorscheme: styleConfig.colorscheme }
                 });
+            } else if (config.displayStyle === 'line') {
+                // Thicker lines for better visibility
+                styleConfig.linewidth = 3;
+                viewer.setStyle({}, { line: styleConfig });
             } else {
                 viewer.setStyle({}, {[config.displayStyle]: styleConfig});
             }
@@ -341,6 +450,39 @@
             const self = this;
             const controls = element.querySelectorAll('.chemviz-viewer__button');
             const canvas = element.querySelector('.chemviz-viewer__canvas');
+            const styleSelect = element.querySelector('.chemviz-viewer__style-select');
+
+            // Hover effects for theme-colored buttons and select
+            const interactiveEls = element.querySelectorAll('.chemviz-viewer__button, .chemviz-viewer__style-select');
+            interactiveEls.forEach(el => {
+                const hoverColor = el.dataset.hoverColor;
+                const baseColor = el.dataset.baseColor;
+                if (hoverColor && baseColor) {
+                    el.addEventListener('mouseenter', () => {
+                        el.style.backgroundColor = hoverColor;
+                        el.style.background = hoverColor;
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        el.style.backgroundColor = baseColor;
+                        el.style.background = baseColor;
+                    });
+                }
+            });
+
+            // Style switcher dropdown
+            if (styleSelect) {
+                styleSelect.addEventListener('change', () => {
+                    const viewer = canvas.id ? self.viewers.get(canvas.id) : null;
+                    if (!viewer) return;
+
+                    const newStyle = styleSelect.value;
+                    const updatedConfig = Object.assign({}, config, { displayStyle: newStyle });
+                    self.applyStyle(viewer, updatedConfig);
+                    viewer.render();
+                    // Update config for subsequent operations
+                    config.displayStyle = newStyle;
+                });
+            }
 
             controls.forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -366,6 +508,23 @@
                             viewer.spin(newSpinState);
                             self.spinState.set(canvas.id, newSpinState);
                             button.textContent = newSpinState ? 'Stop' : 'Drehen';
+                            break;
+                        case 'toggle-bg':
+                            const container = element.querySelector('.chemviz-viewer__container');
+                            // Store original bg from data attribute on first toggle
+                            if (!element._originalBg) {
+                                element._originalBg = element.dataset.backgroundColor || '#000000';
+                            }
+                            const isOriginal = config.backgroundColor === element._originalBg;
+                            // Toggle: original → opposite (black↔white), opposite → original
+                            const opposite = (element._originalBg === '#ffffff' || element._originalBg === '#fff') ? '#000000' : '#ffffff';
+                            const newBg = isOriginal ? opposite : element._originalBg;
+                            config.backgroundColor = newBg;
+                            viewer.setBackgroundColor(newBg);
+                            if (container) {
+                                container.style.backgroundColor = newBg;
+                            }
+                            viewer.render();
                             break;
                         case 'fullscreen':
                             if (element.requestFullscreen) {

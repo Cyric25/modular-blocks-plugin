@@ -32,6 +32,24 @@ $description = $attributes['description'] ?? '';
 // Calculate aspect ratio
 $aspect_ratio = ($height / $width) * 100;
 
+// Theme colors for buttons (inline styles per CLAUDE.md pattern)
+$color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
+$color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
+$button_style = 'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
+                'padding: 8px 16px !important; min-width: 44px !important; min-height: 44px !important; ' .
+                'cursor: pointer !important; font-size: 14px !important; font-weight: 500 !important;';
+$select_style = 'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
+                'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
+                'padding: 8px 12px !important; padding-right: 28px !important; ' .
+                'min-width: 44px !important; min-height: 44px !important; ' .
+                'cursor: pointer !important; font-size: 14px !important; font-weight: 500 !important; ' .
+                'appearance: none !important; -webkit-appearance: none !important; ' .
+                'background-image: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23fff\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E") !important; ' .
+                'background-repeat: no-repeat !important; background-position: right 8px center !important;';
+
 // Build data attributes based on source type
 $data_attrs = [
     'data-chemviz-viewer' => 'true',
@@ -72,6 +90,7 @@ foreach ($data_attrs as $key => $value) {
 // Wrapper attributes
 $wrapper_attributes = get_block_wrapper_attributes([
     'class' => 'chemviz-viewer',
+    'style' => 'max-width:' . $width . 'px;',
     'aria-label' => esc_attr($aria_label),
 ]);
 
@@ -88,13 +107,24 @@ $wrapper_attributes = str_replace('class="', $data_attrs_string . ' class="', $w
 
     <?php if ($show_controls) : ?>
     <div class="chemviz-viewer__controls">
-        <button class="chemviz-viewer__button" data-action="reset">
+        <select class="chemviz-viewer__style-select" data-action="change-style" style="<?php echo esc_attr($select_style); ?>" aria-label="<?php esc_attr_e('Darstellung wählen', 'modular-blocks-plugin'); ?>" data-hover-color="<?php echo esc_attr($color_ui_surface_dark); ?>" data-base-color="<?php echo esc_attr($color_ui_surface); ?>">
+            <option value="stick" <?php selected($display_style, 'stick'); ?>><?php esc_html_e('Stick', 'modular-blocks-plugin'); ?></option>
+            <option value="ballstick" <?php selected($display_style, 'ballstick'); ?>><?php esc_html_e('Ball & Stick', 'modular-blocks-plugin'); ?></option>
+            <option value="sphere" <?php selected($display_style, 'sphere'); ?>><?php esc_html_e('Sphere', 'modular-blocks-plugin'); ?></option>
+            <option value="line" <?php selected($display_style, 'line'); ?>><?php esc_html_e('Line', 'modular-blocks-plugin'); ?></option>
+            <option value="cartoon" <?php selected($display_style, 'cartoon'); ?>><?php esc_html_e('Cartoon', 'modular-blocks-plugin'); ?></option>
+            <option value="surface" <?php selected($display_style, 'surface'); ?>><?php esc_html_e('Surface', 'modular-blocks-plugin'); ?></option>
+        </select>
+        <button class="chemviz-viewer__button" data-action="reset" style="<?php echo esc_attr($button_style); ?>" data-hover-color="<?php echo esc_attr($color_ui_surface_dark); ?>" data-base-color="<?php echo esc_attr($color_ui_surface); ?>">
             <?php esc_html_e('Reset', 'modular-blocks-plugin'); ?>
         </button>
-        <button class="chemviz-viewer__button" data-action="spin">
+        <button class="chemviz-viewer__button" data-action="spin" style="<?php echo esc_attr($button_style); ?>" data-hover-color="<?php echo esc_attr($color_ui_surface_dark); ?>" data-base-color="<?php echo esc_attr($color_ui_surface); ?>">
             <?php echo $enable_spin ? esc_html__('Stop', 'modular-blocks-plugin') : esc_html__('Drehen', 'modular-blocks-plugin'); ?>
         </button>
-        <button class="chemviz-viewer__button" data-action="fullscreen">
+        <button class="chemviz-viewer__button" data-action="toggle-bg" style="<?php echo esc_attr($button_style); ?>" data-hover-color="<?php echo esc_attr($color_ui_surface_dark); ?>" data-base-color="<?php echo esc_attr($color_ui_surface); ?>" title="<?php esc_attr_e('Hintergrundfarbe umschalten', 'modular-blocks-plugin'); ?>">
+            <?php esc_html_e('Hintergrund', 'modular-blocks-plugin'); ?>
+        </button>
+        <button class="chemviz-viewer__button" data-action="fullscreen" style="<?php echo esc_attr($button_style); ?>" data-hover-color="<?php echo esc_attr($color_ui_surface_dark); ?>" data-base-color="<?php echo esc_attr($color_ui_surface); ?>">
             <?php esc_html_e('Vollbild', 'modular-blocks-plugin'); ?>
         </button>
     </div>

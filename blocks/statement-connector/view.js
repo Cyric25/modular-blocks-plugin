@@ -12,7 +12,9 @@
      * @param {HTMLElement} element - The connector block element
      */
     function initStatementConnector(element) {
-        if (!element) return;
+        // Guard gegen Doppel-Initialisierung (Auto-Init + evtl. weitere Aufrufe)
+        if (!element || element.dataset.initialized === 'true') return;
+        element.dataset.initialized = 'true';
 
         const connectorData = JSON.parse(element.dataset.connector || '{}');
         const container = element.querySelector('.connector-container');

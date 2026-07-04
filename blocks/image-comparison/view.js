@@ -13,7 +13,9 @@
      * @param {HTMLElement} element - The comparison block element
      */
     function initImageComparison(element) {
-        if (!element) return;
+        // Guard gegen Doppel-Initialisierung (Auto-Init + evtl. weitere Aufrufe)
+        if (!element || element.dataset.initialized === 'true') return;
+        element.dataset.initialized = 'true';
 
         const container = element.querySelector('.image-comparison-container');
         const afterImage = element.querySelector('.image-comparison-after');

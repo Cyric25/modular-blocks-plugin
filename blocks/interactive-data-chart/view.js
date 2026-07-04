@@ -75,7 +75,10 @@
      * @param {HTMLElement} blockElement - The block container element
      */
     window.initInteractiveDataChart = function(blockElement) {
-        if (!blockElement) return;
+        // DOM-Guard: überlebt (anders als die Map) auch ein doppeltes Laden
+        // der Datei (Block + Shortcode auf einer Seite)
+        if (!blockElement || blockElement.dataset.initialized === 'true') return;
+        blockElement.dataset.initialized = 'true';
 
         const blockId = blockElement.id;
         if (chartInstances.has(blockId)) {

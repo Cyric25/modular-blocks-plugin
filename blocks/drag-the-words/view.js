@@ -12,7 +12,9 @@
      * @param {HTMLElement} element - The drag words block element
      */
     function initDragTheWords(element) {
-        if (!element) return;
+        // Guard gegen Doppel-Initialisierung (Auto-Init + evtl. weitere Aufrufe)
+        if (!element || element.dataset.initialized === 'true') return;
+        element.dataset.initialized = 'true';
 
         const dragWordsData = JSON.parse(element.dataset.dragWords || '{}');
         const container = element.querySelector('.drag-words-container');

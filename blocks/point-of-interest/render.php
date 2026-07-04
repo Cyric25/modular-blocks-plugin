@@ -256,12 +256,4 @@ $icon_map = [
     </div>
 </div>
 
-<script>
-// Initialize point of interest functionality when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const poiBlock = document.getElementById('<?php echo esc_js($block_id); ?>');
-    if (poiBlock && typeof window.initPointOfInterest === 'function') {
-        window.initPointOfInterest(poiBlock);
-    }
-});
-</script>
+<?php /* Inline-Bootstrap entfernt (AP20): view.js initialisiert alle Bloecke selbst (Auto-Init + MutationObserver); der doppelte Aufruf band Event-Handler zweimal. */ ?>

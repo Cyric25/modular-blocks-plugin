@@ -50,7 +50,7 @@
         "displayStyle": {
             "type": "string",
             "default": "stick",
-            "enum": ["stick", "sphere", "cartoon", "line", "surface"]
+            "enum": ["stick", "ballstick", "sphere", "cartoon", "line", "surface"]
         },
         "colorScheme": {
             "type": "string",
@@ -63,11 +63,11 @@
         },
         "width": {
             "type": "number",
-            "default": 800
+            "default": 550
         },
         "height": {
             "type": "number",
-            "default": 600
+            "default": 400
         },
         "showControls": {
             "type": "boolean",
@@ -84,11 +84,15 @@
         "description": {
             "type": "string",
             "default": ""
+        },
+        "align": {
+            "type": "string",
+            "default": "center"
         }
     },
     "supports": {
         "html": false,
-        "align": ["wide", "full"],
+        "align": ["left", "center", "right", "wide", "full"],
         "spacing": {
             "margin": true,
             "padding": true
