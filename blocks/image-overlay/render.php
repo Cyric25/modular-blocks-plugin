@@ -60,7 +60,9 @@ $valid_layers = array_filter($layers, function($layer) {
 });
 
 if (empty($valid_layers)) {
-    return '<div class="image-overlay-placeholder"><p>' . __('Bitte laden Sie mindestens eine Überlagerungs-Ebene hoch.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="image-overlay-placeholder"><p>' . __('Bitte laden Sie mindestens eine Überlagerungs-Ebene hoch.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Generate unique ID for this block instance

@@ -40,7 +40,9 @@ $left_items = $left_column['items'] ?? [];
 $right_items = $right_column['items'] ?? [];
 
 if (empty($left_items) || empty($right_items)) {
-    return '<div class="connector-error"><p>' . __('Bitte konfigurieren Sie beide Spalten mit Aussagen.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="connector-error"><p>' . __('Bitte konfigurieren Sie beide Spalten mit Aussagen.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Generate unique ID for this block instance

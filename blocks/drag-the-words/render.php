@@ -37,11 +37,15 @@ $text_with_blanks = wp_kses_post($text_with_blanks);
 
 // Validate text and word bank
 if (empty($text_with_blanks)) {
-    return '<div class="drag-words-error"><p>' . __('Bitte geben Sie einen Text mit Lücken ein.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="drag-words-error"><p>' . __('Bitte geben Sie einen Text mit Lücken ein.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 if (empty($word_bank) || !is_array($word_bank)) {
-    return '<div class="drag-words-error"><p>' . __('Bitte konfigurieren Sie die Wortbank.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="drag-words-error"><p>' . __('Bitte konfigurieren Sie die Wortbank.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Parse text and create blanks
@@ -65,6 +69,8 @@ $processed_text = preg_replace_callback($blank_pattern, function($matches) use (
     static $counter = 0;
     $blank_id = 'blank-' . $counter;
     $counter++;
+    // Hier MUSS return stehen: das ist der Ersetzungsstring des Callbacks
+    // (kein Top-Level-return wie bei den AP39-Fixes)
     return '<span class="word-blank" data-blank="' . ($counter - 1) . '" data-blank-id="' . $blank_id . '"><span class="blank-placeholder">___________</span></span>';
 }, $text_with_blanks);
 

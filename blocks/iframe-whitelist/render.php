@@ -22,9 +22,11 @@ $title = $block_attributes['title'] ?? '';
 
 // No URL provided
 if (empty($url)) {
-    return '<div class="wp-block-modular-blocks-iframe-whitelist iframe-whitelist-placeholder">' .
-           '<p>' . esc_html__('Keine URL ausgewählt.', 'modular-blocks-plugin') . '</p>' .
-           '</div>';
+    // echo statt return: render.php läuft in Output-Buffering, Rückgabewerte werden verworfen (AP39)
+    echo '<div class="wp-block-modular-blocks-iframe-whitelist iframe-whitelist-placeholder">' .
+         '<p>' . esc_html__('Keine URL ausgewählt.', 'modular-blocks-plugin') . '</p>' .
+         '</div>';
+    return;
 }
 
 // Validate URL against whitelist
@@ -35,10 +37,12 @@ if (!class_exists('ModularBlocks_Iframe_Whitelist_Manager')) {
 $whitelist_manager = new ModularBlocks_Iframe_Whitelist_Manager();
 
 if (!$whitelist_manager->is_url_whitelisted($url)) {
-    return '<div class="wp-block-modular-blocks-iframe-whitelist iframe-whitelist-error">' .
-           '<span class="dashicons dashicons-warning"></span>' .
-           '<p>' . esc_html__('URL nicht autorisiert. Diese URL befindet sich nicht in der Whitelist.', 'modular-blocks-plugin') . '</p>' .
-           '</div>';
+    // echo statt return: render.php läuft in Output-Buffering, Rückgabewerte werden verworfen (AP39)
+    echo '<div class="wp-block-modular-blocks-iframe-whitelist iframe-whitelist-error">' .
+         '<span class="dashicons dashicons-warning"></span>' .
+         '<p>' . esc_html__('URL nicht autorisiert. Diese URL befindet sich nicht in der Whitelist.', 'modular-blocks-plugin') . '</p>' .
+         '</div>';
+    return;
 }
 
 // Build wrapper classes

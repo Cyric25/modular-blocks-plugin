@@ -43,7 +43,9 @@ $penalty_per_wrong = max(0, min(10, intval($penalty_per_wrong)));
 
 // Validate statement groups
 if (empty($statement_groups) || !is_array($statement_groups)) {
-    return '<div class="summary-error"><p>' . __('Keine Aussagen-Gruppen konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="summary-error"><p>' . __('Keine Aussagen-Gruppen konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Generate unique ID for this block instance

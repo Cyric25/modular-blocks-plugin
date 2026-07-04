@@ -45,7 +45,9 @@ $label_color = sanitize_hex_color($label_color) ?: '#ffffff';
 
 // Check if both images are available
 if (empty($before_image['url']) || empty($after_image['url'])) {
-    return '<div class="image-comparison-placeholder"><p>' . __('Bitte laden Sie beide Bilder hoch, um den Vergleich zu sehen.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="image-comparison-placeholder"><p>' . __('Bitte laden Sie beide Bilder hoch, um den Vergleich zu sehen.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Get image dimensions from WordPress media library

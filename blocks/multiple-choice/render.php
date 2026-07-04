@@ -34,7 +34,9 @@ $pass_percentage = max(0, min(100, intval($pass_percentage)));
 
 // Validate answers
 if (empty($answers) || !is_array($answers)) {
-    return '<div class="multiple-choice-error"><p>' . __('Keine Antworten konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="multiple-choice-error"><p>' . __('Keine Antworten konfiguriert.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Generate unique ID for this block instance

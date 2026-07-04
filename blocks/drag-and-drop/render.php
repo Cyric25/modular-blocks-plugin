@@ -48,7 +48,9 @@ $task_width = max(400, min(1200, intval($task_width)));
 
 // Validate required data
 if (empty($draggables) || empty($drop_zones)) {
-    return '<div class="drag-drop-error"><p>' . esc_html__('Bitte konfigurieren Sie sowohl ziehbare Elemente als auch Drop-Zones.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="drag-drop-error"><p>' . esc_html__('Bitte konfigurieren Sie sowohl ziehbare Elemente als auch Drop-Zones.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Generate unique ID for this block instance

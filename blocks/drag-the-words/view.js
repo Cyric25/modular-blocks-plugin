@@ -35,6 +35,10 @@
         let isCompleted = false;
         let draggedElement = null;
         let currentDropTarget = null;
+        // AP40: Touch-Drag erst ab Bewegungsschwelle übernehmen
+        let touchDragActive = false;
+        let touchStartX = 0;
+        let touchStartY = 0;
         let userAnswers = {};
 
         /**
@@ -150,7 +154,21 @@
             draggedElement = event.target.closest('.draggable-word');
             if (!draggedElement) return;
 
-            event.preventDefault();
+            // AP40: NICHT sofort übernehmen (kein preventDefault!) — sonst
+            // ist Scrollen über der Wortbank blockiert und das Click-Event
+            // (Tap-to-Place) wird unterdrückt. Drag startet erst ab
+            // Bewegungsschwelle in handleTouchMove.
+            touchDragActive = false;
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }
+
+        /**
+         * Verzögerter Drag-Start, sobald die Geste eindeutig ein Drag ist
+         */
+        function activateTouchDrag() {
+            touchDragActive = true;
             draggedElement.classList.add('being-dragged');
             container.classList.add('drag-active');
 
@@ -167,8 +185,26 @@
         function handleTouchMove(event) {
             if (!draggedElement) return;
 
-            event.preventDefault();
             const touch = event.touches[0];
+
+            if (!touchDragActive) {
+                const dx = touch.clientX - touchStartX;
+                const dy = touch.clientY - touchStartY;
+
+                // Eindeutig vertikale Geste → Browser scrollen lassen
+                if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
+                    draggedElement = null;
+                    return;
+                }
+                // Noch unter der Schwelle → abwarten
+                if (Math.hypot(dx, dy) < 10) {
+                    return;
+                }
+
+                activateTouchDrag();
+            }
+
+            event.preventDefault();
             const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
             const blank = elementBelow?.closest('.word-blank');
 
@@ -188,6 +224,12 @@
          */
         function handleTouchEnd(event) {
             if (!draggedElement) return;
+
+            // Tap ohne Drag → Click-Handler (Tap-to-Place) übernimmt (AP40)
+            if (!touchDragActive) {
+                draggedElement = null;
+                return;
+            }
 
             event.preventDefault();
 

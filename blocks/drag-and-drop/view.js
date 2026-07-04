@@ -220,19 +220,32 @@
             if (this.state.isChecked) return;
 
             const touch = event.touches[0];
-            const isInfinite = element.dataset.infinite === 'true';
 
-            let dragElement = element;
-            if (isInfinite && !element.dataset.isClone) {
-                dragElement = this.cloneInfiniteDraggable(element);
+            // AP40: Drag erst ab Bewegungsschwelle übernehmen. Sofortiges
+            // Übernehmen (inkl. preventDefault in touchmove) blockierte das
+            // Seiten-Scrollen, wenn der Finger auf einem Draggable ansetzte.
+            this.touchData = {
+                sourceElement: element,
+                element: null,
+                active: false,
+                startX: touch.clientX,
+                startY: touch.clientY
+            };
+        }
+
+        // Verzögerter Drag-Start, sobald die Geste eindeutig ein Drag ist
+        activateTouchDrag(touch) {
+            const source = this.touchData.sourceElement;
+            const isInfinite = source.dataset.infinite === 'true';
+
+            let dragElement = source;
+            if (isInfinite && !source.dataset.isClone) {
+                dragElement = this.cloneInfiniteDraggable(source);
             }
 
-            this.touchData = {
-                element: dragElement,
-                startX: touch.clientX,
-                startY: touch.clientY,
-                elementRect: dragElement.getBoundingClientRect()
-            };
+            this.touchData.element = dragElement;
+            this.touchData.elementRect = dragElement.getBoundingClientRect();
+            this.touchData.active = true;
 
             dragElement.classList.add('dragging');
             this.state.isDragging = true;
@@ -244,9 +257,26 @@
         handleTouchMove(event) {
             if (!this.touchData) return;
 
-            event.preventDefault();
-
             const touch = event.touches[0];
+
+            if (!this.touchData.active) {
+                const dx = touch.clientX - this.touchData.startX;
+                const dy = touch.clientY - this.touchData.startY;
+
+                // Eindeutig vertikale Geste → Browser scrollen lassen
+                if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
+                    this.touchData = null;
+                    return;
+                }
+                // Noch unter der Schwelle → abwarten
+                if (Math.hypot(dx, dy) < 10) {
+                    return;
+                }
+
+                this.activateTouchDrag(touch);
+            }
+
+            event.preventDefault();
 
             if (this.touchData.clone) {
                 this.touchData.clone.style.left = (touch.clientX - this.touchData.clone.offsetWidth / 2) + 'px';
@@ -259,6 +289,13 @@
 
         handleTouchEnd(event) {
             if (!this.touchData) return;
+
+            // Tap ohne Drag → nichts tun, der Click-Handler (Tap-to-Select)
+            // übernimmt (AP40)
+            if (!this.touchData.active) {
+                this.touchData = null;
+                return;
+            }
 
             const touch = event.changedTouches[0];
             const dropZone = this.getDropZoneAtPosition(touch.clientX, touch.clientY);

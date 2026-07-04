@@ -37,7 +37,9 @@ $popup_position = sanitize_text_field($popup_position);
 
 // Check if background image is available
 if (empty($background_image['url'])) {
-    return '<div class="poi-error"><p>' . __('Bitte laden Sie ein Hintergrundbild hoch.', 'modular-blocks-plugin') . '</p></div>';
+    // echo statt return: render.php laeuft in Output-Buffering, Rueckgabewerte werden verworfen (AP39)
+    echo '<div class="poi-error"><p>' . __('Bitte laden Sie ein Hintergrundbild hoch.', 'modular-blocks-plugin') . '</p></div>';
+    return;
 }
 
 // Validate hotspots
