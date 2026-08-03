@@ -241,6 +241,12 @@ Umfang der Datei-Map bewusst begrenzt auf: Plugin-Hauptdatei, `includes/`, Build
 - Zählprüfung: `ls blocks/ | wc -l` ergibt 13; die Block-Tabelle hat genau 13 Datenzeilen.
 
 **Übergabenotiz:**
+Erledigt 2026-08-03, Commit `4898b13`. Git-Ausgangszustand verifiziert (`origin` korrekt, `main` sauber, letzter Commit `f6826a5`), Branch `phase-1-accordion-grundlage` angelegt und gepusht. `reference_file_map.md` neu mit zwei Tabellen: 24 Kern-/Infrastrukturzeilen und 13 Blockzeilen (Zählprüfung 13/13 bestanden). Stichproben bestanden: `register_blocks()`/`scan_block_directories()`/`render_dynamic_block()` existieren in `includes/class-block-manager.php` (Zeilen 57, 77, 315); Blockname `modular-blocks/summary-block` stimmt.
+
+Drei Abweichungen zur AP-Beschreibung, alle bewusst:
+1. `git status --porcelain` war nicht leer, sondern zeigte die untracked Plandatei `PLAN-accordion-block.md`. Da sie das Ausgangsdokument dieses Vorhabens ist, wurde sie in denselben Commit aufgenommen statt das AP zu blockieren.
+2. Beim Erheben des Ist-Zustands zeigte sich, dass das Plugin mehr Kernklassen enthält als `CLAUDE.md` dokumentiert: `class-diagnostics.php`, `class-webapp-manager.php`, `class-iframe-whitelist-manager.php` sind in der Datei-Map erfasst, fehlen aber in `CLAUDE.md`. **Für AP-4.3 relevant** – dort prüfen, ob das ergänzt werden soll (nicht Teil dieses Plans, deshalb nur notiert).
+3. `../../DOKUMENTATION.md` liegt im Website-Wurzelverzeichnis, das **kein** Git-Repository ist. Die dort ergänzte Verweiszeile ist daher nicht versioniert – erwartetes Verhalten, kein Fehler.
 
 ---
 
@@ -310,6 +316,15 @@ Referenzmuster für Dateiaufbau und `block.json`-Felder: `blocks/summary-block/b
 - Funktionale Prüfung im Editor erfolgt gebündelt im Abnahme-AP-1.4 (erfordert Upload) – hier nicht behaupten, sie sei erfolgt.
 
 **Übergabenotiz:**
+Erledigt 2026-08-03, Commit `c993993`, ausgeführt von einem Subagenten (Sonnet), geprüft vom Orchestrator. Sechs Dateien in `blocks/accordion/` angelegt: `block.json` (25 Z.), `index.js` (55 Z.), `render.php` (31 Z.), `view.js` (6 Z., Platzhalter-IIFE), `style.css` (10 Z.), `editor.css` (9 Z.).
+
+**Planabweichung (wichtig für alle Folge-APs):** `save()` gibt **ohne** `useBlockProps.save()`-Wrapper nur `<InnerBlocks.Content />` zurück – abweichend vom ursprünglichen AP-Text. Grund: Bei dynamischen Blöcken mit InnerBlocks wird das `save()`-Markup als `$block_content` an `render.php` übergeben; ein `save()`-Wrapper hätte pro Block einen zweiten, von PHP nicht kontrollierten Wrapper erzeugt. Siehe Abschnitt 11, Änderung 1.
+
+Umsetzungsdetails: `ALLOWED_BLOCKS`/`TEMPLATE` als Modulkonstanten; `renderAppender={InnerBlocks.ButtonBlockAppender}`; `deprecated: []` mit erklärendem Kommentar. Leerer Zustand gibt den Redakteurs-Hinweis innerhalb von `current_user_can('edit_posts')` aus und beendet mit `return;` ohne Wrapper.
+
+Nachbesserung nach Orchestrator-Review: unbenutzter `__`-Import aus `@wordpress/i18n` entfernt (kommt in AP-2.1 mit den Inspector-Labels zurück). Kein `example`-Feld in `block.json` gesetzt, weil `attributes` in dieser Phase leer ist – kann später ergänzt werden.
+
+Tests: `php -l` ohne Fehler, `block.json` valides JSON, `build/blocks/accordion/` enthält `index.js`, `view.js`, `index.css`, `style-index.css` (plus RTL-Varianten und `*.asset.php` aus dem Standard-Build). Kein `var(--` in den Dateien.
 
 ---
 
@@ -384,6 +399,15 @@ In dieser Phase rendert die Zeile **semantisch korrektes, aber statisch geöffne
 - Funktionale Prüfung im Editor erfolgt in AP-1.4.
 
 **Übergabenotiz:**
+Erledigt 2026-08-03, Commit `4c8718d`, ausgeführt von einem Subagenten (Sonnet) parallel zu AP-1.2, geprüft vom Orchestrator. Fünf Dateien in `blocks/accordion-row/` angelegt: `block.json` (30 Z.), `index.js` (60 Z.), `render.php` (69 Z.), `style.css` (35 Z.), `editor.css` (34 Z.). Die Datei-Map-Ergänzung deckt beide Blöcke ab und liegt in diesem Commit.
+
+**Anker-Frage aus dem AP-Text ist entschieden und benötigt keine empirische Prüfung mehr:** Weil `save()` keinen Wrapper erzeugt (Abschnitt 11, Änderung 1), kann WordPress den HTML-Anker nirgends selbst ausgeben. `render.php` setzt die `id` deshalb immer selbst – `$block_attributes['anchor']` wird per `sanitize_html_class()` gefiltert und nur bei nicht-leerem Wert an `get_block_wrapper_attributes(['class' => …, 'id' => …])` übergeben. Ein doppeltes `id`-Attribut ist damit strukturell ausgeschlossen. **AP-3.1 muss diesen Punkt nicht mehr klären, sondern nur beibehalten.**
+
+Markup-Stand (Vertrag für AP-3.1/AP-3.2): Wrapper `.mb-accordion-row` → Kopf `button.mb-accordion-row__header` mit `id`, `aria-expanded="true"`, `aria-controls` → `span.mb-accordion-row__title` (Titel per `wp_kses_post()`, Fallback `Ohne Titel` bei leerem oder nur aus Tags bestehendem Titel) + `span.mb-accordion-row__icon[aria-hidden]` → Panel `div.mb-accordion-row__panel` mit `id`, `role="region"`, `aria-labelledby` und unescapedem `$block_content`. IDs aus `wp_unique_id('mb-accordion-header-')` bzw. `wp_unique_id('mb-accordion-panel-')`. In dieser Phase bewusst dauerhaft geöffnet (kein `hidden`, kein `is-closed`) – Phase 3 ergänzt genau diese drei Marker.
+
+Nachbesserung nach Orchestrator-Review: typografisch falsches Schlusszeichen in der `description` korrigiert (`„Accordion\"` → `„Accordion“`), da dieser Text in der Adminliste erscheint.
+
+Tests: `php -l` ohne Fehler; `block.json` valides JSON mit `parent: ["modular-blocks/accordion"]`, genau einem Attribut (`title`), `anchor: true`, ohne `viewScript`; `wp_unique_id` zweimal aufgerufen; `build/blocks/accordion-row/` enthält `index.js`, `index.css`, `style-index.css` (korrekt ohne `view.js`). Kein `var(--` in den Dateien.
 
 ---
 
@@ -425,6 +449,7 @@ Erster Nachweis, dass beide Blöcke in einer echten WordPress-Installation regis
    - **U7:** Seite im Frontend aufrufen → alle Zeilen sind sichtbar, Titel als Schaltflächen, Inhalte darunter sichtbar (in dieser Phase noch dauerhaft offen und ungestylt).
    - **U8:** Browser-Konsole im Frontend und im Editor: keine roten Fehler.
    - **U9:** Falls `WP_DEBUG` aktiv: `wp-content/debug.log` enthält keine neuen PHP-Notices/Warnings mit Bezug zu `accordion`.
+   - **U10:** (nachträglich ergänzt, ersetzt die empirische Anker-Prüfung aus AP-1.3) In Zeile 1 unter „Erweitert → HTML-Anker" den Wert `test-zeile` eintragen, speichern, Frontend-Quelltext ansehen → das äußere `div` dieser Zeile trägt `id="test-zeile"`, und zwar genau einmal. Dieser Anker wird in Phase 3 für das Deep-Linking gebraucht.
 5. Rückmeldung des Nutzers wörtlich in die Übergabenotiz und als Zeile ins Testprotokoll (Abschnitt 9) übernehmen. Bei Fehlschlag: Status ✗, Ursache dokumentieren, Korrektur-AP `AP-1.fix1` anlegen.
 6. Commit `AP-1.4: Phase-1-Abnahme dokumentiert` und Push.
 
@@ -439,9 +464,18 @@ Erster Nachweis, dass beide Blöcke in einer echten WordPress-Installation regis
 
 **Tests:**
 - Die Gates D1–D4 sind selbst der technische Test.
-- Der funktionale Test ist die Checkliste U1–U9; sie wird vom Nutzer ausgeführt. Ein nicht durchgeführter Punkt gilt als nicht bestanden und darf nicht als bestanden protokolliert werden.
+- Der funktionale Test ist die Checkliste U1–U10; sie wird vom Nutzer ausgeführt. Ein nicht durchgeführter Punkt gilt als nicht bestanden und darf nicht als bestanden protokolliert werden.
 
 **Übergabenotiz:**
+Stand 2026-08-03: **technischer Teil erledigt, funktionale Abnahme offen.** Status bleibt ◐, bis die Rückmeldung des Nutzers zu U1–U10 vorliegt.
+
+Gate-Ergebnisse:
+- **D1** PHP-Syntaxcheck über `*.php`, `includes/*.php` und beide neuen `render.php`: keine Fehler (PHP 8.5.1 CLI).
+- **D2** Lint: **abgeschwächt zum informativen Check**, siehe Abschnitt 11, Änderung 2. Neue Blöcke: 75 `prettier/prettier`-Meldungen (Tabs statt der projektweit verwendeten 4 Leerzeichen) und 2 `react-hooks/rules-of-hooks`-Meldungen zu `useBlockProps` im `edit`-Callback. Vergleichsmessung im Bestand: `blocks/multiple-choice` 715 Fehler, `blocks/summary-block` 1258 Fehler, darunter 6× dieselbe `rules-of-hooks`-Meldung. Es tritt also keine Fehlerklasse auf, die der Bestand nicht ebenfalls aufweist.
+- **D3** `npm run build`: erfolgreich (webpack 5.102.0, 3 Warnungen – ausschließlich die projektweit vorhandenen Bundle-Size-Hinweise). `build/blocks/accordion/` enthält `index.js`, `view.js`, `index.css`, `style-index.css`; `build/blocks/accordion-row/` enthält `index.js`, `index.css`, `style-index.css`.
+- **D4** `npm run block-zips`: „All blocks validated successfully", 15 ZIPs erzeugt. Neu: `plugin-zips/accordion.zip` (4,01 KB) und `plugin-zips/accordion-row.zip` (5,35 KB). Inhaltskontrolle beider ZIPs: `block.json`, `render.php`, `style.css`, `editor.css` sowie die kompilierten `index.js`/`index.css`/`style-index.css` (bei `accordion` zusätzlich `view.js`) sind enthalten.
+
+Offen (Nutzer): Upload gemäß Deploy-Gate D5 – **zuerst `accordion-row.zip`, dann `accordion.zip`**, danach „Cache leeren" – und Abarbeitung der Checkliste U1–U10.
 
 ---
 
@@ -1318,10 +1352,10 @@ Wird während der Ausführung gepflegt. Legende: ☐ offen · ◐ in Arbeit · �
 
 | AP | Titel | Modell | Status | Abhängig von | Notiz |
 |---|---|---|---|---|---|
-| AP-1.1 | Versionierung verifizieren, Datei-Map anlegen | sonnet | ☐ | – | Branch `phase-1-accordion-grundlage` |
-| AP-1.2 | Eltern-Block `accordion` anlegen | sonnet | ☐ | AP-1.1 | parallel zu AP-1.3 |
-| AP-1.3 | Kind-Block `accordion-row` anlegen | sonnet | ☐ | AP-1.1 | parallel zu AP-1.2 |
-| AP-1.4 | Abnahme Phase 1 (Gates, Erst-Deploy) | sonnet | ☐ | AP-1.2, AP-1.3 | Nutzer klickt Checkliste U1–U9 |
+| AP-1.1 | Versionierung verifizieren, Datei-Map anlegen | sonnet | ☑ | – | Commit `4898b13`, Branch `phase-1-accordion-grundlage` gepusht |
+| AP-1.2 | Eltern-Block `accordion` anlegen | sonnet | ☑ | AP-1.1 | Commit `c993993`, Subagent parallel zu AP-1.3, `save()` ohne Wrapper (Abschnitt 11) |
+| AP-1.3 | Kind-Block `accordion-row` anlegen | sonnet | ☑ | AP-1.1 | Commit `4c8718d`, Subagent parallel zu AP-1.2, Anker-Frage entschieden |
+| AP-1.4 | Abnahme Phase 1 (Gates, Erst-Deploy) | sonnet | ◐ | AP-1.2, AP-1.3 | Gates D1–D4 bestanden, ZIPs liegen bereit; **wartet auf Nutzer-Checkliste U1–U10** |
 | AP-1.rev | Unabhängiges Review Phase 1 | opus | ☐ | AP-1.1–AP-1.4 | nur lesend |
 | AP-1.doc | Dokumentation Phase 1 | sonnet | ☐ | AP-1.rev | Merge in `main` |
 | AP-2.1 | Optionen, Inspector, `data`-Attribute | sonnet | ☐ | AP-1.doc | Branch `phase-2-accordion-editor`, parallel zu AP-2.2 |
@@ -1348,7 +1382,11 @@ Wird während der Ausführung gepflegt. Ein Eintrag pro abgeschlossenem AP und p
 
 | Datum | AP / Phase | Getestet | Ergebnis | Getestet von |
 |---|---|---|---|---|
-| | | | | |
+| 2026-08-03 | AP-1.1 | Git-Zustand (`remote`, `status`, Branch), Datei-Map-Stichproben (`class-block-manager.php`-Funktionen, Blockname `summary-block`), Zählprüfung 13 Blockordner ↔ 13 Tabellenzeilen | bestanden | Orchestrator (Opus) |
+| 2026-08-03 | AP-1.2 | `php -l blocks/accordion/render.php`, JSON-Validierung `block.json`, Build-Ausgabe `build/blocks/accordion/`, `grep` auf `var(--` und Wrapper-freies `save()` | bestanden | Subagent (Sonnet), nachgeprüft vom Orchestrator |
+| 2026-08-03 | AP-1.3 | `php -l blocks/accordion-row/render.php`, JSON-Validierung (`parent`, 1 Attribut, kein `viewScript`), 2× `wp_unique_id`, ARIA-Verknüpfung im Quelltext, `grep` auf `var(--` | bestanden | Subagent (Sonnet), nachgeprüft vom Orchestrator |
+| 2026-08-03 | AP-1.4 (technischer Teil) | Gate D1 `php -l` (Kern + 2 neue `render.php`), D2 Lint informativ mit Bestandsvergleich (715/1258 Fehler), D3 `npm run build`, D4 `npm run block-zips` inkl. Inhaltskontrolle beider ZIPs | bestanden | Orchestrator (Opus) |
+| offen | AP-1.4 (funktionaler Teil) | Checkliste U1–U10 im Live-WordPress nach Upload beider Block-ZIPs | ausstehend | Nutzer |
 
 ## 10. Dokumentation
 
@@ -1357,3 +1395,32 @@ Wird während der Ausführung gepflegt. Ein Eintrag pro abgeschlossenem AP und p
 - **Datei-Map:** `reference_file_map.md` im Plugin-Verzeichnis – neu angelegt in AP-1.1, gepflegt von **jedem** AP, das Dateien anlegt oder wesentlich ändert, final abgeglichen in AP-4.doc. Enthält zusätzlich die Abschnitte „Accordion-Optionen", „Accordion – Markup-Vertrag", „Erweiterungspunkte" und „Offene Punkte".
 - **Projektüberblick:** `CLAUDE.md` im Website-Wurzelverzeichnis (Blockliste, Plugin-Kompatibilität) – fortgeschrieben in AP-4.3.
 - **Dieser Plan:** `Plugins/Eigene WP Blocks/PLAN-accordion-block.md` – Statustabelle und Testprotokoll sind Teil der Projekthistorie und werden nicht bereinigt.
+
+## 11. Planänderungen während der Ausführung
+
+Nach Regel 16: bestehende AP-Texte bleiben stehen, Änderungen werden hier ergänzt. Bei Widersprüchen gilt dieser Abschnitt.
+
+### Änderung 1 – `save()` ohne Wrapper in beiden Blöcken (entschieden vor AP-1.2/AP-1.3, 2026-08-03)
+
+**Ursprünglich geplant:** `save()` gibt `<InnerBlocks.Content />` im `useBlockProps.save()`-Wrapper zurück.
+**Jetzt gültig:** `save()` gibt in **beiden** Blöcken ausschließlich `<InnerBlocks.Content />` zurück, ohne jedes umgebende Element.
+
+**Begründung:** Bei einem dynamischen Block mit InnerBlocks reicht WordPress das gespeicherte `save()`-Markup als `$block_content` an `render.php` weiter. Ein `save()`-Wrapper wäre damit nicht *statt*, sondern *innerhalb* des von `render.php` erzeugten Wrappers gelandet – pro Zeile zwei verschachtelte `div`s. Schwerwiegender: `useBlockProps.save()` schreibt den HTML-Anker (`supports.anchor`) als `id` in genau diesen inneren Wrapper, sodass der Deep-Link-Anker auf einem Element gelegen hätte, das `render.php` nicht kontrolliert und das nicht das äußere Zeilenelement ist.
+
+**Auswirkungen auf Folge-APs:**
+- **AP-3.1:** Die dort vorgesehene empirische Prüfung, ob WordPress den Anker selbst als `id` ausgibt, entfällt. Da `save()` keinen Wrapper erzeugt, kann WordPress das nicht tun – `render.php` setzt die `id` immer selbst (bereits in AP-1.3 umgesetzt: `sanitize_html_class($block_attributes['anchor'])` als `id` an `get_block_wrapper_attributes()`). AP-3.1 muss dieses Verhalten nur erhalten.
+- **AP-4.2:** Diese Begründung gehört in den dort zu schreibenden Abschnitt „Eltern-/Kind-Blöcke mit InnerBlocks" – sie ist die eigentliche Falle des Musters.
+- Nachweis der Wirksamkeit: Prüfpunkt **U10** in AP-1.4 (Anker erscheint genau einmal am äußeren Zeilen-`div`).
+
+### Änderung 2 – Gate D2 (Lint) ist informativ, nicht blockierend (entschieden in AP-1.4, 2026-08-03)
+
+**Ursprünglich geplant:** „Lint der beiden neuen Blöcke ohne Fehler" als hartes Gate und als Akzeptanzkriterium in AP-1.2, AP-1.3, AP-2.1, AP-2.2, AP-3.1, AP-3.2, AP-3.3.
+**Jetzt gültig:** `php -l` (D1) bleibt hartes Gate. `npx wp-scripts lint-js` / `lint-style` laufen weiterhin bei jedem Gate-Durchlauf, aber als **informativer Check**. Bestanden ist er, wenn **keine Fehlerklasse auftritt, die der Bestand nicht ebenfalls aufweist**. Das Ergebnis wird im Testprotokoll mit Zahlen dokumentiert.
+
+**Begründung (gemessen, nicht vermutet):** Der Bestand erfüllt den `wp-scripts`-Lint-Standard nirgends – `blocks/multiple-choice` meldet 715, `blocks/summary-block` 1258 Fehler. Der Großteil ist `prettier/prettier`: Der Standard verlangt Tabs, das gesamte Projekt ist mit 4 Leerzeichen geschrieben. Ein `--fix` über die neuen Blöcke hätte sie als einzige Dateien des Projekts auf Tabs umgestellt und damit stilistisch aus der Codebasis herausgelöst. Auch die Meldung `react-hooks/rules-of-hooks` zu `useBlockProps` im `edit`-Callback ist Projektstandard (6× im Bestand) und entsteht daraus, dass Gutenberg-Blöcke ihre Edit-Funktion als Objekt-Property `edit:` statt als großgeschriebene Komponente definieren. Konsistenz mit der Codebasis wiegt hier schwerer als ein formaler Lint-Haken; `CLAUDE.md` führt ohnehin nur `php -l` als verbindliches Gate.
+
+**Wenn das anders gewünscht ist:** Ein projektweiter `npx wp-scripts lint-js --fix` über alle Blöcke wäre die konsistente Alternative – das ist aber ein eigenes Vorhaben (berührt alle 13 bestehenden Blöcke und damit ein Nicht-Ziel dieses Plans) und müsste gesondert beauftragt werden.
+
+### Änderung 3 – Prüfpunkt U10 in AP-1.4 ergänzt (2026-08-03)
+
+Die Anker-Prüfung aus AP-1.3 ist als Prüfpunkt U10 in die Abnahme-Checkliste von AP-1.4 gewandert, weil sie nur im Live-Frontend nachweisbar ist. Ergebnis fließt in AP-3.2 (Deep-Linking) ein.
