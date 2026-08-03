@@ -52,6 +52,26 @@ Jeder Block liegt autark in `blocks/<Ordner>/` und wird automatisch entdeckt, so
 | `statement-summary` | `modular-blocks/statement-summary` | Lernende wählen richtige Aussagen, die eine Zusammenfassung bilden (statischer Block, **kein** `render.php`) | `block.json`, `index.js`, `view.js`, `style.css`, `editor.css` |
 | `summary-block` | `modular-blocks/summary-block` | Summary-Quiz im H5P-Stil mit Gruppen, PDF-Ausgabe | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
 | `svg-drawing` | `modular-blocks/svg-drawing` | Zeichenfläche, auch für Zeichnungen aus OneNote/Zwischenablage (**kein** `view.js`) | `block.json`, `index.js`, `render.php`, `style.css`, `editor.css` |
+| `accordion` | `modular-blocks/accordion` | Eltern-Block: Container für aufklappbare Zeilen, standardmäßig nur eine Zeile offen | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
+| `accordion-row` | `modular-blocks/accordion-row` | Kind-Block: eine einzelne Accordion-Zeile (`parent: modular-blocks/accordion`). **Darf in Einstellungen → Modulare Blöcke nicht deaktiviert werden** – sonst zeigen alle Accordions im Editor ungültigen Inhalt | `block.json`, `index.js`, `render.php`, `style.css`, `editor.css` |
+
+## Accordion-Block im Detail
+
+Erster Block des Plugins mit InnerBlocks und Eltern-/Kind-Struktur (WordPress-Standardmuster analog `core/columns` + `core/column`). Beide Blöcke rendern serverseitig; `save()` gibt in beiden Fällen **ausschließlich** `<InnerBlocks.Content />` ohne Wrapper zurück, damit das sichtbare Markup allein in `render.php` entsteht und spätere Markup-Änderungen keine Block-Validierungsfehler in bestehenden Seiten auslösen.
+
+| Datei | Zweck | Wichtige Funktionen/Inhalte | Hängt ab von |
+|---|---|---|---|
+| `blocks/accordion/block.json` | Metadaten des Eltern-Blocks | `apiVersion 3`, Kategorie `modular-blocks`, Icon `excerpt-view`, `supports.align` (wide/full) + `spacing`, Assets `index.js`/`view.js`/`index.css`/`style-index.css` | Webpack-Build (`build/blocks/accordion/`) |
+| `blocks/accordion/index.js` | Editor-Registrierung des Eltern-Blocks | `edit` mit `useBlockProps` + `InnerBlocks` (`ALLOWED_BLOCKS = ['modular-blocks/accordion-row']`, `TEMPLATE` mit 3 Zeilen, `templateLock: false`, `orientation: vertical`, `ButtonBlockAppender`); `save` nur `InnerBlocks.Content`; `deprecated: []` als vorbereiteter Migrationspunkt | `block.json`, `editor.css`, `style.css`; Kind-Block nur per Namens-String |
+| `blocks/accordion/render.php` | Frontend-Wrapper des Eltern-Blocks | Wrapper über `get_block_wrapper_attributes(['class' => 'mb-accordion'])`, gibt `$block_content` unescaped aus; bei leerem Inhalt Hinweis ausschließlich für `current_user_can('edit_posts')` (Diagnose bei fehlendem Kind-Block) | gerendertes Kind-Block-HTML in `$block_content` |
+| `blocks/accordion/view.js` | Frontend-Interaktivität des Accordions | derzeit Platzhalter-IIFE; Auf-/Zuklapplogik, Exklusivmodus, Deep-Linking folgen in AP-3.2 | Markup-Vertrag aus `accordion-row/render.php` |
+| `blocks/accordion/style.css` | Frontend-Grundstyling des Containers | `.mb-accordion` (Abstand, Rahmen `#e0e0e0`, `border-radius`, `overflow: hidden`) | Import in `index.js` → `build/.../style-index.css` |
+| `blocks/accordion/editor.css` | Editor-Styling des Containers | gestrichelter Rahmen zur Erkennbarkeit der InnerBlocks-Zone | Import in `index.js` → `build/.../index.css` |
+| `blocks/accordion-row/block.json` | Metadaten des Kind-Blocks | `parent: ["modular-blocks/accordion"]`, Attribut `title` (string), `supports.anchor: true` (HTML-Anker für Deep-Linking), `reusable: false`, **kein** `viewScript`; Beschreibung beginnt mit dem Deaktivierungsverbot | Eltern-Block per Namens-String |
+| `blocks/accordion-row/index.js` | Editor-UI der Zeile | `edit` mit `RichText`-Titel (`allowedFormats`: bold/italic) und `InnerBlocks templateLock={false}` ohne `allowedBlocks` (Zeilen nehmen beliebige Blöcke auf); `save` nur `InnerBlocks.Content`, Titel wird nicht gespeichertes Markup; `deprecated: []` | `block.json`, `editor.css`, `style.css` |
+| `blocks/accordion-row/render.php` | Frontend-Markup der Zeile | Kopf als echtes `<button type="button">` mit `aria-expanded`/`aria-controls`, Panel mit `role="region"`/`aria-labelledby`; IDs aus `wp_unique_id('mb-accordion-header-')` und `wp_unique_id('mb-accordion-panel-')`; HTML-Anker per `sanitize_html_class()` als `id` an `get_block_wrapper_attributes()`; Titel über `wp_kses_post()` mit Fallback „Ohne Titel"; `$block_content` unescaped | Attribute `title`/`anchor`, `$block_content` |
+| `blocks/accordion-row/style.css` | Frontend-Grundstyling der Zeile | `.mb-accordion-row` (Trennlinie, letzte Zeile ohne), `.mb-accordion-row__header`, `__title`, `__icon`, `__panel` | Import in `index.js` → `build/.../style-index.css` |
+| `blocks/accordion-row/editor.css` | Editor-Styling der Zeile | Karten-Optik, Kopfzeile als Flex-Container, Platzhalter-Stil für leeren Titel | Import in `index.js` → `build/.../index.css` |
 
 ## Pflegeregel
 

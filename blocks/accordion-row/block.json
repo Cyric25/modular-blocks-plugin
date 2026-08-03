@@ -1,0 +1,30 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/accordion-row",
+    "version": "1.0.0",
+    "title": "Accordion-Zeile",
+    "category": "modular-blocks",
+    "icon": "editor-justify",
+    "description": "Dieser Block ist Teil des Blocks „Accordion“ und darf nicht deaktiviert werden – sonst werden alle Accordions auf der Website unbrauchbar. Eine einzelne Accordion-Zeile mit anklickbarem Titel-Kopf und einem Panel, das beliebige Blöcke aufnehmen kann.",
+    "keywords": ["accordion", "zeile", "row", "akkordeon", "aufklappen"],
+    "parent": ["modular-blocks/accordion"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "html": false,
+        "anchor": true,
+        "reusable": false,
+        "spacing": {
+            "margin": false,
+            "padding": false
+        }
+    }
+}
