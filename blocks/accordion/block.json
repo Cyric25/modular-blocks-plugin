@@ -1,0 +1,25 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/accordion",
+    "version": "1.0.0",
+    "title": "Accordion – Aufklappbare Zeilen",
+    "category": "modular-blocks",
+    "icon": "excerpt-view",
+    "description": "Container für aufklappbare Zeilen. Jede Zeile kann beliebige Blöcke aufnehmen; standardmäßig ist nur eine Zeile gleichzeitig geöffnet.",
+    "keywords": ["accordion", "aufklappen", "zusammenklappen", "faq", "toggle"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
+    "viewScript": "file:./view.js",
+    "attributes": {},
+    "supports": {
+        "html": false,
+        "anchor": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    }
+}

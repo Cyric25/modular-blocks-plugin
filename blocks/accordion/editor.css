@@ -1,0 +1,9 @@
+/**
+ * Accordion block - editor-only styles
+ * Grundgerüst (Phase 1). Ausführliche Gestaltung folgt in einem späteren AP.
+ */
+.mb-accordion {
+    border: 1px dashed #999999;
+    border-radius: 4px;
+    padding: 8px;
+}

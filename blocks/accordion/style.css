@@ -1,0 +1,10 @@
+/**
+ * Accordion block - frontend styles
+ * Grundgerüst (Phase 1). Ausführliche Gestaltung folgt in einem späteren AP.
+ */
+.mb-accordion {
+    margin: 1em 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
