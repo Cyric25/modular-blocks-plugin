@@ -26,27 +26,48 @@ $title = $block_attributes['title'] ?? '';
 if (trim(wp_strip_all_tags($title)) === '') {
     $title_output = esc_html__('Ohne Titel', 'modular-blocks-plugin');
 } else {
-    // wp_kses_post() erlaubt die von RichText zugelassenen Inline-Formate
-    // (fett, kursiv) und filtert alles andere heraus.
-    $title_output = wp_kses_post($title);
+    // Nur die im Editor per RichText zugelassenen Inline-Formate (fett,
+    // kursiv) durchlassen. Der allgemeine Post-Content-Filter waere hier zu
+    // grosszuegig (erlaubt z. B. <a> oder <img>) und wuerde invalides bzw.
+    // barrierefeindliches Markup innerhalb des <button> ermoeglichen.
+    $title_output = wp_kses($title, [
+        'strong' => [],
+        'b'      => [],
+        'em'     => [],
+        'i'      => [],
+    ]);
 }
 
 // Eindeutige IDs für die ARIA-Verknüpfung von Kopf-Button und Panel.
 $header_id = wp_unique_id('mb-accordion-header-');
 $panel_id  = wp_unique_id('mb-accordion-panel-');
 
-// Anker/Deep-Linking: Da save() keinen eigenen Wrapper erzeugt, muss
-// render.php einen im Editor gesetzten HTML-Anker selbst als id an den
-// Block-Wrapper weitergeben. Es darf dabei höchstens ein id-Attribut
-// entstehen.
-$anchor = $block_attributes['anchor'] ?? '';
+// Anker/Deep-Linking: Es wird bewusst NICHT das WordPress-Bordmittel
+// supports.anchor verwendet (siehe block.json: "anchor": false). Core
+// deklariert das Attribut "anchor" clientseitig als gesourctes Attribut
+// (source: 'attribute', attribute: 'id', selector: '*'), dessen Wert beim
+// Laden aus dem gespeicherten save()-Markup zurückgelesen wird. Da save()
+// hier bewusst KEIN eigenes Element erzeugt (nur <InnerBlocks.Content />),
+// gibt es kein Element, aus dem die id zurückgelesen werden könnte – der
+// Wert ginge nach jedem Neuladen verloren und würde render.php nie
+// erreichen. Stattdessen wird ein eigenes String-Attribut "rowAnchor"
+// verwendet, dessen Wert ganz regulär (wie jedes andere Attribut) in der
+// Block-Kommentar-JSON gespeichert wird und render.php zuverlässig erreicht.
+$row_anchor = $block_attributes['rowAnchor'] ?? '';
+
+// Serverseitige Filterung auf denselben Zeichensatz, den auch das
+// Editor-JS (index.js: normalizeRowAnchor) bereits durchsetzt:
+// nur a-z, A-Z, 0-9, "_" und "-". Der WordPress-Filter fuer CSS-Klassennamen
+// ist hier bewusst NICHT die richtige Wahl, da er fuer Klassennamen gedacht
+// ist und u. a. Punkte und Umlaute anders behandelt als hier gewuenscht.
+$row_anchor = trim(preg_replace('/[^A-Za-z0-9_-]/', '', $row_anchor));
 
 $wrapper_args = [
     'class' => 'mb-accordion-row',
 ];
 
-if (!empty($anchor)) {
-    $wrapper_args['id'] = sanitize_html_class($anchor);
+if ($row_anchor !== '') {
+    $wrapper_args['id'] = $row_anchor;
 }
 
 $wrapper_attributes = get_block_wrapper_attributes($wrapper_args);

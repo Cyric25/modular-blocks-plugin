@@ -16,11 +16,15 @@
         "title": {
             "type": "string",
             "default": ""
+        },
+        "rowAnchor": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {
         "html": false,
-        "anchor": true,
+        "anchor": false,
         "reusable": false,
         "spacing": {
             "margin": false,
