@@ -449,7 +449,8 @@ Erster Nachweis, dass beide Blöcke in einer echten WordPress-Installation regis
    - **U7:** Seite im Frontend aufrufen → alle Zeilen sind sichtbar, Titel als Schaltflächen, Inhalte darunter sichtbar (in dieser Phase noch dauerhaft offen und ungestylt).
    - **U8:** Browser-Konsole im Frontend und im Editor: keine roten Fehler.
    - **U9:** Falls `WP_DEBUG` aktiv: `wp-content/debug.log` enthält keine neuen PHP-Notices/Warnings mit Bezug zu `accordion`.
-   - **U10:** (nachträglich ergänzt, ersetzt die empirische Anker-Prüfung aus AP-1.3) In Zeile 1 unter „Erweitert → HTML-Anker" den Wert `test-zeile` eintragen, speichern, Frontend-Quelltext ansehen → das äußere `div` dieser Zeile trägt `id="test-zeile"`, und zwar genau einmal. Dieser Anker wird in Phase 3 für das Deep-Linking gebraucht.
+   - **U10:** (nachträglich ergänzt; Formulierung nach AP-1.fix1 geändert, siehe Abschnitt 11, Änderung 4) Zeile 1 auswählen → in der Seitenleiste im Panel „Zeilen-Einstellungen" das Feld **„Anker für Direktlinks"** mit `test-zeile` füllen. Speichern, Editor neu laden → der Wert steht noch im Feld (**kein** Datenverlust). Frontend-Quelltext ansehen → das äußere `div` dieser Zeile trägt `id="test-zeile"`, und zwar genau einmal. Dieser Anker wird in Phase 3 für das Deep-Linking gebraucht.
+   - **U11:** (nach AP-1.fix2) Accordion auswählen → in der Blockwerkzeugleiste „Breite Breite" wählen, speichern, Frontend prüfen → der Accordion-Wrapper trägt im Quelltext die Klasse `alignwide` und wird breiter dargestellt.
 5. Rückmeldung des Nutzers wörtlich in die Übergabenotiz und als Zeile ins Testprotokoll (Abschnitt 9) übernehmen. Bei Fehlschlag: Status ✗, Ursache dokumentieren, Korrektur-AP `AP-1.fix1` anlegen.
 6. Commit `AP-1.4: Phase-1-Abnahme dokumentiert` und Push.
 
@@ -507,6 +508,113 @@ Unabhängige Qualitätsprüfung der Phase 1 durch einen Agenten, der an keiner I
 - entfällt (Review-AP; das Ergebnis ist der Bericht).
 
 **Übergabenotiz:**
+Erledigt 2026-08-03 durch einen frischen Opus-Agenten, der an keiner Implementierung beteiligt war; ausschließlich lesend (`git status --porcelain` nach der Arbeit leer). Urteil: **abnahmefähig mit Nacharbeiten**.
+
+Scope-Check sauber: 13 Dateien geändert, 1868 Einfügungen, 0 Löschungen, ausschließlich `blocks/accordion/*`, `blocks/accordion-row/*`, `reference_file_map.md`, `PLAN-accordion-block.md`. Gegenprobe mit leerer Ausgabe für `includes/`, `webpack.config.js`, alle `create-*.js`, `verify-zip.js`, `package.json`, `package-lock.json`, `modular-blocks-plugin.php`, `CLAUDE.md`, `BLOCK-DEVELOPMENT.md` sowie für alle 13 Bestandsblöcke.
+
+Befunde: 1 kritisch, 2 mittel, 9 gering.
+- **B1 kritisch** – `supports.anchor` funktioniert bei diesem Blocktyp konstruktiv nicht, der Ankerwert wird nicht gespeichert. → behoben in **AP-1.fix1**, Hintergrund in Abschnitt 11, Änderung 4.
+- **B2 mittel** – `<button>` erbt `font-family`/`font-size`/`color` nicht; Zeilentitel erschienen im Frontend in der Browser-UI-Schrift, im Editor dagegen korrekt. → **als zusätzliches Akzeptanzkriterium in AP-3.3** (`font: inherit; color: inherit;`), gehört inhaltlich in die Gestaltungs-Phase.
+- **B3 mittel** – `supports.align` ohne serverseitige Align-Klasse. → behoben in **AP-1.fix2**, Abschnitt 11, Änderung 5.
+- **B4, B12 gering** – falscher Filter für den Anker (`sanitize_html_class()` verstümmelt Umlaute) und zu weites `wp_kses_post()` für den Titel. → beide behoben in AP-1.fix1.
+- **B6 gering** – Hinweis-`<p>` ohne CSS-Klasse, gerade Anführungszeichen. → behoben in AP-1.fix2.
+- **B5 gering** – wirkungslose Platzhalter-Regel `.mb-accordion-row__title-input:empty::before` in `editor.css` (`RichText` setzt kein `placeholder`-Attribut und rendert den Platzhalter als Kindelement). → **in AP-2.2 entfernen**.
+- **B7 gering** – `build/blocks/accordion/view.js` ist 0 Byte, weil Webpack die leere Platzhalter-IIFE eliminiert. Unkritisch, heilt in AP-3.2 automatisch.
+- **B8, B9, B10 gering** – Datei-Map: falsche Aussage „eingecheckte Build-Artefakte" (die Dateien sind gitignoriert), ein verstümmelter Satzteil, vier fehlende Root-Dokumente. → alle drei direkt korrigiert.
+- **B11 gering** – Betriebsnotiz: Der Zeilenkopf trägt schon `cursor: pointer`, tut aber bis Phase 3 nichts. Bis dahin keine Accordion-Seiten veröffentlichen. → in „Offene Punkte" (AP-1.doc).
+- Ausdrücklich in Ordnung: kein `var(--`, keine Theme-Farben in Phase 1, `ABSPATH`-Guards, kein Roh-Attribut ohne Escaping, keine Debug-Reste, i18n vollständig, `wp_unique_id()` kollisionsfrei über beliebig viele Zeilen und Accordions, Klassen-Hooks für `view.js` stabil und Zeilen als echte Direktkinder (`closest('.mb-accordion')` trägt), ZIP-Inhalte byte-identisch zu Arbeitskopie und Build.
+
+Zwei Einschränkungen des Reviews, bewusst akzeptiert: Der Agent hat D2/D3/D4 nicht selbst nachgefahren, weil Lint/Build/ZIP-Skripte Dateien und Caches schreiben und damit die Lesend-Regel verletzt hätten – ersatzweise über Artefakte, Zeitstempel und Byte-Vergleich verifiziert. Und B1 ließ sich ohne WordPress-Core nicht empirisch belegen; deshalb wurde die deterministische Lösung gewählt statt auf Core-Verhalten zu wetten, und U10 bleibt der entscheidende Nachweis.
+
+---
+
+### AP-1.fix1: Anker-Mechanismus der Zeile auf eigenes Attribut umstellen
+
+**Status:** ☐ offen
+**Umfang:** M
+**Modell:** sonnet
+**Abhängigkeiten:** AP-1.rev (Befund B1)
+
+**Ziel & Kontext:**
+Korrektur-AP aus dem Review. `supports.anchor: true` am Kind-Block funktioniert konstruktiv nicht: WordPress registriert `anchor` clientseitig als **gesourctes** Attribut (`source: 'attribute', attribute: 'id', selector: '*'`), das seinen Wert aus dem gespeicherten HTML zurückliest. Da `save()` bewusst kein Element erzeugt (Abschnitt 11, Änderung 1) und der Core-Filter, der die `id` sonst in das save()-Markup schreibt, für `apiVersion > 1` nicht angewandt wird, wird der Wert nirgends persistiert: Er ist nach dem Neuladen im Editor verloren und erreicht `render.php` nie. Der Anker-Zweig in `blocks/accordion-row/render.php` war damit toter Code. Eine Deklaration von `anchor` in `block.json` ist keine verlässliche Lösung, weil Core seine eigene Definition beim Registrieren darüberlegt – und das ist lokal nicht überprüfbar, weil im Projekt kein WordPress-Core liegt (`@wordpress/block-editor` ist ein Webpack-External, der lokale Testserver hat keine WP-Installation).
+
+**Betroffene Dateien:**
+- `blocks/accordion-row/block.json` (ändern)
+- `blocks/accordion-row/index.js` (ändern)
+- `blocks/accordion-row/render.php` (ändern)
+- `reference_file_map.md` (ändern)
+
+**Vorgehen:**
+1. `supports.anchor` auf `false` setzen – ein Standardfeld, das Eingaben stillschweigend verwirft, ist schlechter als kein Feld.
+2. Eigenes Attribut `"rowAnchor": { "type": "string", "default": "" }` deklarieren.
+3. Im Inspector der Zeile ein `TextControl` „Anker für Direktlinks" anbieten (Panel „Zeilen-Einstellungen"), das den Wert beim Eingeben normalisiert: Kleinschreibung, Leerzeichen zu Bindestrichen, Umlaut-Transliteration (ä→ae, ö→oe, ü→ue, ß→ss), danach alles außer `a-z0-9_-` entfernen.
+4. In `render.php` `rowAnchor` lesen und mit `preg_replace('/[^A-Za-z0-9_-]/', '', …)` filtern – **nicht** mit `sanitize_html_class()`, das für CSS-Klassen gedacht ist und Umlaute sowie Punkte verstümmelt (Review-Befund B4). Nur bei nicht-leerem Ergebnis als `id` an `get_block_wrapper_attributes()` übergeben.
+5. Titel-Ausgabe von `wp_kses_post()` auf `wp_kses($title, ['strong' => [], 'b' => [], 'em' => [], 'i' => []])` einengen (Review-Befund B12): Der Editor erlaubt nur fett und kursiv; ein `<a>` oder `<img>` innerhalb des `<button>` wäre invalides und barrierefeindliches Markup.
+
+**Akzeptanzkriterien:**
+- [ ] `supports.anchor` ist `false`; `block.json` enthält genau die Attribute `title` und `rowAnchor`, beide `"type": "string"`.
+- [ ] Der Inspector zeigt „Anker für Direktlinks"; die Normalisierung im Editor erzeugt denselben Zeichensatz, den der PHP-Filter zulässt (`a-z0-9_-`).
+- [ ] `render.php` setzt die `id` aus `rowAnchor` höchstens einmal am Wrapper; `sanitize_html_class` und `$block_attributes['anchor']` kommen nicht mehr vor.
+- [ ] Titel wird über `wp_kses()` mit ausschließlich `strong`, `b`, `em`, `i` ausgegeben.
+- [ ] `save()` bleibt wrapperlos; `php -l` fehlerfrei; `block.json` valides JSON.
+- [ ] Datei-Map aktualisiert.
+
+**Tests:**
+- `php -l blocks/accordion-row/render.php`.
+- `node -e "const j=JSON.parse(require('fs').readFileSync('blocks/accordion-row/block.json','utf8')); console.log(Object.keys(j.attributes).join(','), j.supports.anchor)"` → erwartet `title,rowAnchor false`.
+- `grep -n "sanitize_html_class\|\['anchor'\]\|wp_kses_post" blocks/accordion-row/render.php` → leer.
+- Funktionaler Nachweis: Prüfpunkt U10 in AP-1.4 (Wert überlebt das Neuladen, `id` erscheint genau einmal im Frontend). Der Prüfpunkt gilt erst mit den nach diesem AP neu erzeugten ZIPs.
+
+**Übergabenotiz:**
+Erledigt 2026-08-03, Subagent (Sonnet), geprüft vom Orchestrator. Geändert: `block.json` (`supports.anchor: false`, neues Attribut `rowAnchor`), `index.js` (Inspector-Panel „Zeilen-Einstellungen" mit `TextControl` „Anker für Direktlinks" plus Normalisierungsfunktion), `render.php` (liest `rowAnchor`, filtert mit `preg_replace('/[^A-Za-z0-9_-]/', '', …)`, Titel jetzt über `wp_kses()` mit nur `strong`/`b`/`em`/`i`).
+
+Zeichensatz-Abgleich Editor ↔ PHP (vom Orchestrator geprüft): Das Editor-JS transliteriert zuerst Umlaute (ä→ae, ö→oe, ü→ue, ß→ss), schaltet auf Kleinschreibung, ersetzt Leerraum durch Bindestriche und entfernt dann alles außer `a-z0-9_-`. Der PHP-Filter lässt `A-Za-z0-9_-` zu, also eine Obermenge – er wirkt auf bereits normalisierten Werten idempotent, beide Seiten liefern für dieselbe Eingabe dasselbe Ergebnis.
+
+Zwei Punkte für Folge-APs:
+1. Der Hilfetext des Feldes verspricht „öffnet sich beim Aufruf automatisch". Das löst erst **AP-3.2** ein – bis dahin ist der Text ein Versprechen auf die Zukunft. AP-3.2 muss `location.hash` gegen die Wrapper-IDs abgleichen, sonst bleibt es uneingelöst.
+2. Zwei Zeilen mit identischem `rowAnchor` erzeugen doppelte `id`-Attribute; es gibt keinen Eindeutigkeitsprüfer. Bewusst nicht behoben (nicht Teil des Korrekturauftrags) → **in „Offene Punkte" (AP-1.doc)**. Auswirkung ist begrenzt: `getElementById` trifft dann die erste Zeile.
+
+Tests: `php -l` fehlerfrei; `block.json` valide mit `title,rowAnchor` und `anchor=false`; `sanitize_html_class`, `$block_attributes['anchor']` und `wp_kses_post` kommen in `render.php` nicht mehr vor; `rowAnchor` in allen drei Dateien; kompilierter Build enthält `rowAnchor` und das Label „Anker für Direktlinks"; `accordion-row.zip` enthält das neue `block.json`.
+
+---
+
+### AP-1.fix2: Align-Klasse und Hinweis-Markup des Eltern-Blocks korrigieren
+
+**Status:** ☐ offen
+**Umfang:** S
+**Modell:** sonnet
+**Abhängigkeiten:** AP-1.rev (Befunde B3, B6). Unabhängig von AP-1.fix1 – andere Dateien, parallele Ausführung erlaubt.
+
+**Ziel & Kontext:**
+Korrektur-AP aus dem Review. `blocks/accordion/block.json` deklariert `supports.align: ["wide", "full"]`; der Editor bietet die Breitenoptionen an und stellt sie dort dar, aber `get_block_wrapper_attributes()` erzeugt serverseitig keine `alignwide`/`alignfull`-Klasse – das übernimmt WordPress nur im `save()`-Pfad, den dieser Block nicht nutzt. Der Redakteur sieht im Editor also eine Breite, die die veröffentlichte Seite nicht zeigt. Zusätzlich zwei Kosmetikbefunde am Redakteurs-Hinweis.
+
+**Betroffene Dateien:**
+- `blocks/accordion/render.php` (ändern)
+- `blocks/accordion/style.css` (ändern)
+- `reference_file_map.md` (ändern)
+
+**Vorgehen:**
+1. In `render.php` vor dem Wrapper-Aufruf die Klassenliste zusammensetzen und `align` übernehmen: `$classes = 'mb-accordion';` plus `' align' . sanitize_html_class($align)` bei nicht-leerem `$block_attributes['align']`. Hier ist `sanitize_html_class()` der richtige Filter – es geht tatsächlich um einen Klassennamen. `get_block_wrapper_attributes()` genau einmal mit der zusammengesetzten Liste aufrufen.
+2. Dem Hinweis-`<p>` die Klasse `mb-accordion__notice` geben (Projektmuster: `class="summary-error"` in `blocks/summary-block/render.php:47`) und die geraden Hochkommata im Text durch `„…“` ersetzen.
+3. In `style.css` eine dezente Regel für `.mb-accordion__notice` ergänzen (Innenabstand, kleinere Schrift, `#e0e0e0`/`#f8f9fa`) – keine Theme-Farben, keine CSS-Variablen.
+
+**Akzeptanzkriterien:**
+- [ ] Bei gesetztem `align` enthält die Wrapper-Klassenliste `alignwide` bzw. `alignfull`.
+- [ ] `get_block_wrapper_attributes()` wird genau einmal aufgerufen.
+- [ ] Der Hinweis trägt `mb-accordion__notice`, verwendet `„…“` und bleibt vollständig innerhalb von `current_user_can('edit_posts')`; Ausgabe weiterhin per `echo`.
+- [ ] `style.css` enthält eine Regel für `.mb-accordion__notice` ohne `var(--` und ohne `#e24614`/`#c93d12`/`#f5ede9`.
+- [ ] `php -l` fehlerfrei; Datei-Map aktualisiert.
+
+**Tests:**
+- `php -l blocks/accordion/render.php`.
+- `grep -n "align\|mb-accordion__notice" blocks/accordion/render.php` → beide Bausteine vorhanden.
+- `grep -n "var(--\|e24614\|c93d12\|f5ede9" blocks/accordion/style.css` → leer.
+- Funktionaler Nachweis: Prüfpunkt U11 in AP-1.4.
+
+**Übergabenotiz:**
+Erledigt 2026-08-03, Subagent (Sonnet) parallel zu AP-1.fix1, geprüft vom Orchestrator. `blocks/accordion/render.php`: Klassenliste wird vor dem einzigen `get_block_wrapper_attributes()`-Aufruf zusammengesetzt, `align` per `sanitize_html_class()` als `alignwide`/`alignfull` übernommen (mit `is_string()`-Prüfung), Kommentar erklärt die Ursache (kein `save()`-Wrapper). Hinweis-`<p>` trägt `mb-accordion__notice` und verwendet `„…“`. `blocks/accordion/style.css`: neue Regel `.mb-accordion__notice` mit `#e0e0e0`/`#f8f9fa`, kleinerer Schrift und Innenabstand – keine Theme-Farben, keine CSS-Variablen.
+
+Tests: `php -l` fehlerfrei; `align` und `mb-accordion__notice` im Quelltext nachgewiesen; `grep` auf `var(--`, `#e24614`, `#c93d12`, `#f5ede9` in `style.css` leer; kompilierte `build/blocks/accordion/style-index.css` enthält die neue Regel; `accordion.zip` enthält das aktualisierte `render.php`.
 
 ---
 
@@ -1356,8 +1464,10 @@ Wird während der Ausführung gepflegt. Legende: ☐ offen · ◐ in Arbeit · �
 | AP-1.2 | Eltern-Block `accordion` anlegen | sonnet | ☑ | AP-1.1 | Commit `c993993`, Subagent parallel zu AP-1.3, `save()` ohne Wrapper (Abschnitt 11) |
 | AP-1.3 | Kind-Block `accordion-row` anlegen | sonnet | ☑ | AP-1.1 | Commit `4c8718d`, Subagent parallel zu AP-1.2, Anker-Frage entschieden |
 | AP-1.4 | Abnahme Phase 1 (Gates, Erst-Deploy) | sonnet | ◐ | AP-1.2, AP-1.3 | Gates D1–D4 bestanden, ZIPs liegen bereit; **wartet auf Nutzer-Checkliste U1–U10** |
-| AP-1.rev | Unabhängiges Review Phase 1 | opus | ☐ | AP-1.1–AP-1.4 | nur lesend |
-| AP-1.doc | Dokumentation Phase 1 | sonnet | ☐ | AP-1.rev | Merge in `main` |
+| AP-1.rev | Unabhängiges Review Phase 1 | opus | ☑ | AP-1.1–AP-1.4 | Urteil „abnahmefähig mit Nacharbeiten": 1 kritischer (B1 Anker), 2 mittlere (B2 Button-Typografie, B3 Align), 9 geringe Befunde; Scope-Check sauber |
+| AP-1.fix1 | Anker-Mechanismus auf `rowAnchor` umstellen | sonnet | ☑ | AP-1.rev | Behebt B1 + B4 + B12 |
+| AP-1.fix2 | Align-Klasse und Hinweis-Markup korrigieren | sonnet | ☑ | AP-1.rev | Behebt B3 + B6; parallel zu AP-1.fix1 |
+| AP-1.doc | Dokumentation Phase 1 | sonnet | ☐ | AP-1.rev, AP-1.fix1, AP-1.fix2 | Merge in `main`; B2 → AP-3.3, B5 → AP-2.2, restliche Befunde in „Offene Punkte" |
 | AP-2.1 | Optionen, Inspector, `data`-Attribute | sonnet | ☐ | AP-1.doc | Branch `phase-2-accordion-editor`, parallel zu AP-2.2 |
 | AP-2.2 | Editor-Bedienung der Zeile | sonnet | ☐ | AP-1.doc | parallel zu AP-2.1 |
 | AP-2.3 | Abnahme Phase 2 | sonnet | ☐ | AP-2.1, AP-2.2 | Nutzer klickt Checkliste U1–U11 |
@@ -1386,7 +1496,11 @@ Wird während der Ausführung gepflegt. Ein Eintrag pro abgeschlossenem AP und p
 | 2026-08-03 | AP-1.2 | `php -l blocks/accordion/render.php`, JSON-Validierung `block.json`, Build-Ausgabe `build/blocks/accordion/`, `grep` auf `var(--` und Wrapper-freies `save()` | bestanden | Subagent (Sonnet), nachgeprüft vom Orchestrator |
 | 2026-08-03 | AP-1.3 | `php -l blocks/accordion-row/render.php`, JSON-Validierung (`parent`, 1 Attribut, kein `viewScript`), 2× `wp_unique_id`, ARIA-Verknüpfung im Quelltext, `grep` auf `var(--` | bestanden | Subagent (Sonnet), nachgeprüft vom Orchestrator |
 | 2026-08-03 | AP-1.4 (technischer Teil) | Gate D1 `php -l` (Kern + 2 neue `render.php`), D2 Lint informativ mit Bestandsvergleich (715/1258 Fehler), D3 `npm run build`, D4 `npm run block-zips` inkl. Inhaltskontrolle beider ZIPs | bestanden | Orchestrator (Opus) |
-| offen | AP-1.4 (funktionaler Teil) | Checkliste U1–U10 im Live-WordPress nach Upload beider Block-ZIPs | ausstehend | Nutzer |
+| 2026-08-03 | AP-1.rev | Unabhängiges Review Phase 1: Kriterienprüfung im Quelltext, Scope-Check per `git diff --stat`, Escaping/Sicherheit, Konventionen, Datei-Map-Abgleich, Robustheitsanalyse | abnahmefähig mit Nacharbeiten (1 kritischer, 2 mittlere, 9 geringe Befunde) | frischer Opus-Agent, nur lesend |
+| 2026-08-03 | AP-1.fix1 | `php -l`, JSON-Validierung (`title,rowAnchor`, `anchor=false`), `grep` auf entfernte Altlasten, Build enthält `rowAnchor` + Feldlabel, ZIP enthält neues `block.json` | bestanden (funktionaler Nachweis U10 offen) | Subagent (Sonnet), nachgeprüft vom Orchestrator |
+| 2026-08-03 | AP-1.fix2 | `php -l`, Align-Klasse und `mb-accordion__notice` im Quelltext, `grep` auf Theme-Farben/CSS-Variablen leer, kompilierte `style-index.css` enthält die Regel, ZIP enthält neues `render.php` | bestanden (funktionaler Nachweis U11 offen) | Subagent (Sonnet), nachgeprüft vom Orchestrator |
+| 2026-08-03 | AP-1.4 (Gates, 2. Durchlauf nach den Korrektur-APs) | D1 `php -l`, D3 `npm run build`, D4 `npm run block-zips` inkl. Prüfung, dass die Korrekturen in Build und ZIPs angekommen sind | bestanden; neue ZIPs: `accordion.zip` 4,40 KB, `accordion-row.zip` 6,29 KB | Orchestrator (Opus) |
+| offen | AP-1.4 (funktionaler Teil) | Checkliste U1–U11 im Live-WordPress nach Upload beider Block-ZIPs | ausstehend | Nutzer |
 
 ## 10. Dokumentation
 
@@ -1424,3 +1538,21 @@ Nach Regel 16: bestehende AP-Texte bleiben stehen, Änderungen werden hier ergä
 ### Änderung 3 – Prüfpunkt U10 in AP-1.4 ergänzt (2026-08-03)
 
 Die Anker-Prüfung aus AP-1.3 ist als Prüfpunkt U10 in die Abnahme-Checkliste von AP-1.4 gewandert, weil sie nur im Live-Frontend nachweisbar ist. Ergebnis fließt in AP-3.2 (Deep-Linking) ein.
+
+### Änderung 4 – Deep-Linking über eigenes Attribut `rowAnchor` statt `supports.anchor` (nach AP-1.rev, 2026-08-03)
+
+**Ursprünglich geplant** (Abschnitt 4, Architekturzeile „Deep-Linking über `supports.anchor: true`"): WordPress-Bordmittel, Redakteure nutzen das bekannte Feld „Erweitert → HTML-Anker".
+**Jetzt gültig:** `supports.anchor` ist am Kind-Block `false`. Der Anker lebt im eigenen Attribut `rowAnchor` und wird über ein Textfeld „Anker für Direktlinks" im Inspector-Panel „Zeilen-Einstellungen" gesetzt. Umgesetzt in AP-1.fix1.
+
+**Begründung:** Das Review (AP-1.rev, Befund B1) hat gezeigt, dass `supports.anchor` bei diesem Blocktyp konstruktiv nicht funktioniert – und zwar schlimmer als „PHP sieht den Wert nicht": Der Wert wird gar nicht gespeichert. Core registriert `anchor` als gesourctes Attribut, das seine Daten aus dem `id`-Attribut des gespeicherten Markups zurückliest; ein wrapperloses `save()` (Änderung 1) liefert kein solches Markup, und der Core-Filter, der die `id` im save()-Pfad ergänzt, greift bei `apiVersion > 1` nicht. Der Redakteur hätte einen Anker eingetragen, der beim nächsten Öffnen der Seite verschwunden wäre. Die naheliegende Gegenmaßnahme (Attribut in `block.json` deklarieren) ist nicht verlässlich, weil Core seine eigene Definition beim Registrieren darüberlegt – und das ließ sich lokal nicht überprüfen, weil im Projekt kein WordPress-Core liegt. Ein selbst verwaltetes Attribut ist deterministisch und braucht keine Wette auf Core-Interna.
+
+**Auswirkungen auf Folge-APs:**
+- **AP-3.2 (Deep-Linking):** unverändert im Ansatz – `view.js` liest weiterhin die `id` am Zeilen-Wrapper. Nur die Herkunft der `id` ist eine andere.
+- **AP-4.2/AP-4.3 (Doku):** Beide Fallen gehören in die Dokumentation des InnerBlocks-Musters, weil sie jedem künftigen Eltern-/Kind-Block mit `render.php` genauso passieren: (1) `save()`-Wrapper landet *innerhalb* des PHP-Wrappers, (2) `supports.anchor` funktioniert dort nicht. Zusätzlich muss die Redakteurs-Doku sagen, wo das Ankerfeld jetzt liegt – nicht unter „Erweitert".
+- **Zeichensatz:** Editor-Normalisierung und PHP-Filter lassen beide nur `a-z0-9_-` zu; Umlaute werden im Editor transliteriert (ä→ae usw.), statt wie zuvor durch `sanitize_html_class()` ersatzlos zu verschwinden (Review-Befund B4).
+
+### Änderung 5 – Align-Klasse muss serverseitig gesetzt werden (nach AP-1.rev, 2026-08-03)
+
+Der Eltern-Block deklariert `supports.align: ["wide", "full"]`, aber `get_block_wrapper_attributes()` erzeugt die Klasse `alignwide`/`alignfull` nicht – auch das eine Folge des wrapperlosen `save()`. `blocks/accordion/render.php` übernimmt `$block_attributes['align']` deshalb selbst in die Wrapper-Klasse (AP-1.fix2). Nachweis: Prüfpunkt U11 in AP-1.4.
+
+Einordnung: Dieselbe Lücke haben mehrere Bestandsblöcke (z. B. `summary-block` deklariert `align`, dessen `render.php` gibt keine Align-Klasse aus). Das wird hier **nicht** mitrepariert – Bestandsblöcke sind Nicht-Ziel. Für die Doku in AP-4.2 ist es aber ein Muster-Hinweis: Wer `supports.align` deklariert und serverseitig rendert, muss die Klasse selbst ausgeben.

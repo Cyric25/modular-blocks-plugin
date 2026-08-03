@@ -32,6 +32,11 @@ Navigationshilfe: Welche Datei ist für was zuständig. Details zur Architektur 
 | `BLOCK-DEVELOPMENT.md` | Leitfaden für die Entwicklung neuer Blöcke mit Beispielen | – | – |
 | `PLAN-accordion-block.md` | Projektplan für den Accordion-Block (Phasen, Arbeitspakete, Status, Testprotokoll) | – | – |
 | `reference_file_map.md` | Diese Datei-Map | – | – |
+| `README.md` | Kurzbeschreibung und Installationshinweise des Plugins | – | – |
+| `CHEMVIZ_INTEGRATION.md` | Dokumentation der ChemViz-Integration (3Dmol.js, Plotly.js) | – | – |
+| `chemviz-entwicklungsplan.md` | Historischer Entwicklungsplan der ChemViz-Blöcke | – | – |
+| `BUILD_SUCCESS.md` | Notiz zu einem abgeschlossenen Build/Meilenstein (historisch) | – | – |
+| `package-lock.json` | Sammelzeile: npm-Abhängigkeitsbaum, generiert – nicht manuell bearbeiten | – | `package.json` |
 
 ## Blöcke
 
@@ -41,9 +46,9 @@ Jeder Block liegt autark in `blocks/<Ordner>/` und wird automatisch entdeckt, so
 |---|---|---|---|
 | `drag-and-drop` | `modular-blocks/drag-and-drop` | Interaktive Drag-&-Drop-Aufgaben mit Bild- oder Text-Elementen | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css`, `h5p-import.php` (H5P-Import, wird von der Plugin-Hauptdatei geladen) |
 | `drag-the-words` | `modular-blocks/drag-the-words` | Lückentexte mit per Drag & Drop einzusetzenden Wörtern | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
-| `iframe-whitelist` | `modular-blocks/iframe-whitelist` | Externe Websites sicher einbetten (nur Whitelist-URLs, ohne `sandbox`-Attribut) | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` + eingecheckte Build-Artefakte (`index.css`, `style-index.css`, `*.asset.php`) |
+| `iframe-whitelist` | `modular-blocks/iframe-whitelist` | Externe Websites sicher einbetten (nur Whitelist-URLs, ohne `sandbox`-Attribut) | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css`; zusätzlich liegen lokal nicht versionierte Build-Artefakte im Ordner (`index.css`, `style-index.css`, `*.asset.php` – per `.gitignore` ausgeschlossen) |
 | `image-comparison` | `modular-blocks/image-comparison` | Zwei Bilder mit interaktivem Schieberegler vergleichen | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css`, `editor.css.backup` |
-| `image-overlay` | `modular-blocks/image-overlay` | Bild mit interaktiven Informations-Ebenen | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` + `*.asset.php` |
+| `image-overlay` | `modular-blocks/image-overlay` | Bild mit interaktiven Informations-Ebenen | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css`; zusätzlich lokal nicht versionierte `*.asset.php` aus dem Build |
 | `interactive-data-chart` | `modular-blocks/interactive-data-chart` | Dateneingabe im Frontend mit automatischer Diagramm-Generierung (Plotly.js) | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
 | `molecule-viewer` | `modular-blocks/molecule-viewer` | 3D-Visualisierung von Molekülen (3Dmol.js; PDB, PubChem, SMILES, AlphaFold) | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
 | `multiple-choice` | `modular-blocks/multiple-choice` | Multiple-Choice-Fragen mit Bewertung und Feedback | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
@@ -68,7 +73,7 @@ Erster Block des Plugins mit InnerBlocks und Eltern-/Kind-Struktur (WordPress-St
 | `blocks/accordion/style.css` | Frontend-Grundstyling des Containers | `.mb-accordion` (Abstand, Rahmen `#e0e0e0`, `border-radius`, `overflow: hidden`) | Import in `index.js` → `build/.../style-index.css` |
 | `blocks/accordion/editor.css` | Editor-Styling des Containers | gestrichelter Rahmen zur Erkennbarkeit der InnerBlocks-Zone | Import in `index.js` → `build/.../index.css` |
 | `blocks/accordion-row/block.json` | Metadaten des Kind-Blocks | `parent: ["modular-blocks/accordion"]`, Attribut `title` (string), `supports.anchor: true` (HTML-Anker für Deep-Linking), `reusable: false`, **kein** `viewScript`; Beschreibung beginnt mit dem Deaktivierungsverbot | Eltern-Block per Namens-String |
-| `blocks/accordion-row/index.js` | Editor-UI der Zeile | `edit` mit `RichText`-Titel (`allowedFormats`: bold/italic) und `InnerBlocks templateLock={false}` ohne `allowedBlocks` (Zeilen nehmen beliebige Blöcke auf); `save` nur `InnerBlocks.Content`, Titel wird nicht gespeichertes Markup; `deprecated: []` | `block.json`, `editor.css`, `style.css` |
+| `blocks/accordion-row/index.js` | Editor-UI der Zeile | `edit` mit `RichText`-Titel (`allowedFormats`: bold/italic) und `InnerBlocks templateLock={false}` ohne `allowedBlocks` (Zeilen nehmen beliebige Blöcke auf); `save` gibt nur `InnerBlocks.Content` zurück – der Titel wird bewusst nicht in das gespeicherte Markup geschrieben, sondern als Attribut gehalten und in `render.php` gerendert; `deprecated: []`; Inspector-Feld „Anker für Direktlinks" (Attribut `rowAnchor`) | `block.json`, `editor.css`, `style.css` |
 | `blocks/accordion-row/render.php` | Frontend-Markup der Zeile | Kopf als echtes `<button type="button">` mit `aria-expanded`/`aria-controls`, Panel mit `role="region"`/`aria-labelledby`; IDs aus `wp_unique_id('mb-accordion-header-')` und `wp_unique_id('mb-accordion-panel-')`; HTML-Anker per `sanitize_html_class()` als `id` an `get_block_wrapper_attributes()`; Titel über `wp_kses_post()` mit Fallback „Ohne Titel"; `$block_content` unescaped | Attribute `title`/`anchor`, `$block_content` |
 | `blocks/accordion-row/style.css` | Frontend-Grundstyling der Zeile | `.mb-accordion-row` (Trennlinie, letzte Zeile ohne), `.mb-accordion-row__header`, `__title`, `__icon`, `__panel` | Import in `index.js` → `build/.../style-index.css` |
 | `blocks/accordion-row/editor.css` | Editor-Styling der Zeile | Karten-Optik, Kopfzeile als Flex-Container, Platzhalter-Stil für leeren Titel | Import in `index.js` → `build/.../index.css` |
