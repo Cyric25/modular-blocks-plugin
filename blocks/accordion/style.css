@@ -101,10 +101,35 @@
     transform: rotate(45deg); /* Geschlossen: Chevron zeigt nach unten */
 }
 
+/* Kein Polster hier: dieses Element ist es, dessen Hoehe view.js auf 0
+ * animiert. Polster wuerde die Animation vorzeitig bei ~24px sichtbar
+ * stoppen, bevor das Skript den Rest schlagartig per [hidden] entfernt –
+ * das fuehlte sich als Stocken beim Zuklappen an. Keine eigene
+ * transition-Deklaration: view.js setzt sie inline (Dauer + eigene
+ * cubic-bezier-Kurve) und wuerde eine hier hinterlegte Deklaration ohnehin
+ * ueberschreiben; eine zweite, potenziell abweichende Angabe waere nur eine
+ * Quelle fuer spaeteres Auseinanderlaufen. */
 .mb-accordion-row__panel {
-    padding: 12px 16px;
+    padding: 0;
     overflow: hidden; /* Voraussetzung fuer die Hoehenanimation */
-    transition: height 250ms ease;
+}
+
+/* Das tatsaechliche Polster sitzt jetzt am inneren Wrapper, den view.js um
+ * den Zeileninhalt legt – so bleibt .mb-accordion-row__panel selbst auf
+ * exakt 0 animierbar. */
+.mb-accordion-row__panel-inner {
+    padding: 12px 16px;
+}
+
+/* Randkollaps abfangen: Absaetze/Ueberschriften/Listen bringen eigene
+ * vertikale Aussenabstaende mit, die aus dem Wrapper herausragen und die
+ * Hoehenmessung (scrollHeight) verfaelschen wuerden. */
+.mb-accordion-row__panel-inner > :first-child {
+    margin-top: 0;
+}
+
+.mb-accordion-row__panel-inner > :last-child {
+    margin-bottom: 0;
 }
 
 /* --- Nummerierung (verschachtelungssicher) -------------------------------
@@ -188,8 +213,10 @@
 /* --- Responsiv ------------------------------------------------------------- */
 
 @media (max-width: 600px) {
+    /* Das Polster liegt jetzt am inneren Wrapper (siehe oben); .mb-accordion-row__panel
+     * selbst bleibt ohne Padding, damit es weiterhin exakt auf 0 animiert werden kann. */
     .mb-accordion-row__header,
-    .mb-accordion-row__panel {
+    .mb-accordion-row__panel-inner {
         padding: 8px 12px;
         font-size: 0.95em;
     }

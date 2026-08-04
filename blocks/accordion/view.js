@@ -7,6 +7,10 @@
  * pro Ueberschrift der konfigurierten Ebene eine Zeile, deren Panel alle
  * Folgegeschwister bis zur naechsten Ueberschrift aufnimmt.
  *
+ * Die Inhalte liegen dabei in einem Polster-Wrapper
+ * (.mb-accordion-row__panel-inner), der den Innenabstand traegt. Das Panel
+ * selbst bleibt polsterlos und laesst sich deshalb exakt auf 0 animieren.
+ *
  * Wichtig: Inhalte werden ausschliesslich per Knotenverschiebung
  * (appendChild/insertBefore) umgehaengt, niemals per innerHTML. Andernfalls
  * verlieren verschachtelte Bloecke (3D-Molekuel-Viewer, Plotly-Diagramme,
@@ -26,6 +30,9 @@
     var HEADER_SELECTOR = '.mb-accordion-row__header';
     var CLOSED_CLASS = 'is-closed';
     var ANIMATION_DURATION = 250;
+    // Standardkurve fuer Auf-/Zuklappbewegungen; wirkt beim Schliessen
+    // deutlich weniger abrupt als 'ease'.
+    var ANIMATION_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
     var OPEN_TITLE_COLOR = '#ffffff';
 
     // Standardfarben, falls die data-color-*-Attribute fehlen.
@@ -184,6 +191,29 @@
     }
 
     /**
+     * Misst die Zielhoehe eines Panels am Polster-Wrapper.
+     *
+     * Das Panel selbst ist polsterlos und wird waehrend der Animation auf eine
+     * Inline-Hoehe geklemmt - es kennt die Inhaltshoehe also nicht zuverlaessig.
+     * Der Wrapper haelt Inhalt samt Innenabstand und behaelt seine natuerliche
+     * Hoehe, auch wenn das Panel auf 0 steht.
+     *
+     * offsetHeight (Rahmen und Polster eingeschlossen) und scrollHeight
+     * (Inhaltsbox samt Polster) koennen sich je nach CSS unterscheiden; der
+     * groessere Wert verhindert ein Abschneiden des Inhalts.
+     *
+     * @param {HTMLElement} panelInner Polster-Wrapper
+     * @return {number} Zielhoehe in Pixel
+     */
+    function measureContentHeight(panelInner) {
+        if (!panelInner) {
+            return 0;
+        }
+
+        return Math.max(panelInner.scrollHeight || 0, panelInner.offsetHeight || 0);
+    }
+
+    /**
      * Gibt das Ziel einer laufenden Animation zurueck ('open' oder 'close').
      *
      * @param {HTMLElement} panel Panel-Element
@@ -236,7 +266,7 @@
 
         panel.style.overflow = 'hidden';
         panel.style.height = fromHeight + 'px';
-        panel.style.transition = 'height ' + ANIMATION_DURATION + 'ms ease';
+        panel.style.transition = 'height ' + ANIMATION_DURATION + 'ms ' + ANIMATION_EASING;
         panel.addEventListener('transitionend', onEnd);
 
         // Sicherheitsnetz: feuert transitionend nicht (z. B. weil Start- und
@@ -260,14 +290,14 @@
      * @param {HTMLElement} content Inhaltszone des Accordions
      * @param {number}      level   Ueberschriftenebene
      * @param {Object}      colors  Farbwerte
-     * @param {Map}         parts   Zuordnung Zeile -> { header, panel }
+     * @param {Map}         parts   Zuordnung Zeile -> { header, panel, panelInner }
      * @return {Array} Zeilen-Elemente in Dokumentreihenfolge
      */
     function buildRows(content, level, colors, parts) {
         var headingTag = 'H' + level;
         var children = Array.prototype.slice.call(content.children);
         var rows = [];
-        var activePanel = null;
+        var activeInner = null;
         var i;
 
         for (i = 0; i < children.length; i++) {
@@ -322,15 +352,25 @@
                 panel.setAttribute('role', 'region');
                 panel.setAttribute('aria-labelledby', headerId);
                 panel.hidden = true;
+
+                // Polster-Wrapper: Der Innenabstand liegt per CSS auf diesem
+                // Element, nicht auf dem Panel. Nur so laesst sich das Panel
+                // exakt auf 0 animieren - mit Polster am Panel selbst bliebe
+                // beim Schliessen die Polsterhoehe stehen und wuerde erst durch
+                // 'hidden' schlagartig verschwinden (sichtbares Stocken).
+                var panelInner = document.createElement('div');
+
+                panelInner.className = 'mb-accordion-row__panel-inner';
+                panel.appendChild(panelInner);
                 row.appendChild(panel);
 
                 setHeaderColors(header, colors.surface, colors.text);
 
-                parts.set(row, { header: header, panel: panel });
+                parts.set(row, { header: header, panel: panel, panelInner: panelInner });
                 rows.push(row);
-                activePanel = panel;
-            } else if (activePanel) {
-                activePanel.appendChild(node);
+                activeInner = panelInner;
+            } else if (activeInner) {
+                activeInner.appendChild(node);
             }
 
             // Inhalt vor der ersten Ueberschrift (Einleitungstext) bleibt
@@ -452,6 +492,9 @@
 
             var panel = part.panel;
             var header = part.header;
+
+            // Startwert: die aktuell gerenderte Panel-Hoehe. Bei einer
+            // abgebrochenen Schliess-Animation ist das der Zwischenwert.
             var startHeight = panel.hidden ? 0 : panel.offsetHeight;
 
             cancelAnimation(panel);
@@ -471,7 +514,9 @@
             };
 
             if (animate && !prefersReducedMotion()) {
-                animateHeight(panel, startHeight, panel.scrollHeight, 'open', finishOpen);
+                // Zielhoehe am Polster-Wrapper messen, nicht am polsterlosen
+                // Panel: nur der Wrapper kennt Inhalt samt Innenabstand.
+                animateHeight(panel, startHeight, measureContentHeight(part.panelInner), 'open', finishOpen);
             } else {
                 panel.style.removeProperty('height');
                 panel.style.removeProperty('transition');

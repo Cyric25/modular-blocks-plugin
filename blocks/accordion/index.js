@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from '@wordpress/blocks';
+import { registerBlockType, createBlock } from '@wordpress/blocks';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import {
     useBlockProps,
@@ -14,9 +14,11 @@ import {
     ToggleControl,
     SelectControl,
     Notice,
+    Button,
 } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { plus } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -52,6 +54,45 @@ registerBlockType('modular-blocks/accordion', {
             (block) => block.name === 'core/heading' && block.attributes.level === headingLevel
         ).length;
 
+        const { insertBlocks, updateBlockAttributes } = useDispatch(blockEditorStore);
+
+        // Legt am Ende der Innenbloecke eine vollstaendige neue Klappzeile an:
+        // Ueberschrift mit der aktuell eingestellten Ebene + leerer Absatz.
+        // insertBlocks selektiert automatisch den ersten eingefuegten Block
+        // (die Ueberschrift), der Redakteur kann also sofort tippen.
+        const addRow = () => {
+            const heading = createBlock('core/heading', { level: headingLevel });
+            const paragraph = createBlock('core/paragraph', {});
+            insertBlocks([heading, paragraph], innerBlocks.length, clientId);
+        };
+
+        // Beim Wechsel der Ueberschriftenebene sollen bestehende Zeilen nicht
+        // verloren gehen: Alle Ueberschriften der BISHERIGEN Zeilen-Ebene
+        // werden auf die neue Ebene umgeschrieben, bevor das Attribut selbst
+        // gesetzt wird (sonst waere die alte Ebene beim Sammeln schon weg).
+        // Ueberschriften anderer Ebenen (z. B. eine H4-Zwischenueberschrift
+        // innerhalb einer H3-Zeile) sind bewusst normaler Inhalt und bleiben
+        // unangetastet.
+        const changeHeadingLevel = (value) => {
+            const nextLevel = parseInt(value, 10);
+
+            if (nextLevel === headingLevel) {
+                return;
+            }
+
+            const rowHeadingIds = innerBlocks
+                .filter(
+                    (block) => block.name === 'core/heading' && block.attributes.level === headingLevel
+                )
+                .map((block) => block.clientId);
+
+            if (rowHeadingIds.length > 0) {
+                updateBlockAttributes(rowHeadingIds, { level: nextLevel });
+            }
+
+            setAttributes({ headingLevel: nextLevel });
+        };
+
         const TEMPLATE = [
             [
                 'core/heading',
@@ -85,9 +126,9 @@ registerBlockType('modular-blocks/accordion', {
                             label={__('Überschriftenebene für Zeilentitel', 'modular-blocks-plugin')}
                             value={String(headingLevel)}
                             options={HEADING_LEVEL_OPTIONS}
-                            onChange={(value) => setAttributes({ headingLevel: parseInt(value, 10) })}
+                            onChange={changeHeadingLevel}
                             help={__(
-                                'Überschriften dieser Ebene werden im Frontend zu anklickbaren Klappzeilen. Andere Überschriftenebenen bleiben normaler Inhalt.',
+                                'Überschriften dieser Ebene werden im Frontend zu anklickbaren Klappzeilen. Andere Überschriftenebenen bleiben normaler Inhalt. Beim Ändern werden bestehende Zeilen-Überschriften automatisch auf die neue Ebene umgestellt, damit keine Zeile verloren geht.',
                                 'modular-blocks-plugin'
                             )}
                         />
@@ -129,9 +170,10 @@ registerBlockType('modular-blocks/accordion', {
                         <Notice status="warning" isDismissible={false}>
                             {sprintf(
                                 __(
-                                    'Keine Überschrift der Ebene H%d gefunden. Überschriften dieser Ebene markieren den Beginn einer Klappzeile – ohne eine solche Überschrift öffnet sich im Frontend nichts. Füge eine Überschrift der eingestellten Ebene hinzu, um eine Klappzeile zu erzeugen.',
+                                    'Keine Überschrift der Ebene H%d gefunden. Überschriften dieser Ebene markieren den Beginn einer Klappzeile – ohne eine solche Überschrift öffnet sich im Frontend nichts. Nutze den Knopf „Zeile hinzufügen“ unterhalb der Inhalte: Er legt automatisch eine neue Überschrift der Ebene H%d samt Absatz an.',
                                     'modular-blocks-plugin'
                                 ),
+                                headingLevel,
                                 headingLevel
                             )}
                         </Notice>
@@ -154,6 +196,14 @@ registerBlockType('modular-blocks/accordion', {
                         orientation="vertical"
                         renderAppender={InnerBlocks.ButtonBlockAppender}
                     />
+                    <Button
+                        variant="primary"
+                        icon={plus}
+                        onClick={addRow}
+                        className="mb-accordion-add-row"
+                    >
+                        {__('Zeile hinzufügen', 'modular-blocks-plugin')}
+                    </Button>
                 </div>
             </Fragment>
         );
