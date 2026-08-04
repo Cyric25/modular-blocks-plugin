@@ -15,6 +15,24 @@
  * (appendChild/insertBefore) umgehaengt, niemals per innerHTML. Andernfalls
  * verlieren verschachtelte Bloecke (3D-Molekuel-Viewer, Plotly-Diagramme,
  * Zeichenflaechen) ihre Event-Handler und ihren Zustand.
+ *
+ * Zustandsregel (bewusst asymmetrisch - bitte nicht "aufraeumen"):
+ * Die Marker einer Zeile folgen nicht mehr alle gemeinsam, sondern in zwei
+ * Stufen. Sofort auf den Klick, noch vor dem Start der Hoehenanimation, folgen
+ * alle *sichtbaren* Rueckmeldungen: die Kopf-Farben, die Klasse is-closed an
+ * der Zeile (daran haengt im Stylesheet die Chevron-Drehung) und
+ * aria-expanded am Kopf-Button - letzteres, damit Screenreader-Nutzer dieselbe
+ * unmittelbare Rueckmeldung erhalten wie sehende. Erst nach der Bewegung folgt
+ * panel.hidden, denn sonst waere der Inhalt sofort weg und es gaebe gar keine
+ * Animation zu sehen.
+ *
+ * Waehrend der 250 ms des Zuklappens ist eine Zeile deshalb absichtlich schon
+ * als geschlossen markiert, aber noch sichtbar. Beim Oeffnen tritt der Fall
+ * nicht auf: dort passen alle Marker von Anfang an zusammen.
+ *
+ * Daraus folgt fuer die Umschaltlogik: Die Frage "ist diese Zeile offen?" darf
+ * niemals an is-closed, hidden oder aria-expanded allein haengen. Verbindlich
+ * ist ausschliesslich isRowOpen() - die Rangfolge ist dort dokumentiert.
  */
 
 (function () {
@@ -42,6 +60,11 @@
         hover: '#c93d12',
         text: '#71230a'
     };
+
+    // Zeilenkoepfe, auf denen der Zeiger gerade steht. Notwendig, weil die
+    // Farben inline mit 'important' gesetzt werden und CSS-':hover' deshalb
+    // nicht greift - siehe setHeaderColors().
+    var hoveredHeaders = new WeakSet();
 
     // Laufende Hoehen-Animationen: Panel-Element -> { target, onEnd, timer }.
     // Modul-lokal (keine globale Variable), damit ein Umschalten waehrend einer
@@ -127,12 +150,21 @@
      * im Dunkelmodus weiss. Ohne Inline-Wichtigkeit waeren geschlossene Titel
      * auf hellem Kopf unlesbar.
      *
-     * @param {HTMLElement} header     Kopf-Button
-     * @param {string}      background Hintergrundfarbe
-     * @param {string}      color      Textfarbe
+     * Weil die Inline-Werte 'important' tragen, kommt ein CSS-':hover' nicht
+     * dagegen an. Steht der Zeiger gerade auf diesem Kopf, gewinnt deshalb der
+     * uebergebene Hover-Hintergrund - sonst wuerde die Flaeche bei einem Klick
+     * auf die Zustandsfarbe springen, obwohl der Zeiger nie weggegangen ist.
+     * Die Textfarbe folgt immer dem Zustand, nur der Hintergrund wird ersetzt.
+     *
+     * @param {HTMLElement} header            Kopf-Button
+     * @param {string}      background        Hintergrundfarbe des Zustands
+     * @param {string}      color             Textfarbe des Zustands
+     * @param {string}      [hoverBackground] Hintergrund waehrend des Hoverns
      */
-    function setHeaderColors(header, background, color) {
-        header.style.setProperty('background-color', background, 'important');
+    function setHeaderColors(header, background, color, hoverBackground) {
+        var effective = (hoverBackground && hoveredHeaders.has(header)) ? hoverBackground : background;
+
+        header.style.setProperty('background-color', effective, 'important');
         header.style.setProperty('color', color, 'important');
 
         var title = header.querySelector('.mb-accordion-row__title');
@@ -364,7 +396,7 @@
                 panel.appendChild(panelInner);
                 row.appendChild(panel);
 
-                setHeaderColors(header, colors.surface, colors.text);
+                setHeaderColors(header, colors.surface, colors.text, colors.hover);
 
                 parts.set(row, { header: header, panel: panel, panelInner: panelInner });
                 rows.push(row);
@@ -454,10 +486,22 @@
         }
 
         /**
-         * Prueft, ob eine Zeile offen ist (beruecksichtigt laufende Animationen).
+         * Prueft, ob eine Zeile als offen gilt. Einzige verbindliche Quelle
+         * fuer die Umschaltlogik (siehe Zustandsregel im Dateikopf).
+         *
+         * Rangfolge:
+         * 1. Laeuft eine Hoehenanimation, entscheidet allein ihr Ziel
+         *    (pendingTarget). Eine zuklappende Zeile gilt sofort als
+         *    geschlossen, eine aufklappende sofort als offen. Nur so kehrt ein
+         *    Klick mitten in der Bewegung die Richtung um, statt zu blockieren.
+         * 2. Ohne laufende Animation entscheidet die Klasse is-closed.
+         *
+         * hidden wird bewusst nicht geprueft: Es folgt der Bewegung erst
+         * nachtraeglich und waere waehrend des Zuklappens noch false, obwohl die
+         * Zeile bereits als geschlossen gilt.
          *
          * @param {HTMLElement} row Zeilen-Element
-         * @return {boolean} true, wenn offen oder gerade oeffnend
+         * @return {boolean} true, wenn offen oder gerade aufklappend
          */
         function isRowOpen(row) {
             var part = parts.get(row);
@@ -499,11 +543,13 @@
 
             cancelAnimation(panel);
 
-            // Die drei Zustandsmarker immer gemeinsam setzen.
+            // Beim Oeffnen passen alle Marker von Anfang an zusammen: Der Inhalt
+            // muss sichtbar sein, damit die Bewegung ueberhaupt etwas zeigt.
+            // Deshalb hier - anders als im Schliesspfad - keine Zweistufigkeit.
             panel.hidden = false;
             row.classList.remove(CLOSED_CLASS);
             header.setAttribute('aria-expanded', 'true');
-            setHeaderColors(header, colors.active, OPEN_TITLE_COLOR);
+            setHeaderColors(header, colors.active, OPEN_TITLE_COLOR, colors.hover);
 
             var finishOpen = function () {
                 // Verschachtelte Spezialbloecke (Plotly-Diagramme, 3D-Viewer)
@@ -540,17 +586,26 @@
 
             var panel = part.panel;
             var header = part.header;
+
+            // Startwert: die aktuell gerenderte Panel-Hoehe. Bei einer
+            // abgebrochenen Oeffnen-Animation ist das der Zwischenwert. Muss
+            // vor cancelAnimation() gelesen werden.
             var startHeight = panel.offsetHeight;
 
-            var finishClose = function () {
-                // Die drei Zustandsmarker immer gemeinsam setzen.
-                panel.hidden = true;
-                row.classList.add(CLOSED_CLASS);
-                header.setAttribute('aria-expanded', 'false');
-                setHeaderColors(header, colors.surface, colors.text);
-            };
-
             cancelAnimation(panel);
+
+            // Sofortige Rueckmeldung auf den Klick, noch vor dem Start der
+            // Animation (siehe Zustandsregel im Dateikopf): Kopf-Farben zurueck
+            // auf den geschlossenen Zustand, is-closed fuer die Chevron-Drehung
+            // und aria-expanded fuer Screenreader. Nur panel.hidden wartet auf
+            // das Ende der Bewegung - sonst gaebe es nichts zu animieren.
+            row.classList.add(CLOSED_CLASS);
+            header.setAttribute('aria-expanded', 'false');
+            setHeaderColors(header, colors.surface, colors.text, colors.hover);
+
+            var finishClose = function () {
+                panel.hidden = true;
+            };
 
             if (animate && !prefersReducedMotion()) {
                 animateHeight(panel, startHeight, 0, 'close', finishClose);
@@ -721,11 +776,18 @@
             }
 
             if (event.type === 'mouseenter') {
+                // Merken, damit setHeaderColors() die Hover-Farbe auch bei einem
+                // Zustandswechsel unter dem stehenden Zeiger beibehaelt.
+                hoveredHeaders.add(header);
                 setBackground(header, colors.hover);
                 return;
             }
 
-            // Zurueck auf den Zustandswert.
+            hoveredHeaders.delete(header);
+
+            // Zurueck auf den Zustandswert. isRowOpen() ist dabei verbindlich:
+            // Mitten in einer Animation liefert es das Ziel der Bewegung, sodass
+            // die Zielfarbe erscheint und nicht die Ausgangsfarbe.
             setBackground(header, isRowOpen(row) ? colors.active : colors.surface);
         }
 
@@ -746,10 +808,19 @@
         /**
          * Deep-Linking: Zeile zum aktuellen Hash oeffnen und anspringen.
          *
-         * @param {boolean} animate Mit Hoehen-Animation
+         * Bewusst immer ohne Animation - beim ersten Laden wie bei jedem
+         * hashchange. Zwei Gruende: Beim Ankersprung will der Nutzer sofort am
+         * Ziel sein und keiner Bewegung zusehen. Und ohne Animation ist die
+         * Layouthoehe bereits final, sodass die von scrollIntoView berechnete
+         * Zielposition stimmt - animiert geoeffnet waere das Panel im Moment des
+         * Scrollens noch 0 Pixel hoch und die Position saesse 250 ms spaeter
+         * daneben. Im Exklusivmodus schliessen die uebrigen Zeilen deshalb
+         * ebenfalls ohne Animation, damit die Hoehe vor dem Scrollen endgueltig
+         * ist.
+         *
          * @return {boolean} true, wenn eine Zeile dieses Accordions getroffen wurde
          */
-        function applyHash(animate) {
+        function applyHash() {
             var raw = window.location.hash.slice(1);
 
             if (!raw) {
@@ -805,11 +876,13 @@
                 return false;
             }
 
-            // Von aussen nach innen oeffnen, damit Hoehenmessungen stimmen.
+            // Von aussen nach innen und ohne Animation oeffnen, damit das Layout
+            // vor dem Scrollen fertig ist.
             chain.reverse().forEach(function (row) {
-                activateRow(row, animate);
+                activateRow(row, false);
             });
 
+            // Erst jetzt springen: Die Panels haben ihre endgueltige Hoehe.
             if (typeof target.scrollIntoView === 'function') {
                 target.scrollIntoView({ block: 'start' });
             }
@@ -844,14 +917,14 @@
         }
 
         // Startzustand: Ein passender Hash gewinnt gegen data-open-first.
-        var hashHandled = applyHash(false);
+        var hashHandled = applyHash();
 
         if (!hashHandled && openFirst) {
             openRow(rows[0], false);
         }
 
         window.addEventListener('hashchange', function () {
-            applyHash(true);
+            applyHash();
         });
     }
 
