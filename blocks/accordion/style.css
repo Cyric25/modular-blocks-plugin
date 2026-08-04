@@ -1,13 +1,205 @@
 /**
  * Accordion block - frontend styles
- * Grundgerüst (Phase 1). Ausführliche Gestaltung folgt in einem späteren AP.
+ *
+ * Architektur: ueberschriftengesteuert. view.js baut zur Laufzeit aus dem
+ * flachen Inhalt in .mb-accordion__content die Zeilen (.mb-accordion-row)
+ * mit Kopf (.mb-accordion-row__header) und Panel (.mb-accordion-row__panel).
+ * Farben der Zeilenkoepfe (aktiv/hover/geschlossen) werden von view.js
+ * inline aus den data-color-* Attributen gesetzt (siehe render.php) – diese
+ * Datei legt sich deshalb bei Zeilenkopf-Hintergruenden nicht fest.
  */
+
 .mb-accordion {
     margin: 1em 0;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     overflow: hidden;
 }
+
+/* --- Steuerleiste (Alle oeffnen / Alle schliessen) --------------------- */
+
+.mb-accordion__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+}
+
+/*
+ * Haeufiger Fehler: eine display:flex-Regel auf einem Element mit
+ * [hidden] ueberschreibt die UA-Standardausblendung. Deshalb explizit und
+ * unmissverstaendlich erzwingen.
+ */
+.mb-accordion__controls[hidden] {
+    display: none;
+}
+
+.mb-accordion__control:focus-visible {
+    outline: 3px solid #71230a;
+    outline-offset: -3px;
+}
+
+/* --- Zeilen -------------------------------------------------------------- */
+
+.mb-accordion-row {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mb-accordion-row:last-child {
+    border-bottom: none;
+}
+
+/* Die Ueberschrift ist jetzt der Zeilenkopf-Container; ihre typischen
+ * Ueberschriften-Abstaende/-Groessen werden entfernt, das eigentliche
+ * Erscheinungsbild kommt vom Button/Titel darin. */
+.mb-accordion-row__heading {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+}
+
+.mb-accordion-row__header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    /* Buttons erben Typografie standardmaessig nicht von ihren Eltern –
+     * ohne diese beiden Zeilen erscheint der Titel in der
+     * Browser-Systemschrift statt in der Theme-Schrift/-Farbe. */
+    font: inherit;
+    color: inherit;
+}
+
+.mb-accordion-row__header:focus-visible {
+    outline: 3px solid #71230a;
+    outline-offset: -3px;
+}
+
+.mb-accordion-row__title {
+    flex: 1;
+}
+
+.mb-accordion-row__icon {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-135deg); /* Grundzustand (offen): Chevron zeigt nach oben */
+    transition: transform 200ms ease;
+}
+
+.mb-accordion-row.is-closed .mb-accordion-row__icon {
+    transform: rotate(45deg); /* Geschlossen: Chevron zeigt nach unten */
+}
+
+.mb-accordion-row__panel {
+    padding: 12px 16px;
+    overflow: hidden; /* Voraussetzung fuer die Hoehenanimation */
+    transition: height 250ms ease;
+}
+
+/* --- Nummerierung (verschachtelungssicher) -------------------------------
+ * counter-reset erzeugt an .mb-accordion.is-numbered eine neue,
+ * eigenstaendige Zaehler-Instanz. Ein verschachteltes Accordion mit
+ * eigenem .is-numbered setzt seinerseits counter-reset und beginnt damit
+ * automatisch neu zu zaehlen; die direkten Kind-Kombinatoren (>) stellen
+ * zusaetzlich sicher, dass nur Zeilen der jeweils naechsten Accordion-Ebene
+ * matchen, nicht tiefer verschachtelte Zeilen eines inneren Accordions. */
+.mb-accordion.is-numbered {
+    counter-reset: mb-accordion-row;
+}
+
+.mb-accordion.is-numbered > .mb-accordion__content > .mb-accordion-row > .mb-accordion-row__heading > .mb-accordion-row__header {
+    counter-increment: mb-accordion-row;
+}
+
+.mb-accordion.is-numbered > .mb-accordion__content > .mb-accordion-row > .mb-accordion-row__heading > .mb-accordion-row__header::before {
+    content: counter(mb-accordion-row) ". ";
+}
+
+/* --- Kontrast-Falle -------------------------------------------------------
+ * assets/css/blocks.css enthaelt global fuer [class*="title"] und
+ * [class*="content"] (jeweils verschachtelt unter [class*="wp-block-modular-blocks"])
+ * eine Farbregel ueber eine CSS-Custom-Property, die im Dunkelmodus auf Weiss
+ * gesetzt wird. Beide Selektoren haben Spezifitaet 0-2-0 (zwei
+ * Attributselektoren). Die folgenden Regeln nutzen
+ * bewusst mind. drei Klassen bzw. Klasse+Element, um zuverlaessig zu
+ * gewinnen – ohne !important, weil die Zeilenkoepfe von view.js inline mit
+ * !important eingefaerbt werden und ein Wettruesten das kaputt machen wuerde.
+ */
+
+/* 1) Zeilentitel: erzwingt "inherit" mit hoeherer Spezifitaet (0-3-0), damit
+ * der Titel wieder die (von view.js am Button gesetzte) Farbe des
+ * Zeilenkopfs erbt, statt vom globalen Dunkelmodus-Weiss ueberschrieben zu
+ * werden. Kein hartkodierter Farbwert noetig/gewuenscht. */
+.mb-accordion .mb-accordion-row .mb-accordion-row__title {
+    color: inherit;
+}
+
+/* 2) Lesbarkeit VOR dem Ausfuehren von view.js (bzw. bei deaktiviertem
+ * JavaScript): der flache Inhalt in .mb-accordion__content besteht aus
+ * normalen Ueberschriften/Absaetzen und braucht eine explizite dunkle
+ * Farbe, sonst waere er im Dunkelmodus weiss auf hellem Grund. Spezifitaet
+ * 0-2-1 (zwei Klassen + Element), damit hoeher als 0-2-0. */
+.mb-accordion .mb-accordion__content h1,
+.mb-accordion .mb-accordion__content h2,
+.mb-accordion .mb-accordion__content h3,
+.mb-accordion .mb-accordion__content h4,
+.mb-accordion .mb-accordion__content h5,
+.mb-accordion .mb-accordion__content h6,
+.mb-accordion .mb-accordion__content p,
+.mb-accordion .mb-accordion__content li,
+.mb-accordion .mb-accordion__content blockquote {
+    color: #333333;
+}
+
+/* --- Bewegungsreduktion --------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .mb-accordion-row__icon,
+    .mb-accordion-row__panel {
+        transition: none;
+    }
+}
+
+/* --- Druckausgabe ---------------------------------------------------------
+ * Geschlossene Panels sollen beim Drucken trotzdem sichtbar sein. Das
+ * [hidden]-Attribut muss dafuer explizit uebersteuert werden – hier ist
+ * !important korrekt und noetig. */
+@media print {
+    .mb-accordion-row__panel[hidden] {
+        display: block !important;
+    }
+
+    .mb-accordion-row__icon {
+        display: none;
+    }
+}
+
+/* --- Responsiv ------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+    .mb-accordion-row__header,
+    .mb-accordion-row__panel {
+        padding: 8px 12px;
+        font-size: 0.95em;
+    }
+
+    .mb-accordion__controls {
+        padding: 8px 12px;
+    }
+}
+
+/* --- Hinweis fuer Redakteure (leerer Zustand) ------------------------------ */
 
 .mb-accordion__notice {
     margin: 1em 0;
