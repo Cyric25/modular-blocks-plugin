@@ -656,7 +656,72 @@ Die Dokumentation auf den Stand nach Phase 1 bringen. **Wichtig – keine Parall
 
 ---
 
-### Phase 2: Editor-Erlebnis und Optionen
+### Phase 2 (neu): Ein Block, überschriftengesteuert – Editor und Frontend zusammen
+
+> **Die alten APs AP-2.1 bis AP-2.3 und AP-3.1 bis AP-3.4 weiter unten sind überholt** (Abschnitt 11, Änderung 6). Sie bleiben als Historie stehen und werden nicht ausgeführt. Ihre Inhalte sind in die vier folgenden APs eingegangen. Es gibt keinen Kind-Block mehr; alle Aussagen über `blocks/accordion-row/` sind gegenstandslos.
+
+---
+
+### AP-2.0: Kind-Block entfernen
+
+**Status:** ☑ erledigt · **Umfang:** S · **Modell:** — (Orchestrator-Aufräumarbeit) · **Abhängigkeiten:** Nutzerentscheidung zum Architekturwechsel
+
+**Übergabenotiz:** Erledigt 2026-08-04, Commit `405ea26`. `blocks/accordion-row/` per `git rm -r` entfernt, danach das leere Verzeichnis gelöscht. Zusätzlich `build/blocks/accordion-row/` und das veraltete `plugin-zips/accordion-row.zip` beseitigt, damit niemand ein Paket hochlädt, das es nicht mehr gibt. `npm run block-zips` erzeugt seitdem 14 statt 15 ZIPs.
+
+**Für den Nutzer offen:** Auf der Live-Installation muss der Block „Accordion-Zeile" über Einstellungen → Modulare Blöcke → Papierkorb-Symbol entfernt werden, und bestehende Test-Accordions auf der Testseite sind neu anzulegen (das alte Markup verweist auf den entfallenen Kind-Block).
+
+---
+
+### AP-2.1n: Editor auf überschriftengesteuerte Zeilen umstellen
+
+**Status:** ☑ erledigt · **Umfang:** M · **Modell:** sonnet · **Abhängigkeiten:** AP-2.0
+**Betroffene Dateien:** `blocks/accordion/block.json`, `blocks/accordion/index.js`
+
+**Übergabenotiz:** Erledigt 2026-08-04, Commit `63b9f69`, Subagent (Sonnet), geprüft vom Orchestrator. Attribute jetzt `allowMultiple`, `openFirst`, `showNumbering`, `showExpandAll` (alle boolean, Default false) und `headingLevel` (number, Default 3, per `parseInt` gespeichert – `SelectControl` liefert Strings). `allowedBlocks` entfernt, Start-Template sind zwei Paare aus Überschrift und Absatz mit Platzhaltern. Inspector: Auswahl der Überschriftenebene (H2–H5) plus vier Schalter. Neu als Bedienhilfe: Fehlt eine Überschrift der eingestellten Ebene, erscheint eine Warnung, die genau sagt, was zu tun ist; sonst eine Statuszeile „N Klappzeilen erkannt". Beide liegen ausschließlich im `edit`-Zweig und landen nicht im gespeicherten Markup. `save()` bleibt bei ausschließlich `<InnerBlocks.Content />`. `example` mit `innerBlocks` ergänzt, damit die Vorschau im Einfügen-Dialog etwas Sinnvolles zeigt.
+
+Abweichung: Die Statuszeile heißt intern `mb-accordion-status-count` (nicht `…-row-count`), weil ein Prüfkriterium den Teilstring „accordion-row" projektweit verbot. Der Orchestrator hat einen daraus entstandenen Schnittstellenfehler gefunden – das Editor-Stylesheet gestaltete zunächst den alten Namen – und ihn korrigieren lassen.
+
+---
+
+### AP-2.2n: Serverausgabe und Styling
+
+**Status:** ☑ erledigt · **Umfang:** M · **Modell:** sonnet · **Abhängigkeiten:** AP-2.0
+**Betroffene Dateien:** `blocks/accordion/render.php`, `blocks/accordion/style.css`, `blocks/accordion/editor.css`
+
+**Übergabenotiz:** Erledigt 2026-08-04, Commit `ccd5521`, Subagent (Sonnet), geprüft vom Orchestrator. `render.php` gibt den Wrapper mit allen vier Optionen als `data`-Flags (`"true"`/`"false"`), `data-heading-level` und den vier `data-color-*` aus `get_theme_mod()` aus; `get_block_wrapper_attributes()` wird genau einmal aufgerufen und trägt weiterhin die Align-Klasse. Steuerleiste nur bei aktivierter Option, immer mit `hidden` (ohne JavaScript keine toten Schaltflächen), im Exklusivmodus nur „Alle schließen". `$block_content` unverändert in `.mb-accordion__content`.
+
+Kontrastfalle entschärft (Abschnitt 11, Änderung 7) mit `.mb-accordion .mb-accordion-row .mb-accordion-row__title` (0-3-0) und `.mb-accordion .mb-accordion__content h1…h6, p, li, blockquote` (0-2-1) gegen die Bug-Regel mit 0-2-0, im Editor per doppelt notierter Klasse `.mb-accordion.mb-accordion h1…` – überall ohne `!important`, damit die Inline-Farben von `view.js` nicht bekämpft werden. Weiter enthalten: `font: inherit` und `color: inherit` am Kopf-Button (Buttons erben Typografie nicht – das war Review-Befund B2), `.mb-accordion__controls[hidden] { display: none }` gegen die Flex-Falle, Chevron per CSS mit Drehung an `.is-closed`, verschachtelungssichere Nummerierung über `>`-Kombinatoren, `prefers-reduced-motion`, Druckregel mit offenen Panels, responsive Abstände unter 600 px.
+
+---
+
+### AP-2.3n: Frontend-Logik (`view.js`)
+
+**Status:** ☑ erledigt · **Umfang:** L · **Modell:** opus · **Abhängigkeiten:** AP-2.0
+**Betroffene Dateien:** `blocks/accordion/view.js`
+
+**Übergabenotiz:** Erledigt 2026-08-04, Commit `c9452b9`, Subagent (Opus), geprüft vom Orchestrator. 887 Zeilen, IIFE ohne globale Variablen. Baut aus der flachen Blockfolge in `.mb-accordion__content` die Zeilen: jede Überschrift der konfigurierten Ebene wird zum Zeilenkopf – das **Original-Element bleibt erhalten** (damit `id` und Anker überleben), der Button wird hineingesetzt, die Folgegeschwister wandern ins Panel. Inhalte werden ausschließlich per `appendChild`/`insertBefore` verschoben, **nie** per `innerHTML`, sonst verlieren verschachtelte Blöcke ihren Zustand. Inhalt vor der ersten Überschrift bleibt unangetastet.
+
+Enthalten: exklusives und mehrfaches Öffnen, Umschalten der offenen Zeile, erste Zeile offen ohne Animation, Alle öffnen/schließen, Deep-Linking beim Laden und bei `hashchange` (mit `decodeURIComponent` und `getElementById` in `try/catch`, ungültige Hashes werfen nichts), Höhenanimation über `scrollHeight` mit Abbruchbehandlung und Fallback-Timer, `prefers-reduced-motion`, Tastaturnavigation `ArrowUp`/`ArrowDown`/`Home`/`End` (Fokus wandert umlaufend), Hover- und Zustandsfarben inline aus den `data-color-*`-Attributen mit `important`, Idempotenz über einen Init-Marker, Isolation mehrerer und verschachtelter Accordions.
+
+Zwei Entscheidungen des Agenten, die im Vertrag festzuhalten sind: `data-numbering` wird von JS **nicht** gelesen – die Nummerierung ist rein CSS. Und nach dem Öffnen einer Zeile wird `window.dispatchEvent(new Event('resize'))` ausgelöst, damit Plotly-Diagramme und der 3D-Molekül-Viewer, die in einem geschlossenen Panel mit Breite 0 initialisiert wurden, ihre Größe korrigieren.
+
+Der Agent hat zusätzlich eine Testumgebung mit jsdom gebaut (jsdom lag bereits in `node_modules`) und darin 104 Zusicherungen ohne Fehlschlag geprüft: Struktur, beide Öffnungsmodi, Startzustand, Steuerleiste, Deep-Links inklusive ungültiger Hashes, Tastatur, Hover, Bewegungsreduktion, Animationsabbrüche, Verschachtelung, `MutationObserver`. **Das ersetzt keinen Browsertest** – jsdom hat keine Layout-Engine, `scrollHeight` und `transitionend` sind dort nur simuliert.
+
+**Bekannte Grenzen:** Ein Block, der seine Höhe erst nach dem Öffnen ändert (spät geladenes Bild, wachsender 3D-Viewer), kann während der 250 ms Animation kurz beschnitten wirken; der Endzustand ist immer korrekt. Zeilen werden einmalig gebaut – fügt ein verschachtelter Block später eine passende Überschrift in ein Panel ein, entsteht daraus keine neue Zeile.
+
+---
+
+### AP-2.4n: Abnahme der neuen Architektur
+
+**Status:** ◐ in Arbeit (Gates bestanden, funktionale Abnahme offen) · **Umfang:** M · **Modell:** sonnet · **Abhängigkeiten:** AP-2.1n, AP-2.2n, AP-2.3n
+
+**Übergabenotiz:** Gates am 2026-08-04 bestanden: `php -l` über Kern und `render.php` fehlerfrei; `node --check blocks/accordion/view.js` fehlerfrei; `npm run build` ohne Fehler (alle Artefakte neu, `view.js` jetzt 6.747 Bytes statt 0); `npm run block-zips` meldet „All blocks validated successfully" und erzeugt **14** ZIPs (der Kind-Block ist weg). `plugin-zips/accordion.zip` ist 13,71 KB groß und enthält alle zwölf erwarteten Dateien; Stichproben im ZIP bestätigen die fünf neuen Attribute, `example`, `data-heading-level` in `render.php` und die Zeilenlogik in `view.js`.
+
+**Abnahme-Checkliste für den Nutzer (U1–U12):** siehe Nachricht an den Nutzer vom 2026-08-04. Kernpunkte: nur noch **ein** ZIP hochladen; alten Kind-Block im Admin löschen; Testseite neu aufbauen; Überschrift-Inhalt-Folge anlegen; exklusives Öffnen, Mehrfachmodus, erste Zeile offen, Nummerierung, Alle öffnen/schließen, Deep-Link über den HTML-Anker der Überschrift, Lesbarkeit der Titel im Dunkelmodus, Tastaturbedienung.
+
+---
+
+### Phase 2 (überholt): Editor-Erlebnis und Optionen
 
 ---
 
@@ -1468,15 +1533,20 @@ Wird während der Ausführung gepflegt. Legende: ☐ offen · ◐ in Arbeit · �
 | AP-1.fix1 | Anker-Mechanismus auf `rowAnchor` umstellen | sonnet | ☑ | AP-1.rev | Behebt B1 + B4 + B12 |
 | AP-1.fix2 | Align-Klasse und Hinweis-Markup korrigieren | sonnet | ☑ | AP-1.rev | Behebt B3 + B6; parallel zu AP-1.fix1 |
 | AP-1.doc | Dokumentation Phase 1 | sonnet | ☐ | AP-1.rev, AP-1.fix1, AP-1.fix2 | Merge in `main`; B2 → AP-3.3, B5 → AP-2.2, restliche Befunde in „Offene Punkte" |
-| AP-2.1 | Optionen, Inspector, `data`-Attribute | sonnet | ☐ | AP-1.doc | Branch `phase-2-accordion-editor`, parallel zu AP-2.2 |
-| AP-2.2 | Editor-Bedienung der Zeile | sonnet | ☐ | AP-1.doc | parallel zu AP-2.1 |
-| AP-2.3 | Abnahme Phase 2 | sonnet | ☐ | AP-2.1, AP-2.2 | Nutzer klickt Checkliste U1–U11 |
+| AP-2.0 | Kind-Block entfernen (Architekturwechsel) | – | ☑ | Nutzerentscheidung | Commit `405ea26`; 14 statt 15 ZIPs |
+| AP-2.1n | Editor auf Überschriften umstellen | sonnet | ☑ | AP-2.0 | Commit `63b9f69`; 5 Attribute, Inspector, Editor-Hinweis |
+| AP-2.2n | Serverausgabe und Styling | sonnet | ☑ | AP-2.0 | Commit `ccd5521`; Kontrastfalle entschärft |
+| AP-2.3n | Frontend-Logik `view.js` | opus | ☑ | AP-2.0 | Commit `c9452b9`; 104 jsdom-Zusicherungen grün |
+| AP-2.4n | Abnahme der neuen Architektur | sonnet | ◐ | AP-2.1n–AP-2.3n | Gates bestanden, **wartet auf Nutzer-Checkliste U1–U12** |
+| AP-2.1 | ~~Optionen, Inspector, `data`-Attribute~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch AP-2.1n |
+| AP-2.2 | ~~Editor-Bedienung der Zeile~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
+| AP-2.3 | ~~Abnahme Phase 2~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
 | AP-2.rev | Unabhängiges Review Phase 2 | opus | ☐ | AP-2.1–AP-2.3 | nur lesend |
 | AP-2.doc | Dokumentation Phase 2 | sonnet | ☐ | AP-2.rev | Merge in `main` |
-| AP-3.1 | Frontend-Markup der Zeile fertigstellen | sonnet | ☐ | AP-2.doc | Branch `phase-3-accordion-frontend` |
-| AP-3.2 | Frontend-Logik `view.js` | opus | ☐ | AP-3.1, AP-2.1 | Kernlogik, parallel zu AP-3.3 |
-| AP-3.3 | Gestaltung, Nummerierung, Barrierefreiheit | sonnet | ☐ | AP-3.1 | parallel zu AP-3.2 |
-| AP-3.4 | Abnahme Phase 3 (Kernabnahme) | sonnet | ☐ | AP-3.1–AP-3.3 | Nutzer klickt Checkliste U1–U17 |
+| AP-3.1 | ~~Frontend-Markup der Zeile fertigstellen~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
+| AP-3.2 | ~~Frontend-Logik `view.js`~~ (überholt, Änderung 6) | opus | – | – | ersetzt durch Phase 2 (neu) |
+| AP-3.3 | ~~Gestaltung, Nummerierung, Barrierefreiheit~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
+| AP-3.4 | ~~Abnahme Phase 3 (Kernabnahme)~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
 | AP-3.rev | Unabhängiges Review Phase 3 | opus | ☐ | AP-3.1–AP-3.4 | nur lesend, Sicherheits-/a11y-Fokus |
 | AP-3.doc | Dokumentation Phase 3 | sonnet | ☐ | AP-3.rev | Merge in `main`, Markup-Vertrag |
 | AP-4.1 | CDB-Container-Integration, Regressionscheck | sonnet | ☐ | AP-3.doc | Branch `phase-4-accordion-integration` |
@@ -1550,6 +1620,40 @@ Die Anker-Prüfung aus AP-1.3 ist als Prüfpunkt U10 in die Abnahme-Checkliste v
 - **AP-3.2 (Deep-Linking):** unverändert im Ansatz – `view.js` liest weiterhin die `id` am Zeilen-Wrapper. Nur die Herkunft der `id` ist eine andere.
 - **AP-4.2/AP-4.3 (Doku):** Beide Fallen gehören in die Dokumentation des InnerBlocks-Musters, weil sie jedem künftigen Eltern-/Kind-Block mit `render.php` genauso passieren: (1) `save()`-Wrapper landet *innerhalb* des PHP-Wrappers, (2) `supports.anchor` funktioniert dort nicht. Zusätzlich muss die Redakteurs-Doku sagen, wo das Ankerfeld jetzt liegt – nicht unter „Erweitert".
 - **Zeichensatz:** Editor-Normalisierung und PHP-Filter lassen beide nur `a-z0-9_-` zu; Umlaute werden im Editor transliteriert (ä→ae usw.), statt wie zuvor durch `sanitize_html_class()` ersatzlos zu verschwinden (Review-Befund B4).
+
+### Änderung 6 – Architekturwechsel: ein überschriftengesteuerter Block statt Eltern-/Kind-Paar (2026-08-04, Nutzerentscheidung nach dem ersten Live-Test)
+
+**Das ist die größte Änderung dieses Plans. Sie überschreibt Abschnitt 4 (Architekturentscheidungen 1, 5, 8, 9) sowie die Phasen 2 und 3 in ihrer ursprünglichen Form.**
+
+**Ursprünglich geplant:** Eltern-Block `modular-blocks/accordion` plus Kind-Block `modular-blocks/accordion-row`; jede Zeile ein eigener Block mit RichText-Titel und eigener InnerBlocks-Zone.
+**Jetzt gültig:** **Ein einziger Block.** Seine InnerBlocks-Zone nimmt beliebige Blöcke auf. Überschriften einer im Inspector einstellbaren Ebene (Attribut `headingLevel`, Default 3) markieren den Beginn einer Klappzeile. `blocks/accordion/view.js` baut daraus im Frontend zur Laufzeit die Zeilen. Der Ordner `blocks/accordion-row/` ist gelöscht (Commit `405ea26`).
+
+**Begründung – drei Befunde aus dem ersten Live-Test:**
+1. **Das Blockpaar ist im Betrieb zerbrechlich.** Beim ersten Upload wurde nur `accordion.zip` eingespielt; der Editor zeigte daraufhin dreimal „Deine Website unterstützt den Block ‚modular-blocks/accordion-row' nicht". Ursache ist eine Falle im Plugin-Kern: `includes/class-admin-manager.php` trägt hochgeladene Blöcke **nicht** in die Aktivierungsliste ein, und `includes/class-block-manager.php:339-346` aktiviert neue Blöcke nur automatisch, solange die Option `modular_blocks_enabled_blocks` leer ist. Wer je einzelne Blöcke geschaltet hat, bekommt jeden neuen Block deaktiviert ausgeliefert. Ein Blockpaar potenziert dieses Risiko: zwei ZIPs, zwei Admin-Karten, stiller Totalausfall wenn eines fehlt.
+2. **Das Editor-Erlebnis war schlecht.** Ein Spezial-UI mit eigenen Zeilenkarten muss erst erlernt werden. Mit Überschriften schreiben Redakteure so, wie sie es kennen – Überschrift, Text, Bild, nächste Überschrift.
+3. **Namensverwechslung mit dem WordPress-Kern.** WordPress bringt inzwischen selbst einen Block „Akkordeon" mit (`core/accordion` → `accordion-item` → `accordion-panel`, dreistufig). Beim ersten Test wurde versehentlich dieser eingefügt statt unserem. Die Beschreibung unseres Blocks grenzt jetzt ausdrücklich ab; der Titel bleibt „Accordion – Aufklappbare Zeilen".
+
+**Was der Wechsel zusätzlich löst:** Deep-Linking läuft über das Standard-Ankerfeld der Überschrift (Änderung 4 mit dem eigenen Attribut `rowAnchor` ist damit gegenstandslos – das Feld ist mit dem Kind-Block entfallen). Ohne JavaScript ist der gesamte Inhalt sichtbar statt versteckt, was für Schülerinnen und Schüler die bessere Ausfallvariante ist. Und es gibt nur noch **ein** ZIP und **eine** Admin-Karte.
+
+**Preis, offen benannt:** Die Zeilenstruktur entsteht im Browser, nicht auf dem Server. Ohne JavaScript gibt es kein Aufklappen (der Inhalt bleibt aber vollständig lesbar). Es braucht die Konvention „Überschrift der eingestellten Ebene = Zeilentitel"; der Editor weist mit einem Hinweis darauf hin, wenn keine passende Überschrift vorhanden ist, und zeigt sonst die Anzahl erkannter Zeilen.
+
+**Neuer Markup-Vertrag** (ersetzt den in AP-3.doc geplanten):
+- Serverseitig: `.mb-accordion[.is-numbered]` mit `data-allow-multiple`, `data-open-first`, `data-numbering`, `data-expand-all`, `data-heading-level` und `data-color-surface|active|hover|text` (Werte aus `get_theme_mod()`); darin optional `.mb-accordion__controls[hidden]` und immer `.mb-accordion__content` mit unverändertem `$block_content`.
+- Zur Laufzeit erzeugt `view.js` je Zeile: `.mb-accordion-row.is-closed` → das **Original-Heading** (Klasse `mb-accordion-row__heading`, `id` und Klassen bleiben erhalten) → `button.mb-accordion-row__header[aria-expanded][aria-controls]` → `span.mb-accordion-row__title` + `span.mb-accordion-row__icon`; daneben `.mb-accordion-row__panel[role=region][aria-labelledby][hidden]`.
+- Zustandsmarker bleiben `is-closed` + `hidden` + `aria-expanded`, immer synchron.
+- Inhalt vor der ersten Überschrift bleibt unangetastet (Einleitungstext).
+
+**Auswirkungen auf die Phasen:** Die alten APs AP-2.1/2.2/2.3 und AP-3.1/3.2/3.3/3.4 sind **überholt**; ihre Inhalte sind in die neuen APs AP-2.1n bis AP-2.4n eingegangen, die Editor und Frontend zusammen liefern. Phase 4 (Integration, Regression, Doku) bleibt inhaltlich gültig, verliert aber alle Aussagen über den Kind-Block.
+
+### Änderung 7 – Kontrastfehler im globalen Stylesheet des Plugins (2026-08-04)
+
+Beim Live-Test waren die Zeilentitel im Editor **unlesbar** (weiße Schrift auf hellem Grund). Ursache ist nicht unser Code, sondern `assets/css/blocks.css`: Zeile 84-89 setzt `[class*="wp-block-modular-blocks"] [class*="title"] { color: var(--modular-blocks-text) }`, und der `@media (prefers-color-scheme: dark)`-Block setzt `--modular-blocks-text: #ffffff`. Wer im Dunkelmodus arbeitet, sieht deshalb weiße Titel auf hellen Flächen.
+
+**Das ist ein vorhandener Fehler des Plugins, nicht ein neuer.** `summary-block`, `drag-the-words`, `point-of-interest` und `image-overlay` verwenden ebenfalls „title"-Klassen ohne eigene Farbangabe und sind im Dunkelmodus vermutlich genauso betroffen – auf der Live-Seite bereits heute.
+
+**Gegenmaßnahme in diesem Plan (eng gefasst):** Unsere Stylesheets setzen Farben mit höherer Spezifität als die Bug-Regel (drei Klassen bzw. Klasse+Element, Spezifität 0-3-0 bzw. 0-2-1 gegen 0-2-0), **ohne** `!important`, damit die von `view.js` inline gesetzten Theme-Farben nicht bekämpft werden. `assets/css/blocks.css` wird **nicht** angefasst – das wäre eine Änderung an geteilter Infrastruktur und damit ein Nicht-Ziel.
+
+**Offener Punkt für den Nutzer:** Die Wurzel bleibt unrepariert. Eine Korrektur in `assets/css/blocks.css` würde alle Blöcke betreffen und muss gesondert beauftragt werden. Gehört in „Offene Punkte" (AP-4.doc).
 
 ### Änderung 5 – Align-Klasse muss serverseitig gesetzt werden (nach AP-1.rev, 2026-08-03)
 
