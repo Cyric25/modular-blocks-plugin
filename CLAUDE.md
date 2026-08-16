@@ -330,6 +330,73 @@ $iframe_attrs = [
 - PDF-Export, Downloads, komplexe JavaScript-Apps brauchen volle Berechtigungen
 - Sicherheit wird durch die Whitelist gewährleistet, nicht durch sandbox
 
+## Accordion-Block: Zeilen entstehen erst im Browser
+
+Der Block `modular-blocks/accordion` ist der einzige, dessen sichtbare
+Struktur **nicht** vom Server kommt. `blocks/accordion/render.php` gibt den
+Inhalt flach aus — eine Folge von `<h3>`, `<p>`, Listen. Erst
+`blocks/accordion/view.js` gruppiert das im Browser zu Klappzeilen: Jede
+Überschrift der eingestellten Ebene wird zum Zeilenkopf, alles bis zur
+nächsten Überschrift wandert in ihr Panel.
+
+**Es gibt keinen Kind-Block.** Eine frühere Fassung hatte
+`modular-blocks/accordion-row` als eigenen Block (Muster `core/columns` +
+`core/column`); dieser Weg wurde verworfen, der Block ist entfernt. Ältere
+Dokumentation, die ihn beschreibt, ist überholt.
+
+### `buildRows()` muss über `childNodes` iterieren, nicht über `children`
+
+Das ist der Kern und eine Falle, die schon einmal zugeschlagen hat.
+`children` liefert nur **Elemente**. Nackte Textknoten bleiben dabei liegen,
+wo sie sind — also außerhalb jeder Klappzeile, dauerhaft sichtbar, auch wenn
+alle Zeilen zu sind.
+
+Nackte Textknoten entstehen regelmäßig: Sobald ein Block-Element mitten in
+einem Absatz steht, spaltet der HTML-Parser des Browsers den `<p>` auf und
+lässt den Text dahinter als eigenen Knoten zurück. Der Regelfall dafür sind
+Display-Formeln. Genau deshalb gibt das CDB-Plugin seine Display-Formeln
+inzwischen als `<span>` aus und nicht mehr als `<div>` — beide Seiten
+zusammen ergeben erst das richtige Ergebnis.
+
+Weil sich die Knotenliste beim Verschieben ändert, braucht es vorher eine
+feste Kopie (`Array.prototype.slice.call(content.childNodes)`); sonst
+überspringt die Schleife jeden zweiten Knoten. Reine Leerraum-Knoten werden
+verworfen, nicht verschoben.
+
+### Naht zum CDB-Plugin: `window.cbdRenderLatex`
+
+Nach dem Aufklappen ruft `finishOpen()` die Funktion
+`window.cbdRenderLatex(panel)` aus dem Plugin „Container Block Designer" auf
+und misst die Panelhöhe **erst im `.then()`** neu. Ohne das misst das
+Accordion die Ersatzschrift, weil KaTeX seine Webfonts für einen
+`display:none`-Teilbaum nicht lädt — die Aufklapp-Animation liefe dann auf
+eine falsche Zielhöhe.
+
+**Der Aufruf ist einseitig optional und muss es bleiben.** Das CDB-Plugin
+kann abgeschaltet sein, deshalb immer
+`typeof window.cbdRenderLatex === 'function'` prüfen und ohne die Funktion
+das bisherige Verhalten beibehalten. Die vollständige Zusage der Funktion
+(Rückgabe, Verhalten ohne KaTeX, Markierung gescheiterter Formeln) steht in
+`Plugins/CDB-Designer/CLAUDE.md`, Abschnitt „LaTeX-Formeln: Renderpfad und
+Wiederholrendern".
+
+Das ist nach dem Accordion-Import und der Klassen-Freigabe die **dritte**
+Stelle, an der die beiden Plugins zusammenwirken.
+
+### Farben kommen aus `data-color-*`, nicht aus dem Stylesheet
+
+`render.php` schreibt die Theme-Farben als `data-color-surface`,
+`data-color-active`, `data-color-hover` und `data-color-text` an den
+Wurzel-`<div>`; `view.js` setzt sie inline auf die Zeilenköpfe. Eine offene
+Zeile bekommt dabei **weiße** Schrift auf der Akzentfarbe. `style.css` legt
+sich bei Zeilenkopf-Hintergründen deshalb bewusst nicht fest.
+
+Der Panel-Inhalt wird von `style.css` auf `#333` zurückgeholt — die Regel
+zählt `p`, `li`, `h1`–`h6` und `blockquote` **einzeln** auf. Alles andere
+erbt weiter. Wer dort ein Element ergänzt, das Text zeigt, muss es in diese
+Aufzählung aufnehmen; sonst erbt es eine Farbe, die für den Zeilenkopf
+gedacht war. Genau daran waren LaTeX-Formeln einmal unsichtbar.
+
 ## Security Considerations
 
 - All admin functions check `current_user_can('manage_options')`
