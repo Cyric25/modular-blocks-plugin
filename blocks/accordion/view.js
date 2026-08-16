@@ -33,6 +33,14 @@
  * Daraus folgt fuer die Umschaltlogik: Die Frage "ist diese Zeile offen?" darf
  * niemals an is-closed, hidden oder aria-expanded allein haengen. Verbindlich
  * ist ausschliesslich isRowOpen() - die Rangfolge ist dort dokumentiert.
+ *
+ * Optionale Fremd-Schnittstelle: Ist das Plugin "Container Block Designer"
+ * aktiv, stellt es window.cbdRenderLatex(root) bereit (Promise<number>, loest
+ * nach document.fonts.ready auf). Nach dem Aufklappen laesst dieses Skript den
+ * Renderer ueber das nun sichtbare Panel laufen und misst dessen Hoehe danach
+ * neu - in einem versteckten Panel wuerde KaTeX ohne die echten Webfonts
+ * rendern und jede Messung traefe die Ersatzschrift. Die Funktion wird immer
+ * per typeof geprueft; fehlt sie, bleibt alles beim bisherigen Verhalten.
  */
 
 (function () {
@@ -319,6 +327,13 @@
      * Das Original-Heading-Element bleibt erhalten (samt HTML-Anker und
      * vorhandenen Klassen) und wird nur in die Zeilen-Huelle verschoben.
      *
+     * Iteriert bewusst ueber childNodes und nicht ueber children: Steht ein
+     * Block-Element in einem Absatz - bei Display-Formeln der Regelfall -,
+     * spaltet der HTML-Parser des Browsers den <p> auf, und dabei entstehen
+     * nackte Textknoten. Ueber children waeren die fuer diese Schleife
+     * unsichtbar: Sie blieben zwischen den Klappzeilen sichtbar stehen,
+     * waehrend der Rest ihres Absatzes im Panel verschwindet.
+     *
      * @param {HTMLElement} content Inhaltszone des Accordions
      * @param {number}      level   Ueberschriftenebene
      * @param {Object}      colors  Farbwerte
@@ -327,15 +342,21 @@
      */
     function buildRows(content, level, colors, parts) {
         var headingTag = 'H' + level;
-        var children = Array.prototype.slice.call(content.children);
+        // Feste Kopie: Das Verschieben veraendert content.childNodes waehrend
+        // der Schleife - ueber die Live-Liste wuerde jeder zweite Knoten
+        // uebersprungen.
+        var nodes = Array.prototype.slice.call(content.childNodes);
         var rows = [];
         var activeInner = null;
         var i;
 
-        for (i = 0; i < children.length; i++) {
-            var node = children[i];
+        for (i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
 
-            if (node.tagName === headingTag) {
+            // Zeilentrenner ist ausschliesslich ein Ueberschriftenelement der
+            // eingestellten Ebene. Ein Textknoten hat kein tagName und ist
+            // deshalb nie ein Zeilenkopf.
+            if (node.nodeType === 1 && node.tagName === headingTag) {
                 var row = document.createElement('div');
 
                 row.className = ROW_CLASS + ' ' + CLOSED_CLASS;
@@ -401,12 +422,25 @@
                 parts.set(row, { header: header, panel: panel, panelInner: panelInner });
                 rows.push(row);
                 activeInner = panelInner;
-            } else if (activeInner) {
-                activeInner.appendChild(node);
+                continue;
             }
 
             // Inhalt vor der ersten Ueberschrift (Einleitungstext) bleibt
             // unveraendert an seiner Stelle stehen.
+            if (!activeInner) {
+                continue;
+            }
+
+            // Reiner Einrueckungs-Leerraum zwischen den Bloecken gehoert in
+            // kein Panel - er bleibt liegen, wo er ist. Sonst wanderte der
+            // Zeilenumbruch hinter jeder Ueberschrift in die Klappzeile.
+            if (node.nodeType === 3 && node.textContent.trim() === '') {
+                continue;
+            }
+
+            // Alles Uebrige - Elemente wie nicht-leere Textknoten - gehoert in
+            // das Panel der zuletzt eroeffneten Zeile.
+            activeInner.appendChild(node);
         }
 
         return rows;
@@ -520,6 +554,96 @@
         }
 
         /**
+         * Zieht die Hoehe eines offenen Panels nach, wenn sich sein Inhalt
+         * nachtraeglich veraendert hat - etwa weil KaTeX erst nach dem
+         * Aufklappen mit den echten Webfonts gerendert hat.
+         *
+         * Warum hier nicht bedingungslos eine Pixelhoehe gesetzt wird:
+         * animateHeight() entfernt am Ende jeder Bewegung seine Inline-Werte,
+         * ein fertig geoeffnetes Panel steht also auf natuerlicher Hoehe und
+         * waechst mit seinem Inhalt von selbst. Eine feste Pixelhoehe waere
+         * dort schaedlich - sie ueberlebte jede spaetere Layoutaenderung
+         * (Fensterbreite, umbrechender Text) und wuerde den Inhalt wegen des
+         * overflow:hidden am Panel abschneiden. Die frisch gemessene Hoehe
+         * wird deshalb nur dort gesetzt, wo tatsaechlich eine Inline-Hoehe
+         * wirkt: waehrend einer laufenden Oeffnen-Animation (sie bekommt das
+         * korrigierte Ziel und traegt es ueber die Transition weich nach)
+         * oder bei einem Restwert aus einer abgebrochenen Bewegung.
+         *
+         * @param {HTMLElement} row Zeilen-Element
+         */
+        function refreshOpenHeight(row) {
+            var part = parts.get(row);
+
+            // Der Nutzer kann inzwischen wieder zugeklappt haben.
+            if (!part || !isRowOpen(row)) {
+                return;
+            }
+
+            var panel = part.panel;
+            var height = measureContentHeight(part.panelInner);
+
+            if (pendingTarget(panel) === 'open' || panel.style.height) {
+                panel.style.height = height + 'px';
+            }
+        }
+
+        /**
+         * Laesst den LaTeX-Renderer des CDB-Plugins ueber ein gerade
+         * geoeffnetes Panel laufen und misst danach neu.
+         *
+         * Der sichtbare Teilbaum ist der Punkt: In einem versteckten Panel
+         * laedt der Browser die KaTeX-Webfonts nicht, jede Hoehenmessung
+         * traefe dort die Ersatzschrift. window.cbdRenderLatex(panel) loest
+         * erst nach document.fonts.ready auf - erst danach ist die Messung
+         * verlaesslich.
+         *
+         * Die Funktion stammt aus einem anderen Plugin (Container Block
+         * Designer) und fehlt, wenn dieses abgeschaltet ist. Ohne sie bleibt
+         * es beim bisherigen Verhalten: Das resize-Ereignis aus finishOpen()
+         * ist die Rueckfallebene, sie sagt aber nicht, wann fertig gerendert
+         * ist.
+         *
+         * @param {HTMLElement} row Zeilen-Element
+         */
+        function renderLatexAndRemeasure(row) {
+            if (typeof window.cbdRenderLatex !== 'function') {
+                return;
+            }
+
+            var part = parts.get(row);
+
+            if (!part) {
+                return;
+            }
+
+            // Der ganze Block liegt im try: Zugesichert ist zwar, dass die
+            // Funktion nie wirft und ein Promise liefert - aber sie stammt aus
+            // einem fremden Plugin. Weder ein Wurf noch ein Thenable ohne
+            // catch() darf das Aufklappen aufhalten.
+            try {
+                var pending = window.cbdRenderLatex(part.panel);
+
+                if (!pending || typeof pending.then !== 'function') {
+                    return;
+                }
+
+                var settled = pending.then(function () {
+                    refreshOpenHeight(row);
+                });
+
+                if (settled && typeof settled['catch'] === 'function') {
+                    settled['catch'](function () {
+                        // Ein Problem im LaTeX-Renderer bleibt folgenlos: Die
+                        // Zeile ist offen, nur die Nachmessung entfaellt.
+                    });
+                }
+            } catch (error) {
+                // bewusst still - siehe oben
+            }
+        }
+
+        /**
          * Oeffnet eine Zeile dieses Accordions.
          *
          * @param {HTMLElement} row     Zeilen-Element
@@ -552,6 +676,11 @@
             setHeaderColors(header, colors.active, OPEN_TITLE_COLOR, colors.hover);
 
             var finishOpen = function () {
+                // Formeln, die erst mit dem Aufklappen sichtbar geworden sind,
+                // rendern lassen und die Hoehe danach nachziehen. Fehlt das
+                // CDB-Plugin, tut der Aufruf nichts.
+                renderLatexAndRemeasure(row);
+
                 // Verschachtelte Spezialbloecke (Plotly-Diagramme, 3D-Viewer)
                 // messen ihre Groesse beim Initialisieren. Wurden sie in einem
                 // geschlossenen Panel initialisiert, richten sie sich erst nach
@@ -926,6 +1055,28 @@
         window.addEventListener('hashchange', function () {
             applyHash();
         });
+
+        // Zeilen, die schon beim Laden offen sind (Option "erste Zeile
+        // oeffnen" oder Deep-Link), wurden vermessen, bevor die Schriften
+        // standen. Sobald sie geladen sind, die Hoehen einmalig nachziehen.
+        // Nur messen, nicht rendern: Das Rendern beim Laden erledigt der
+        // LaTeX-Renderer fuer das ganze Dokument selbst.
+        var fontsReady = document.fonts && document.fonts.ready;
+
+        if (fontsReady && typeof fontsReady.then === 'function') {
+            var fontsSettled = fontsReady.then(function () {
+                rows.forEach(function (row) {
+                    refreshOpenHeight(row);
+                });
+            });
+
+            if (fontsSettled && typeof fontsSettled['catch'] === 'function') {
+                fontsSettled['catch'](function () {
+                    // Scheitert das Schriften-Versprechen, bleibt es bei der
+                    // Messung von vorhin - kein Grund fuer einen Fehler.
+                });
+            }
+        }
     }
 
     /**

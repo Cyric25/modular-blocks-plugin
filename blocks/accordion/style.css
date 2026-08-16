@@ -86,6 +86,23 @@
     flex: 1;
 }
 
+/* Formeln im Zeilenkopf: Der Kopf ist ein Flex-Container, der Titel sein
+ * Flex-Element. Eine Display-Formel darin ist ein Block-Element (das
+ * CDB-Plugin setzt display:block, KaTeX fuer .katex-display ebenso) und wuerde
+ * den Kopf sprengen - der Titel braeche um, das Aufklapp-Symbol rutschte weg.
+ * Im Zeilenkopf deshalb zurueck auf inline-block, ohne Aussenabstaende.
+ *
+ * !important ist hier noetig und kein Wettruesten: Die Grundregel im
+ * CDB-Plugin (assets/css/latex-formulas.css) traegt selbst !important und
+ * waere sonst nicht zu ueberstimmen. Selektiert wird ueber die Klasse, nie
+ * ueber das Element - Display-Formeln des CDB-Plugins sind ein <span>, kein
+ * <div>. */
+.mb-accordion-row__title .cbd-latex-display,
+.mb-accordion-row__title .katex-display {
+    display: inline-block !important;
+    margin: 0 !important;
+}
+
 .mb-accordion-row__icon {
     flex-shrink: 0;
     display: inline-block;
@@ -119,6 +136,18 @@
  * exakt 0 animierbar. */
 .mb-accordion-row__panel-inner {
     padding: 12px 16px;
+
+    /* Ueberbreiter Inhalt (typisch: eine KaTeX-Display-Formel, eine breite
+     * Tabelle) wuerde sonst am overflow:hidden des Panels bzw. des Accordions
+     * abgeschnitten und waere nicht erreichbar. Waagerecht scrollbar statt
+     * beschnitten. Das overflow:hidden am Panel selbst bleibt - die
+     * Hoehenanimation braucht es.
+     *
+     * Nebenwirkung, hier erwuenscht: Der Wrapper bildet damit einen eigenen
+     * Blockformatierungskontext, aus dem keine Aussenabstaende mehr
+     * herauskollabieren koennen - genau das, was die :first-child/:last-child-
+     * Regeln unten fuer die Hoehenmessung sicherstellen sollen. */
+    overflow-x: auto;
 }
 
 /* Randkollaps abfangen: Absaetze/Ueberschriften/Listen bringen eigene
