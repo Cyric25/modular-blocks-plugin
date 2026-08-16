@@ -22,7 +22,7 @@ Navigationshilfe: Welche Datei ist für was zuständig. Details zur Architektur 
 | `create-zip.js`, `create-custom-plugin-zip.js`, `verify-zip.js` | Ältere/alternative ZIP-Skripte; **nicht** für die reguläre Auslieferung verwenden (`npm run plugin-zip` ist deprecated) | – | – |
 | `debug-capabilities.php` | Hilfsskript zur Prüfung von Benutzerrechten | – | – |
 | `package.json` | npm-Skripte und Abhängigkeiten | `build`, `start`, `lint:js`, `lint:css`, `block-zips`, `download-libs`; Version 1.1.8 | Node 16+, npm 7+ |
-| `assets/css/blocks.css` | Globale Block-Styles (wird immer geladen, wenn vorhanden) | – | – |
+| `assets/css/blocks.css` | Globale Block-Styles (wird immer geladen, wenn vorhanden) | **Bewusst OHNE Dunkelmodus** (seit 2026-08-16): Ein `@media (prefers-color-scheme: dark)`-Block setzte `--modular-blocks-text` auf `#ffffff` — das Theme folgt dem Systemdesign aber nicht und bleibt weiß, Ergebnis war weiße Schrift auf weißem Grund. Die Begründung steht als Kommentar in der Datei; **nicht wieder einbauen**, ein Dunkelmodus muss vom Theme ausgehen. Der weite Selektor `[class*="content"]` trägt seit demselben Datum die Ausnahme `:not([class*="cbd-"])`, weil er sonst `.cbd-latex-content` des CDB-Plugins mitfärbt | – |
 | `assets/js/chart-templates.js` | Vordefinierte Chemie-Diagrammvorlagen (Titration, Kinetik, Phasendiagramme, IR, Lineweaver-Burk) | – | Plotly.js |
 | `assets/js/vendor/` | Sammelzeile: lokale Fremdbibliotheken (`3Dmol-min.js`, `plotly-2.27.1.min.js`, `imagetracer.js`) – aus DSGVO-Gründen lokal statt CDN | – | – |
 | `assets/structures/` | Sammelzeile: Beispiel-Molekülstrukturen (`water.pdb`, `ethanol.pdb`) | – | – |
