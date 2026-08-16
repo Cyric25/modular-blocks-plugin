@@ -1528,7 +1528,7 @@ Wird während der Ausführung gepflegt. Legende: ☐ offen · ◐ in Arbeit · �
 | AP-1.1 | Versionierung verifizieren, Datei-Map anlegen | sonnet | ☑ | – | Commit `4898b13`, Branch `phase-1-accordion-grundlage` gepusht |
 | AP-1.2 | Eltern-Block `accordion` anlegen | sonnet | ☑ | AP-1.1 | Commit `c993993`, Subagent parallel zu AP-1.3, `save()` ohne Wrapper (Abschnitt 11) |
 | AP-1.3 | Kind-Block `accordion-row` anlegen | sonnet | ☑ | AP-1.1 | Commit `4c8718d`, Subagent parallel zu AP-1.2, Anker-Frage entschieden |
-| AP-1.4 | Abnahme Phase 1 (Gates, Erst-Deploy) | sonnet | ◐ | AP-1.2, AP-1.3 | Gates D1–D4 bestanden, ZIPs liegen bereit; **wartet auf Nutzer-Checkliste U1–U10** |
+| AP-1.4 | Abnahme Phase 1 (Gates, Erst-Deploy) | sonnet | ◐ | AP-1.2, AP-1.3 | Gates D1–D4 bestanden, ZIPs liegen bereit; **wartet auf Nutzer-Checkliste U1–U10**. Nach main gemergt am 2026-08-16 durch AP-1.0 des Plans PLAN-Vier-Erweiterungen.md; Nutzer-Checkliste weiterhin offen |
 | AP-1.rev | Unabhängiges Review Phase 1 | opus | ☑ | AP-1.1–AP-1.4 | Urteil „abnahmefähig mit Nacharbeiten": 1 kritischer (B1 Anker), 2 mittlere (B2 Button-Typografie, B3 Align), 9 geringe Befunde; Scope-Check sauber |
 | AP-1.fix1 | Anker-Mechanismus auf `rowAnchor` umstellen | sonnet | ☑ | AP-1.rev | Behebt B1 + B4 + B12 |
 | AP-1.fix2 | Align-Klasse und Hinweis-Markup korrigieren | sonnet | ☑ | AP-1.rev | Behebt B3 + B6; parallel zu AP-1.fix1 |
@@ -1537,7 +1537,7 @@ Wird während der Ausführung gepflegt. Legende: ☐ offen · ◐ in Arbeit · �
 | AP-2.1n | Editor auf Überschriften umstellen | sonnet | ☑ | AP-2.0 | Commit `63b9f69`; 5 Attribute, Inspector, Editor-Hinweis |
 | AP-2.2n | Serverausgabe und Styling | sonnet | ☑ | AP-2.0 | Commit `ccd5521`; Kontrastfalle entschärft |
 | AP-2.3n | Frontend-Logik `view.js` | opus | ☑ | AP-2.0 | Commit `c9452b9`; 104 jsdom-Zusicherungen grün |
-| AP-2.4n | Abnahme der neuen Architektur | sonnet | ◐ | AP-2.1n–AP-2.3n | Gates bestanden, **wartet auf Nutzer-Checkliste U1–U12** |
+| AP-2.4n | Abnahme der neuen Architektur | sonnet | ◐ | AP-2.1n–AP-2.3n | Gates bestanden, **wartet auf Nutzer-Checkliste U1–U12**. Nach main gemergt am 2026-08-16 durch AP-1.0 des Plans PLAN-Vier-Erweiterungen.md; Nutzer-Checkliste weiterhin offen |
 | AP-2.1 | ~~Optionen, Inspector, `data`-Attribute~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch AP-2.1n |
 | AP-2.2 | ~~Editor-Bedienung der Zeile~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
 | AP-2.3 | ~~Abnahme Phase 2~~ (überholt, Änderung 6) | sonnet | – | – | ersetzt durch Phase 2 (neu) |
