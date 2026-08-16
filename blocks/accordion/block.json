@@ -1,0 +1,39 @@
+{
+    "apiVersion": 3,
+    "name": "modular-blocks/accordion",
+    "version": "1.0.0",
+    "title": "Accordion – Aufklappbare Zeilen",
+    "category": "modular-blocks",
+    "icon": "excerpt-view",
+    "description": "Klappzeilen aus normalem Inhalt: Jede Überschrift der eingestellten Ebene (z. B. H3) beginnt im Frontend eine neue aufklappbare Zeile, alle Blöcke danach bis zur nächsten passenden Überschrift gehören dazu. Einfach Überschrift, Inhalt, Überschrift, Inhalt schreiben – keine Spezial-Unterblöcke nötig. Nicht zu verwechseln mit dem WordPress-eigenen Block „Akkordeon“.",
+    "keywords": ["accordion", "aufklappen", "zusammenklappen", "faq", "toggle", "klappzeilen"],
+    "textdomain": "modular-blocks-plugin",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
+    "viewScript": "file:./view.js",
+    "attributes": {
+        "allowMultiple": { "type": "boolean", "default": false },
+        "openFirst": { "type": "boolean", "default": false },
+        "showNumbering": { "type": "boolean", "default": false },
+        "showExpandAll": { "type": "boolean", "default": false },
+        "headingLevel": { "type": "number", "default": 3 }
+    },
+    "supports": {
+        "html": false,
+        "anchor": false,
+        "align": ["wide", "full"],
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {
+        "innerBlocks": [
+            { "name": "core/heading", "attributes": { "level": 3, "content": "Erste Klappzeile" } },
+            { "name": "core/paragraph", "attributes": { "content": "Inhalt der ersten Klappzeile." } },
+            { "name": "core/heading", "attributes": { "level": 3, "content": "Zweite Klappzeile" } },
+            { "name": "core/paragraph", "attributes": { "content": "Inhalt der zweiten Klappzeile." } }
+        ]
+    }
+}

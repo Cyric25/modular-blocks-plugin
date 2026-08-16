@@ -1,0 +1,77 @@
+/**
+ * Accordion block - editor-only styles
+ *
+ * Der Editor zeigt keine fertigen Klappzeilen (die baut view.js erst im
+ * Frontend), sondern die flache Abfolge aus Ueberschriften und Inhalt.
+ * Diese Styles machen trotzdem sichtbar, welche Ueberschrift eine neue
+ * Zeile beginnt.
+ */
+
+.mb-accordion {
+    border: 1px dashed #999999;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.mb-accordion-status-count {
+    margin: 0 0 8px;
+    font-size: 0.85em;
+    font-style: italic;
+    color: #555555;
+}
+
+/* --- Kontrast-Falle (siehe style.css) --------------------------------------
+ * assets/css/blocks.css setzt global fuer [class*="title"] und
+ * [class*="content"] (verschachtelt unter [class*="wp-block-modular-blocks"])
+ * per CSS-Custom-Property im Dunkelmodus Weiss (Spezifitaet 0-2-0).
+ * Genau dieser Fehler machte den Titel im Editor unlesbar. Ueberschriften
+ * jeder Ebene innerhalb des Blocks
+ * bekommen deshalb eine explizite dunkle Farbe mit hoeherer Spezifitaet.
+ * ".mb-accordion" wird bewusst doppelt notiert (0-2-1 statt 0-1-1), weil im
+ * Editor keine zusaetzliche, garantiert vorhandene zweite Klasse zur
+ * Verfuegung steht, auf die verlaesslich gebaut werden koennte. */
+.mb-accordion.mb-accordion h1,
+.mb-accordion.mb-accordion h2,
+.mb-accordion.mb-accordion h3,
+.mb-accordion.mb-accordion h4,
+.mb-accordion.mb-accordion h5,
+.mb-accordion.mb-accordion h6,
+.mb-accordion.mb-accordion p {
+    color: #333333;
+}
+
+/* Ueberschriften optisch als Zeilenanfang hervorheben: dezenter linker
+ * Farbbalken + leichter Hintergrund. Bewusst neutrale Toene statt
+ * Theme-Farben, da der Editor die Customizer-Werte nicht kennt. */
+.mb-accordion.mb-accordion h1,
+.mb-accordion.mb-accordion h2,
+.mb-accordion.mb-accordion h3,
+.mb-accordion.mb-accordion h4,
+.mb-accordion.mb-accordion h5,
+.mb-accordion.mb-accordion h6 {
+    margin: 0.75em 0 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-left: 4px solid #e0e0e0;
+}
+
+/* --- Nummerierung im Editor -------------------------------------------------
+ * Im Editor koennen alle Ueberschriftenebenen vorkommen (nicht nur die
+ * eingestellte headingLevel); es wird deshalb pragmatisch jede Ueberschrift
+ * im Block gezaehlt, damit der Redakteur ueberhaupt eine Reihenfolge sieht.
+ * Eigener Zaehlername (mb-accordion-editor-row), damit keine Kollision mit
+ * dem Frontend-Zaehler (mb-accordion-row) aus style.css entsteht, das im
+ * Editor parallel geladen wird. */
+.mb-accordion.is-numbered {
+    counter-reset: mb-accordion-editor-row;
+}
+
+.mb-accordion.is-numbered h1::before,
+.mb-accordion.is-numbered h2::before,
+.mb-accordion.is-numbered h3::before,
+.mb-accordion.is-numbered h4::before,
+.mb-accordion.is-numbered h5::before,
+.mb-accordion.is-numbered h6::before {
+    counter-increment: mb-accordion-editor-row;
+    content: counter(mb-accordion-editor-row) ". ";
+}
