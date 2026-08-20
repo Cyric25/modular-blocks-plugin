@@ -11,7 +11,7 @@
 
 .mb-accordion {
     margin: 1em 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -36,14 +36,14 @@
 }
 
 .mb-accordion__control:focus-visible {
-    outline: 3px solid #71230a;
+    outline: 3px solid var(--color-special-text, #71230a);
     outline-offset: -3px;
 }
 
 /* --- Zeilen -------------------------------------------------------------- */
 
 .mb-accordion-row {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-sidebar-border, #e0e0e0);
 }
 
 .mb-accordion-row:last-child {
@@ -78,7 +78,7 @@
 }
 
 .mb-accordion-row__header:focus-visible {
-    outline: 3px solid #71230a;
+    outline: 3px solid var(--color-special-text, #71230a);
     outline-offset: -3px;
 }
 
@@ -213,7 +213,7 @@
 .mb-accordion .mb-accordion__content p,
 .mb-accordion .mb-accordion__content li,
 .mb-accordion .mb-accordion__content blockquote {
-    color: #333333;
+    color: var(--color-text-primary, #333333);
 }
 
 /* --- Bewegungsreduktion --------------------------------------------------- */
@@ -260,8 +260,65 @@
 .mb-accordion__notice {
     margin: 1em 0;
     padding: 0.75em 1em;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 4px;
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     font-size: 0.9em;
+}
+
+/* --- Plastischer Look des aktiven Zeilenkopfs ----------------------------- */
+
+/*
+ * Der offene und der ueberfahrene Zeilenkopf bekommen dieselbe Optik wie die
+ * Icon-Kacheln, die Knoepfe der Website und die Blockreferenz-Karte: Verlauf
+ * 135 Grad, radialer Glanz oben links, Innenkante oben dunkel / unten hell.
+ *
+ * DIE SCHICHTEN SIND BEWUSST FARBUNABHAENGIG. Die Grundfarbe des Kopfes setzt
+ * view.js INLINE aus den data-color-*-Attributen (aktiv / hover / Flaeche,
+ * siehe render.php) — ein Stylesheet kann sie nicht kennen und ein
+ * color-mix() auf einer CSS-Variablen traefe die falsche. Statt aus der
+ * Grundfarbe abgeleiteter Stufen liegen hier deshalb durchsichtiges Weiss
+ * (Glanz) und durchsichtiges Schwarz (Abdunklung nach unten rechts) darueber.
+ * Das ergibt ueber JEDER Grundfarbe denselben Effekt wie darken(base, 0.20).
+ *
+ * Das traegt nur, weil setHeaderColors() in view.js ausdruecklich NUR die
+ * Langform background-color setzt (dort im Kommentar begruendet) — die
+ * Kurzform background wuerde diese Schichten mitloeschen. Wer view.js dort
+ * auf die Kurzform umstellt, macht diesen Block wirkungslos.
+ *
+ * Geschlossene Zeilen bleiben bewusst flach: Ihre Flaechenfarbe ist hell
+ * (--color-ui-surface-light), auf der ein Plastik-Effekt schmutzig wirkt, und
+ * ein Stapel plastischer Baender laese sich nicht mehr als Liste. Dieselbe
+ * Zurueckhaltung gilt im Theme, wo nur der Navigationsstreifen den Look traegt
+ * und die Kopfleiste bewusst schlicht bleibt.
+ *
+ * Der Selektor greift ueber .mb-accordion-row__heading, weil der Kopf ein
+ * ENKEL der Zeile ist (view.js haengt den Button in das Ueberschriftenelement).
+ * Die Kindkombinatoren sind Absicht: Ein Accordion INNERHALB eines Panels
+ * wuerde sonst von der aeusseren Zeile mitgefaerbt.
+ *
+ * Waehrend der 250 ms des Zuklappens traegt die Zeile bereits is-closed und
+ * verliert den Look sofort — das ist die gewollte unmittelbare Rueckmeldung
+ * (siehe Zustandsregel im Kopf von view.js), nicht ein Fehler der Animation.
+ */
+.mb-accordion-row:not(.is-closed) > .mb-accordion-row__heading > .mb-accordion-row__header,
+.mb-accordion-row > .mb-accordion-row__heading > .mb-accordion-row__header:hover {
+    background-image:
+        radial-gradient(75% 75% at 30% 22%,
+            rgba(255, 255, 255, 0.35) 0%,
+            rgba(255, 255, 255, 0.08) 45%,
+            rgba(255, 255, 255, 0) 100%),
+        linear-gradient(135deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.2) 100%);
+    box-shadow:
+        inset 0 2px 2px -1px rgba(0, 0, 0, 0.25),
+        inset 0 -2px 2px -1px rgba(255, 255, 255, 0.5);
+}
+
+/* Ohne Bewegungswunsch keine weichen Uebergaenge auf den Schichten. */
+@media (prefers-reduced-motion: no-preference) {
+    .mb-accordion-row > .mb-accordion-row__heading > .mb-accordion-row__header {
+        transition: box-shadow 0.2s ease, background-image 0.2s ease;
+    }
 }
