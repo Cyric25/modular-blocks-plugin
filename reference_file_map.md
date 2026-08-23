@@ -59,6 +59,25 @@ Jeder Block liegt autark in `blocks/<Ordner>/` und wird automatisch entdeckt, so
 | `svg-drawing` | `modular-blocks/svg-drawing` | Zeichenfläche, auch für Zeichnungen aus OneNote/Zwischenablage (**kein** `view.js`) | `block.json`, `index.js`, `render.php`, `style.css`, `editor.css` |
 | `accordion` | `modular-blocks/accordion` | Klappzeilen aus normalem Inhalt: Jede Überschrift der eingestellten Ebene beginnt im Frontend eine aufklappbare Zeile. **Ein** Block, kein Kind-Block | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
 
+**CSS-Variablen-Umstellung (Phase 3, `PLAN-CSS-Variablen-Darkmode.md`,
+2026-08-23):** `accordion`, `iframe-whitelist`, `molecule-viewer` und
+`summary-block` folgten alle demselben, in AP-3.0 (`accordion`) validierten
+Muster: `get_theme_mod()`-Werte in `render.php` landen nicht mehr als
+hartkodierter Hex-Wert im Inline-Style von Buttons, sondern als
+block-eigene Custom-Properties (`--mb-accordion-*`, `--iw-*`, `--mv-*`,
+`--sb-*`) auf dem äußeren Wrapper; `style.css` referenziert sie per `var()`.
+`drag-and-drop`, `image-comparison`, `image-overlay`, `point-of-interest`,
+`multiple-choice`, `statement-summary` (lokale Redefinition entfernt),
+`drag-the-words` und `assets/css/blocks.css` erhielten stattdessen direkte
+`var(--color-ui-surface, …)`-Kopplung ihrer lokalen Token-Layer bzw.
+verbleibender Rest-Hex-Werte, ohne eigenes Wrapper-Custom-Property (kein
+Anti-Pattern-Fund in diesen Blöcken). **Wichtig:** `block.json` registriert
+bei `accordion`/`iframe-whitelist`/`molecule-viewer`/`summary-block`
+`style-index.css` (Webpack-Build-Artefakt, per `.gitignore` nicht
+versioniert) statt `style.css` direkt – eine Änderung an `style.css` wird
+erst nach `npm run build` sichtbar, siehe `PLAN-CSS-Variablen-Darkmode.md`
+Abschnitt 3.
+
 ## Accordion-Block im Detail
 
 **Ein einziger Block, überschriftengesteuert.** Der früher hier beschriebene Kind-Block `modular-blocks/accordion-row` existiert nicht mehr (Verzeichnis `blocks/accordion-row/` ist entfallen); wer noch darauf verweist, liest eine überholte Fassung.

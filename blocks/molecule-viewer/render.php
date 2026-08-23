@@ -21,7 +21,16 @@ $alphafold_id = $attributes['alphafoldId'] ?? '';
 $structure_url = $attributes['structureUrl'] ?? '';
 $display_style = $attributes['displayStyle'] ?? 'stick';
 $color_scheme = $attributes['colorScheme'] ?? 'default';
-$background_color = $attributes['backgroundColor'] ?? '#000000';
+// AP-3.3: Fallback folgt jetzt dem Theme-Customizer-Hintergrund statt einem
+// festen Hex-Wert - der Standard-Hintergrund der 3D-Ansicht folgt damit dem
+// Theme, sofern der Autor keinen eigenen Wert im Block-Attribut gewaehlt
+// hat. Ein vom Autor explizit gesetztes Attribut hat weiterhin Vorrang
+// (unveraenderte Prioritaetslogik, nur der Fallback-Wert selbst aendert
+// sich). Bewusst eigener Fallback ('#000000') statt des globalen
+// --color-background-Defaults ('#ffffff'), damit der bisherige optische
+// Standard (schwarzer 3D-Hintergrund) ohne Customizer-Aenderung erhalten
+// bleibt.
+$background_color = $attributes['backgroundColor'] ?? get_theme_mod('color_background', '#000000');
 $width = absint($attributes['width'] ?? 800);
 $height = absint($attributes['height'] ?? 600);
 $show_controls = $attributes['showControls'] ?? true;
@@ -32,17 +41,21 @@ $description = $attributes['description'] ?? '';
 // Calculate aspect ratio
 $aspect_ratio = ($height / $width) * 100;
 
-// Theme colors for buttons (inline styles per CLAUDE.md pattern)
+// AP-3.3 (PLAN-CSS-Variablen-Darkmode.md), Muster wie AP-3.0 (accordion):
+// PHP liest die Theme-Farben weiterhin per get_theme_mod(), gibt sie aber
+// als Custom-Properties auf dem AEUSSEREN Block-Wrapper aus statt als
+// hartkodierten Hex-Wert direkt im Inline-Style der Buttons/des Selects.
+// style.css referenziert die Werte per var(--mv-surface, #fallback) bzw.
+// var(--mv-surface-hover, #fallback). data-hover-color/data-base-color
+// bleiben zusaetzlich als Rohwerte an den Steuerelementen erhalten, weil
+// view.js (attachControlListeners()) sie fuer den JS-gesteuerten
+// Hover-Farbwechsel direkt liest - das ist unveraendert.
 $color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
 $color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
-$button_style = 'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
+$button_style = 'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
                 'padding: 8px 16px !important; min-width: 44px !important; min-height: 44px !important; ' .
                 'cursor: pointer !important; font-size: 14px !important; font-weight: 500 !important;';
-$select_style = 'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
+$select_style = 'color: #fff !important; border: none !important; border-radius: 4px !important; ' .
                 'padding: 8px 12px !important; padding-right: 28px !important; ' .
                 'min-width: 44px !important; min-height: 44px !important; ' .
                 'cursor: pointer !important; font-size: 14px !important; font-weight: 500 !important; ' .
@@ -88,9 +101,19 @@ foreach ($data_attrs as $key => $value) {
 }
 
 // Wrapper attributes
+// AP-3.3: --mv-surface/--mv-surface-hover transportieren die Theme-Farben
+// als Custom-Properties auf den Wrapper, style.css referenziert sie per
+// var(--mv-surface, #fallback) (siehe Kommentar oben bei $button_style).
+$wrapper_style_vars = sprintf(
+    'max-width: %dpx; --mv-surface: %s; --mv-surface-hover: %s;',
+    $width,
+    esc_attr($color_ui_surface),
+    esc_attr($color_ui_surface_dark)
+);
+
 $wrapper_attributes = get_block_wrapper_attributes([
     'class' => 'chemviz-viewer',
-    'style' => 'max-width:' . $width . 'px;',
+    'style' => $wrapper_style_vars,
     'aria-label' => esc_attr($aria_label),
 ]);
 

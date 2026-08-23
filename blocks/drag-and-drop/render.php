@@ -157,7 +157,7 @@ $drag_drop_data = [
                         $drag_type = sanitize_text_field($draggable['type'] ?? 'text');
                         $drag_content = wp_kses_post($draggable['content'] ?? '');
                         $drag_image = $draggable['image'] ?? ['url' => '', 'alt' => '', 'id' => null];
-                        $drag_color = sanitize_hex_color($draggable['color'] ?? '#0073aa');
+                        $drag_color = sanitize_hex_color($draggable['color'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
                         $drag_size = sanitize_text_field($draggable['size'] ?? 'medium');
                         $drag_opacity = max(20, min(100, intval($draggable['opacity'] ?? 100)));
                         $drag_infinite = !empty($draggable['infinite']);
@@ -233,7 +233,7 @@ $drag_drop_data = [
                             $zone_width = max(50, min(400, floatval($zone['width'] ?? 150)));
                             $zone_height = max(50, min(400, floatval($zone['height'] ?? 100)));
                             $zone_bg = $zone['backgroundColor'] ?? 'rgba(0, 115, 170, 0.1)';
-                            $zone_border = sanitize_hex_color($zone['borderColor'] ?? '#0073aa');
+                            $zone_border = sanitize_hex_color($zone['borderColor'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
                             $zone_opacity = max(0, min(100, intval($zone['opacity'] ?? 100)));
                             $zone_auto_align = $zone['autoAlign'] ?? true;
                             $zone_align_spacing = max(0, min(20, intval($zone['alignSpacing'] ?? 8)));

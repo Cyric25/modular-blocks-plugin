@@ -60,19 +60,22 @@
 }
 
 /* Toolbar */
+/* AP-3.1: Hintergrund kommt ueber die vom Wrapper gesetzte Custom Property
+   --iw-surface (render.php, aus get_theme_mod('color_ui_surface_light')). */
 .iframe-whitelist-toolbar {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background-color: #f5ede9 !important;
-    background-color: var(--color-ui-surface-light, #f5ede9) !important;
-    border: 1px solid #ddd;
+    background-color: var(--iw-surface, #f5ede9) !important;
+    border: 1px solid var(--color-border, #ddd);
     border-bottom: none;
     border-radius: 4px 4px 0 0;
 }
 
 /* Button styles with high specificity to override WordPress defaults */
+/* AP-3.1: Hintergrund kommt ueber die vom Wrapper gesetzte Custom Property
+   --iw-active (render.php, aus get_theme_mod('color_ui_surface')). */
 .wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button,
 .wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button,
 .wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar button.iframe-toolbar-button,
@@ -85,8 +88,8 @@
     padding: 8px 16px !important;
     border: none !important;
     border-radius: 4px !important;
-    background: var(--color-ui-surface, #e24614) !important;
-    background-color: var(--color-ui-surface, #e24614) !important;
+    background: var(--iw-active, #e24614) !important;
+    background-color: var(--iw-active, #e24614) !important;
     color: #fff !important;
     font-size: 14px !important;
     font-weight: 500 !important;
@@ -102,8 +105,8 @@
 .wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar a.iframe-toolbar-button:visited,
 .iframe-whitelist-toolbar a.iframe-toolbar-button:link,
 .iframe-whitelist-toolbar a.iframe-toolbar-button:visited {
-    background: var(--color-ui-surface, #e24614) !important;
-    background-color: var(--color-ui-surface, #e24614) !important;
+    background: var(--iw-active, #e24614) !important;
+    background-color: var(--iw-active, #e24614) !important;
     color: #fff !important;
     text-decoration: none !important;
 }
@@ -117,8 +120,8 @@
 .iframe-whitelist-toolbar .iframe-toolbar-button:active,
 .iframe-whitelist-toolbar a.iframe-toolbar-button:hover,
 .iframe-whitelist-toolbar button.iframe-toolbar-button:hover {
-    background: var(--color-ui-surface-dark, #c93d12) !important;
-    background-color: var(--color-ui-surface-dark, #c93d12) !important;
+    background: var(--iw-hover, #c93d12) !important;
+    background-color: var(--iw-hover, #c93d12) !important;
     color: #fff !important;
     text-decoration: none !important;
     transform: translateY(-1px);
@@ -127,10 +130,10 @@
 /* Focus state */
 .wp-block-modular-blocks-iframe-whitelist .iframe-whitelist-toolbar .iframe-toolbar-button:focus,
 .iframe-whitelist-toolbar .iframe-toolbar-button:focus {
-    outline: 2px solid var(--color-ui-surface, #e24614) !important;
+    outline: 2px solid var(--iw-active, #e24614) !important;
     outline-offset: 2px !important;
-    background: var(--color-ui-surface, #e24614) !important;
-    background-color: var(--color-ui-surface, #e24614) !important;
+    background: var(--iw-active, #e24614) !important;
+    background-color: var(--iw-active, #e24614) !important;
 }
 
 /* Dashicons inside buttons */
@@ -145,12 +148,12 @@
 
 /* Border variant */
 .wp-block-modular-blocks-iframe-whitelist.has-border .iframe-whitelist-container {
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border, #ddd);
 }
 
 /* Toolbar border adjustment when block has border */
 .wp-block-modular-blocks-iframe-whitelist.has-border .iframe-whitelist-toolbar {
-    border-color: #ddd;
+    border-color: var(--color-border, #ddd);
 }
 
 /* Aspect ratio support */

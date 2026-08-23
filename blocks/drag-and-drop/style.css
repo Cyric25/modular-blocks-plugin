@@ -7,15 +7,15 @@
    CSS VARIABLES
    ========================================== */
 .wp-block-modular-blocks-drag-and-drop {
-    --dd-primary: #0073aa;
-    --dd-success: #00a32a;
-    --dd-error: #d63638;
+    --dd-primary: var(--color-ui-surface, #0073aa);
+    --dd-success: var(--color-success, #00a32a);
+    --dd-error: var(--color-danger, #d63638);
     --dd-warning: #eab308;
-    --dd-bg: #ffffff;
-    --dd-bg-light: #f8f9fa;
-    --dd-border: #e0e0e0;
-    --dd-text: #1e1e1e;
-    --dd-text-light: #666666;
+    --dd-bg: var(--color-background, #ffffff);
+    --dd-bg-light: var(--color-background-light, #f8f9fa);
+    --dd-border: var(--color-border, #e0e0e0);
+    --dd-text: var(--color-text-primary, #1e1e1e);
+    --dd-text-light: var(--color-text-muted, #666666);
     --dd-radius: 8px;
     --dd-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     --dd-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -668,7 +668,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #333333;
+    color: var(--color-text-primary, #333333);
 }
 
 .zone-content {
@@ -725,7 +725,7 @@
 
 /* Drop Zone States - Always gray */
 .drop-zone:hover {
-    border-color: #666666 !important;
+    border-color: var(--color-text-muted, #666666) !important;
     background-color: rgba(128, 128, 128, 0.25) !important;
     transform: scale(1.01);
 }
@@ -733,7 +733,7 @@
 .drop-zone:focus {
     outline: 3px solid rgba(100, 100, 100, 0.6);
     outline-offset: 2px;
-    border-color: #666666 !important;
+    border-color: var(--color-text-muted, #666666) !important;
 }
 
 .drop-zone.drag-active {
@@ -841,7 +841,7 @@
 
 .drag-drop-button:disabled {
     background: #ccc;
-    color: #666;
+    color: var(--color-text-muted, #666);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;

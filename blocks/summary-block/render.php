@@ -89,8 +89,25 @@ $css_classes = array_filter($css_classes);
 $css_class = implode(' ', $css_classes);
 
 // Get theme colors for buttons
+// AP-3.2 (PLAN-CSS-Variablen-Darkmode.md): Rollout des in AP-3.0 (accordion)
+// live getesteten Musters, hier identisch zu AP-3.1 (iframe-whitelist)
+// angewandt. Die get_theme_mod()-Werte werden nicht mehr als hartkodierter
+// Hex-Wert direkt ins Inline-Style der Buttons geschrieben (frueheres
+// Anti-Pattern, siehe CLAUDE.md "Buttons mit Theme-Farben"), sondern als
+// Custom Properties auf den AEUSSEREN Wrapper geschrieben (siehe
+// $wrapper_style_vars unten) - style.css referenziert sie per
+// var(--sb-x, #bisheriger-fallback-wert). $color_ui_surface_dark wurde vorher
+// bereits geholt, aber nirgends verwendet (das seither wirkungslose
+// "transition: background 0.2s ease" unten deutete darauf hin); analog zu
+// AP-3.1 steuert er jetzt den Hover-Zustand der gefuellten Buttons.
 $color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
 $color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
+
+$wrapper_style_vars = sprintf(
+    '--sb-primary: %s; --sb-primary-hover: %s;',
+    esc_attr($color_ui_surface),
+    esc_attr($color_ui_surface_dark)
+);
 
 // Prepare data for JavaScript
 $summary_data = [
@@ -128,22 +145,26 @@ $summary_data = [
     ]
 ];
 
-// Button styles
+// Button styles - Farbwerte kommen seit AP-3.2 nicht mehr von hier, sondern
+// per CSS-Custom-Property vom Wrapper (siehe oben) plus var(--sb-x, #fallback)
+// in style.css; hier nur noch die farbunabhaengigen Layout-Eigenschaften.
+// "color: #fff" ist keine get_theme_mod()-Fundstelle (kein Theme-Wert) und
+// bleibt deshalb wie zuvor als literaler Wert stehen.
 $button_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
                 'padding: 10px 20px; border: none; border-radius: 4px; ' .
-                'background: ' . esc_attr($color_ui_surface) . '; ' .
                 'color: #fff; cursor: pointer; font-size: 14px; font-weight: 500; ' .
                 'transition: background 0.2s ease;';
 
 $button_secondary_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
-                          'padding: 10px 20px; border: 2px solid ' . esc_attr($color_ui_surface) . '; ' .
+                          'padding: 10px 20px; border-width: 2px; border-style: solid; ' .
                           'border-radius: 4px; background: transparent; ' .
-                          'color: ' . esc_attr($color_ui_surface) . '; cursor: pointer; ' .
+                          'cursor: pointer; ' .
                           'font-size: 14px; font-weight: 500; transition: all 0.2s ease;';
 ?>
 
 <div id="<?php echo esc_attr($block_id); ?>"
      class="<?php echo esc_attr($css_class); ?>"
+     style="<?php echo esc_attr($wrapper_style_vars); ?>"
      data-summary='<?php echo esc_attr(json_encode($summary_data)); ?>'>
 
     <div class="summary-container">

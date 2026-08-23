@@ -1,17 +1,36 @@
 /**
  * Summary Block - Frontend Styles (H5P-Style)
  * Based on H5P Summary design patterns
+ *
+ * AP-3.2 (PLAN-CSS-Variablen-Darkmode.md): Das lokale Token-Layer unten war
+ * bisher eine eigene, vom Theme unabhaengige Farbpalette (Google/H5P-Stil).
+ * Es bleibt bestehen - der Rest dieser Datei nutzt weiterhin diese lokalen
+ * Namen unveraendert -, wird hier aber an das Theme gekoppelt (Vorbild:
+ * image-overlay/style.css): jeder Token verweist per
+ * var(--color-x, <bisheriger Wert>) auf die naheliegendste globale
+ * Theme-Variable. Der bisherige literale Wert bleibt exakt als Fallback
+ * erhalten und greift nur, wenn die globale Variable nicht definiert ist -
+ * ist sie es (Regelfall auf dieser Website), UEBERNIMMT der Block ab jetzt
+ * bewusst die Theme-Farben statt der bisherigen Google-Palette (das ist der
+ * Zweck der Kopplung, siehe Uebergabenotiz).
+ *
+ * Freistehende Hex-Werte AUSSERHALB dieses Layers wurden dort umgestellt, wo
+ * eine der oben im Plan gelisteten globalen Variablen semantisch passt
+ * (Flaechen-Hintergruende #fff/#f8f9fa). Rein dekorative Farbtoene ohne
+ * globales Gegenstueck (helle Tönungen fuer richtig/falsch-Zustaende,
+ * Feedback-Textfarben, Icon-Strichfarben, Print-Overrides) bleiben literal -
+ * siehe Uebergabenotiz fuer die vollstaendige Liste.
  */
 
 .wp-block-modular-blocks-summary-block {
-    --summary-primary: #1a73e8;
-    --summary-primary-hover: #1557b0;
-    --summary-success: #0f9d58;
-    --summary-danger: #ea4335;
-    --summary-bg: #f8f9fa;
-    --summary-border: #dadce0;
-    --summary-text: #202124;
-    --summary-text-light: #5f6368;
+    --summary-primary: var(--color-ui-surface, #1a73e8);
+    --summary-primary-hover: var(--color-ui-surface-dark, #1557b0);
+    --summary-success: var(--color-success, #0f9d58);
+    --summary-danger: var(--color-danger, #ea4335);
+    --summary-bg: var(--color-background-light, #f8f9fa);
+    --summary-border: var(--color-border, #dadce0);
+    --summary-text: var(--color-text-primary, #202124);
+    --summary-text-light: var(--color-text-muted, #5f6368);
 
     font-family: 'Google Sans', 'Segoe UI', Roboto, Arial, sans-serif;
     max-width: 100%;
@@ -22,7 +41,7 @@
 
 /* Container */
 .wp-block-modular-blocks-summary-block .summary-container {
-    background: #fff;
+    background: var(--color-background, #fff);
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     overflow: hidden;
@@ -31,7 +50,7 @@
 /* Header */
 .wp-block-modular-blocks-summary-block .summary-header {
     padding: 32px 32px 24px;
-    background: #fff;
+    background: var(--color-background, #fff);
     border-bottom: 1px solid var(--summary-border);
 }
 
@@ -130,7 +149,7 @@
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    background: #fff;
+    background: var(--color-background, #fff);
     border: 2px solid var(--summary-border);
     border-radius: 8px;
     cursor: pointer;
@@ -145,7 +164,7 @@
 
 .wp-block-modular-blocks-summary-block .statement-option:hover:not(:disabled) {
     border-color: var(--summary-primary);
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
@@ -324,7 +343,7 @@
 /* Summary Section - H5P Style */
 .wp-block-modular-blocks-summary-block .summary-section {
     padding: 24px 32px;
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     border-top: 1px solid var(--summary-border);
 }
 
@@ -346,7 +365,7 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px 16px;
-    background: #fff;
+    background: var(--color-background, #fff);
     border-radius: 8px;
     border: 1px solid var(--summary-border);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -377,7 +396,7 @@
 .wp-block-modular-blocks-summary-block .summary-results {
     padding: 40px 32px;
     text-align: center;
-    background: #fff;
+    background: var(--color-background, #fff);
     border-top: 1px solid var(--summary-border);
 }
 
@@ -463,13 +482,42 @@
     flex-shrink: 0;
 }
 
-.wp-block-modular-blocks-summary-block .continue-button {
-    background: var(--summary-primary);
-    color: #fff;
+/*
+ * AP-3.2 (PLAN-CSS-Variablen-Darkmode.md): Diese Regel war vorher ein
+ * pro Button hartkodiertes Inline-Style aus render.php (siehe CLAUDE.md,
+ * bisherige Empfehlung "Buttons mit Theme-Farben") - unabhaengig vom
+ * lokalen Token-Layer oben (--summary-primary), das dadurch bislang nie
+ * sichtbar wurde. Jetzt referenziert die Regel die vom Wrapper inline
+ * gesetzte Custom Property --sb-primary/--sb-primary-hover (render.php, aus
+ * get_theme_mod('color_ui_surface'/'color_ui_surface_dark')). !important
+ * bleibt aus Symmetrie zum bisherigen Verhalten (Buttons sollen unabhaengig
+ * von anderen Regeln auf dieser Seite immer die Theme-Farbe zeigen) - siehe
+ * AP-3.0-Spike (live getestet: kein Override-Problem) und AP-3.1
+ * (iframe-whitelist), wo dasselbe Muster bereits ausgerollt wurde.
+ */
+.wp-block-modular-blocks-summary-block .continue-button,
+.wp-block-modular-blocks-summary-block .pdf-download-button,
+.wp-block-modular-blocks-summary-block .solution-button {
+    background: var(--sb-primary, #e24614) !important;
+    background-color: var(--sb-primary, #e24614) !important;
+    color: #fff !important;
 }
 
-.wp-block-modular-blocks-summary-block .continue-button:hover {
-    background: var(--summary-primary-hover);
+.wp-block-modular-blocks-summary-block .continue-button:hover,
+.wp-block-modular-blocks-summary-block .pdf-download-button:hover,
+.wp-block-modular-blocks-summary-block .solution-button:hover {
+    background: var(--sb-primary-hover, #c93d12) !important;
+    background-color: var(--sb-primary-hover, #c93d12) !important;
+}
+
+.wp-block-modular-blocks-summary-block .retry-button {
+    border-color: var(--sb-primary, #e24614) !important;
+    color: var(--sb-primary, #e24614) !important;
+}
+
+.wp-block-modular-blocks-summary-block .retry-button:hover {
+    border-color: var(--sb-primary-hover, #c93d12) !important;
+    color: var(--sb-primary-hover, #c93d12) !important;
 }
 
 /* Error State */

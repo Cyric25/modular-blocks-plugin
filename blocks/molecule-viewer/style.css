@@ -1,3 +1,28 @@
+/*
+ * AP-3.3 (PLAN-CSS-Variablen-Darkmode.md): Farben laufen ueber
+ * CSS-Custom-Properties statt freistehender Hex-Werte.
+ *
+ * --mv-surface / --mv-surface-hover kommen als Inline-Custom-Properties vom
+ * Wrapper-<div> (render.php, Muster wie AP-3.0/accordion) - der Fallback
+ * hier entspricht dem bisherigen get_theme_mod()-Default (#e24614 /
+ * #c93d12), nicht dem alten statischen CSS-Blau (#0073aa / #005a87), das
+ * ohnehin schon immer vom PHP-Inline-Style ueberschrieben wurde.
+ *
+ * --color-background und --color-text-primary sind die bereits global vom
+ * Theme injizierten Customizer-Variablen (Theme/functions.php); sie werden
+ * hier nur an Stellen wiederverwendet, an denen ihr aktueller globaler
+ * Default (#ffffff bzw. #333333) exakt dem bisherigen lokalen Hex-Wert
+ * entspricht - so bleibt die Kopplung optisch neutral.
+ *
+ * Alle uebrigen Werte (Fokus-Rahmen, aktiver Button-Zustand, weisser Text,
+ * Fehler-/Standardhintergrund) haben keine Entsprechung unter den
+ * bestehenden Theme-Customizer-Variablen. Sie bekommen lokale,
+ * block-eigene Variablennamen (--mv-*), die aktuell nirgends gesetzt
+ * werden - der var()-Fallback greift dadurch immer und das Ergebnis bleibt
+ * unveraendert. Das erfuellt "keine freistehenden Hex-Werte", ohne eine
+ * neue Kopplung einzufuehren, die es vorher nicht gab.
+ */
+
 /* Viewer Container */
 .chemviz-viewer {
     position: relative;
@@ -11,7 +36,7 @@
     width: 100%;
     height: 0;
     padding-bottom: 75%; /* 4:3 Aspect Ratio default */
-    background-color: #000;
+    background-color: var(--mv-viewer-bg, #000);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -41,8 +66,12 @@
     min-width: 44px;
     min-height: 44px;
     padding: 8px 16px;
-    background-color: #0073aa;
-    color: #fff;
+    /* !important wie zuvor im PHP-Inline-Style (siehe CLAUDE.md, Abschnitt
+       "Buttons mit Theme-Farben"): Buttons sollen unabhaengig von anderen
+       Regeln auf der Seite immer die Theme-Farbe zeigen. */
+    background: var(--mv-surface, #e24614) !important;
+    background-color: var(--mv-surface, #e24614) !important;
+    color: var(--mv-text-light, #fff);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -52,16 +81,17 @@
 }
 
 .chemviz-viewer__button:hover {
-    background-color: #005a87;
+    background: var(--mv-surface-hover, #c93d12) !important;
+    background-color: var(--mv-surface-hover, #c93d12) !important;
 }
 
 .chemviz-viewer__button:focus {
-    outline: 3px solid #4A90E2;
+    outline: 3px solid var(--mv-focus-outline, #4A90E2);
     outline-offset: 2px;
 }
 
 .chemviz-viewer__button:active {
-    background-color: #004a70;
+    background-color: var(--mv-surface-active, #004a70);
 }
 
 /* Style Selector */
@@ -69,8 +99,11 @@
     min-width: 44px;
     min-height: 44px;
     padding: 8px 12px;
-    background-color: #0073aa;
-    color: #fff;
+    /* !important wie beim Button (siehe CLAUDE.md, Abschnitt "Buttons mit
+       Theme-Farben") - background-image bleibt separat und liefert nur das
+       Pfeil-Icon, kollidiert nicht mit background-color/background. */
+    background-color: var(--mv-surface, #e24614) !important;
+    color: var(--mv-text-light, #fff);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -85,17 +118,17 @@
 }
 
 .chemviz-viewer__style-select:hover {
-    background-color: #005a87;
+    background-color: var(--mv-surface-hover, #c93d12) !important;
 }
 
 .chemviz-viewer__style-select:focus {
-    outline: 3px solid #4A90E2;
+    outline: 3px solid var(--mv-focus-outline, #4A90E2);
     outline-offset: 2px;
 }
 
 .chemviz-viewer__style-select option {
-    background-color: #fff;
-    color: #333;
+    background-color: var(--color-background, #fff);
+    color: var(--color-text-primary, #333);
 }
 
 /* Screen Reader Only */
@@ -117,15 +150,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
+    color: var(--mv-text-light, #fff);
     font-size: 16px;
 }
 
 /* Error State */
 .chemviz-viewer__error {
     padding: 20px;
-    background-color: #f44336;
-    color: #fff;
+    background-color: var(--mv-error-bg, #f44336);
+    color: var(--mv-text-light, #fff);
     border-radius: 8px;
     text-align: center;
 }
@@ -173,7 +206,7 @@
 .chemviz-viewer:-moz-full-screen {
     width: 100vw;
     height: 100vh;
-    background: #000;
+    background: var(--mv-viewer-bg, #000);
     display: flex;
     flex-direction: column;
 }
