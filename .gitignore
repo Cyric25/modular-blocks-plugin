@@ -87,7 +87,9 @@ pnpm-lock.yaml
 # WordPress build artifacts
 *.asset.php
 blocks/**/index.css
+blocks/**/index-rtl.css
 blocks/**/style-index.css
+blocks/**/style-index-rtl.css
 
 # Debug and testing
 debug-*.php
