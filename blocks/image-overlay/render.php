@@ -137,7 +137,7 @@ $overlay_data = [
                         <?php
                         $layer_label = esc_html($layer['label'] ?? 'Ebene ' . ($index + 1));
                         $layer_description = esc_html($layer['description'] ?? '');
-                        $layer_color = sanitize_hex_color($layer['color'] ?? '#e24614');
+                        $layer_color = sanitize_hex_color($layer['color'] ?? get_theme_mod('color_ui_surface', '#e24614'));
                         $layer_visible = $layer['visible'] ?? false;
                         $layer_opacity = max(0, min(100, intval($layer['opacity'] ?? 100)));
                         ?>
@@ -187,7 +187,7 @@ $overlay_data = [
                             <?php
                             $layer_label = esc_html($layer['label'] ?? 'Ebene ' . ($index + 1));
                             $layer_description = esc_html($layer['description'] ?? '');
-                            $layer_color = sanitize_hex_color($layer['color'] ?? '#e24614');
+                            $layer_color = sanitize_hex_color($layer['color'] ?? get_theme_mod('color_ui_surface', '#e24614'));
                             $layer_visible = $layer['visible'] ?? false;
                             ?>
                             <button
@@ -215,7 +215,7 @@ $overlay_data = [
             if (!empty($background_color)) {
                 $stack_bg = $background_color;
             } elseif (!$has_base_image) {
-                $stack_bg = '#ffffff';
+                $stack_bg = get_theme_mod('color_background', '#ffffff');
             }
             ?>
             <div class="image-stack"<?php if (!empty($stack_bg)) : ?> style="background-color: <?php echo esc_attr($stack_bg); ?>;"<?php endif; ?>>

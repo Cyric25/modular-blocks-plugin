@@ -3,8 +3,8 @@
  */
 
 .wp-block-modular-blocks-multiple-choice {
-    --primary-color: #0073aa;
-    --primary-hover: #005177;
+    --primary-color: var(--color-ui-surface, #0073aa);
+    --primary-hover: var(--color-ui-surface-dark, #005177);
     --success-color: #00a32a;
     --error-color: #d63638;
     --warning-color: #dba617;
@@ -23,7 +23,7 @@
 }
 
 .multiple-choice-container {
-    background: #ffffff;
+    background: var(--color-background, #ffffff);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 24px;

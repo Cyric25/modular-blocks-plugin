@@ -7,11 +7,11 @@
     --comparison-height: 400px; /* Fallback for old browsers */
     --comparison-aspect-ratio: 16 / 9; /* Dynamic, based on actual image dimensions */
     --slider-width: 4px;
-    --slider-color: #0073aa;
+    --slider-color: var(--color-ui-surface, #0073aa);
     --slider-handle-size: 48px;
     --slider-button-size: 32px;
     --label-bg: rgba(0, 0, 0, 0.7);
-    --label-color: #ffffff;
+    --label-color: var(--color-ui-surface, #ffffff);
     --transition-duration: 0.3s;
 
     margin: 1.5em 0;
@@ -173,7 +173,7 @@
 }
 
 .slider-button:hover {
-    background-color: #005177;
+    background-color: var(--color-ui-surface-dark, #005177);
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

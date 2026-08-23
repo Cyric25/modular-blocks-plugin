@@ -22,12 +22,12 @@ $starting_position = $block_attributes['startingPosition'] ?? 50;
 $show_labels = $block_attributes['showLabels'] ?? true;
 $hover_animation = $block_attributes['hoverAnimation'] ?? true;
 $height = $block_attributes['height'] ?? 400;
-$slider_color = $block_attributes['sliderColor'] ?? '#0073aa';
+$slider_color = $block_attributes['sliderColor'] ?? get_theme_mod('color_ui_surface', '#0073aa');
 $slider_width = $block_attributes['sliderWidth'] ?? 4;
 $handle_size = $block_attributes['handleSize'] ?? 48;
 $animation_speed = $block_attributes['animationSpeed'] ?? 12;
 $label_background = $block_attributes['labelBackground'] ?? 'rgba(0, 0, 0, 0.7)';
-$label_color = $block_attributes['labelColor'] ?? '#ffffff';
+$label_color = $block_attributes['labelColor'] ?? get_theme_mod('color_ui_surface', '#ffffff');
 
 // Sanitize attributes
 $before_label = esc_html($before_label);
@@ -36,12 +36,12 @@ $orientation = sanitize_text_field($orientation);
 $display_mode = in_array($display_mode, ['slide', 'fade']) ? $display_mode : 'slide';
 $starting_position = max(0, min(100, intval($starting_position)));
 $height = max(200, min(800, intval($height)));
-$slider_color = sanitize_hex_color($slider_color) ?: '#0073aa';
+$slider_color = sanitize_hex_color($slider_color) ?: get_theme_mod('color_ui_surface', '#0073aa');
 $slider_width = max(1, min(10, intval($slider_width)));
 $handle_size = max(24, min(72, intval($handle_size)));
 $animation_speed = max(2, min(15, floatval($animation_speed)));
 $label_background = sanitize_text_field($label_background);
-$label_color = sanitize_hex_color($label_color) ?: '#ffffff';
+$label_color = sanitize_hex_color($label_color) ?: get_theme_mod('color_ui_surface', '#ffffff');
 
 // Check if both images are available
 if (empty($before_image['url']) || empty($after_image['url'])) {

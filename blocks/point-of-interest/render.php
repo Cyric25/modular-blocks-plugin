@@ -164,7 +164,7 @@ $icon_map = [
                         $hotspot_content = wp_kses_post($hotspot['content'] ?? '');
                         $hotspot_x = max(0, min(100, floatval($hotspot['x'] ?? 0)));
                         $hotspot_y = max(0, min(100, floatval($hotspot['y'] ?? 0)));
-                        $hotspot_color = sanitize_hex_color($hotspot['color'] ?? '#0073aa');
+                        $hotspot_color = sanitize_hex_color($hotspot['color'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
                         $hotspot_icon = sanitize_text_field($hotspot['icon'] ?? 'info');
                         $hotspot_size = sanitize_text_field($hotspot['size'] ?? 'medium');
                         $hotspot_animation = sanitize_text_field($hotspot['animation'] ?? 'pulse');
@@ -241,7 +241,7 @@ $icon_map = [
                 <div class="legend-items">
                     <?php foreach ($hotspots as $index => $hotspot): ?>
                         <div class="legend-item" data-hotspot="<?php echo esc_attr($index); ?>">
-                            <div class="legend-marker" style="--hotspot-color: <?php echo sanitize_hex_color($hotspot['color'] ?? '#0073aa'); ?>;">
+                            <div class="legend-marker" style="--hotspot-color: <?php echo sanitize_hex_color($hotspot['color'] ?? get_theme_mod('color_ui_surface', '#0073aa')); ?>;">
                                 <?php if ($show_numbers): ?>
                                     <span><?php echo $index + 1; ?></span>
                                 <?php else: ?>

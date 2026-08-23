@@ -31,7 +31,7 @@
 }
 
 .image-overlay-container {
-    background: #ffffff;
+    background: var(--color-background, #ffffff);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     overflow: hidden;
