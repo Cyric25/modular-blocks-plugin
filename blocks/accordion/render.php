@@ -40,14 +40,37 @@ $open_first      = !empty($block_attributes['openFirst']);
 $show_numbering  = !empty($block_attributes['showNumbering']);
 $show_expand_all = !empty($block_attributes['showExpandAll']);
 
-// Theme-Farben: siehe CLAUDE.md "Buttons mit Theme-Farben" – hartkodierte
-// Hex-Werte statt CSS-Variablen, da Letztere von Core- bzw. Plugin-Styles
-// ueberschrieben werden koennen. view.js faerbt die Zeilenkoepfe zur
-// Laufzeit anhand dieser data-Attribute inline (mit !important) ein.
+// Theme-Farben: view.js faerbt die Zeilenkoepfe zur Laufzeit anhand der
+// data-Attribute unten inline (mit !important) ein - das bleibt unveraendert
+// (siehe CLAUDE.md, Abschnitt "Farben kommen aus data-color-*").
+//
+// AP-3.0-Spike (PLAN-CSS-Variablen-Darkmode.md): Fuer die "Alle oeffnen"/
+// "Alle schliessen"-Buttons wird hier zusaetzlich getestet, ob ein Inline-
+// Custom-Property auf dem Wrapper (Vorbild cbd_get_icon_position_style() im
+// CDB-Plugin) das in CLAUDE.md dokumentierte Override-Problem umgeht, das die
+// bisherige Empfehlung "keine CSS-Variablen" begruendet hat. Der PHP-Wert
+// wird weiterhin per get_theme_mod() aufgeloest (siehe Begruendung unten),
+// aber statt als hartkodierter Hex-Wert direkt im Inline-Style der Buttons
+// nun als Custom-Property auf dem AEUSSEREN Wrapper - style.css referenziert
+// sie per var(--mb-accordion-active, #fallback). Testergebnis: siehe
+// Uebergabenotiz AP-3.0 im Plan.
 $color_active  = get_theme_mod('color_ui_surface', '#e24614');
 $color_hover   = get_theme_mod('color_ui_surface_dark', '#c93d12');
 $color_surface = get_theme_mod('color_ui_surface_light', '#f5ede9');
 $color_text    = get_theme_mod('color_special_text', '#71230a');
+
+// AP-3.0: Alle vier oben gelesenen Theme-Werte als Inline-Custom-Properties
+// auf dem Wrapper - unabhaengig davon, ob style.css aktuell alle vier
+// referenziert (aktuell nur --mb-accordion-active fuer die Buttons; die
+// uebrigen drei bleiben zusaetzlich als data-color-*-Attribute fuer view.js
+// erhalten, siehe unten).
+$wrapper_style_vars = sprintf(
+    '--mb-accordion-surface: %s; --mb-accordion-active: %s; --mb-accordion-hover: %s; --mb-accordion-text: %s;',
+    esc_attr($color_surface),
+    esc_attr($color_active),
+    esc_attr($color_hover),
+    esc_attr($color_text)
+);
 
 // Dieser Block nutzt bewusst keinen save()-Wrapper (siehe index.js), daher
 // setzt WordPress die align-Klasse (alignwide/alignfull) NICHT automatisch.
@@ -64,6 +87,7 @@ if ($show_numbering) {
 
 echo '<div ' . get_block_wrapper_attributes([
     'class'               => $classes,
+    'style'               => $wrapper_style_vars,
     'data-allow-multiple' => $allow_multiple ? 'true' : 'false',
     'data-open-first'     => $open_first ? 'true' : 'false',
     'data-numbering'      => $show_numbering ? 'true' : 'false',
@@ -76,26 +100,16 @@ echo '<div ' . get_block_wrapper_attributes([
 ]) . '>';
 
 if ($show_expand_all) {
-    // Buttons erhalten ihre Farbe zusaetzlich direkt als Inline-Style (siehe
-    // CLAUDE.md "Buttons mit Theme-Farben"): hoechste Spezifitaet, keine
-    // Abhaengigkeit von CSS-Variablen-Unterstuetzung.
-    $button_style = 'background: ' . esc_attr($color_active) . ' !important;'
-        . ' background-color: ' . esc_attr($color_active) . ' !important;'
-        . ' color: #fff !important;'
-        . ' border: none !important;'
-        . ' border-radius: 4px !important;'
-        . ' padding: 8px 16px !important;'
-        . ' cursor: pointer !important;'
-        . ' display: inline-flex !important;'
-        . ' align-items: center !important;';
-
+    // AP-3.0-Spike: keine Inline-Farben mehr an den Buttons selbst - die
+    // Farbe kommt aus der Custom-Property auf dem Wrapper (siehe oben),
+    // style.css referenziert sie per var(--mb-accordion-active, #fallback).
     echo '<div class="mb-accordion__controls" hidden>';
     if ($allow_multiple) {
         // "Alle oeffnen" ist im Exklusivmodus (allowMultiple aus)
         // widerspruechlich und wird dort nicht ausgegeben.
-        echo '<button type="button" class="mb-accordion__control" data-action="open-all" style="' . esc_attr($button_style) . '">' . esc_html__('Alle öffnen', 'modular-blocks-plugin') . '</button>';
+        echo '<button type="button" class="mb-accordion__control" data-action="open-all">' . esc_html__('Alle öffnen', 'modular-blocks-plugin') . '</button>';
     }
-    echo '<button type="button" class="mb-accordion__control" data-action="close-all" style="' . esc_attr($button_style) . '">' . esc_html__('Alle schließen', 'modular-blocks-plugin') . '</button>';
+    echo '<button type="button" class="mb-accordion__control" data-action="close-all">' . esc_html__('Alle schließen', 'modular-blocks-plugin') . '</button>';
     echo '</div>';
 }
 

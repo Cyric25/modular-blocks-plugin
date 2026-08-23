@@ -7,6 +7,11 @@
  * Farben der Zeilenkoepfe (aktiv/hover/geschlossen) werden von view.js
  * inline aus den data-color-* Attributen gesetzt (siehe render.php) – diese
  * Datei legt sich deshalb bei Zeilenkopf-Hintergruenden nicht fest.
+ *
+ * Die Steuerleisten-Buttons (.mb-accordion__control) sind seit AP-3.0
+ * (PLAN-CSS-Variablen-Darkmode.md, Spike) die Ausnahme: Ihre Farbe kommt
+ * per var(--mb-accordion-active, #fallback) von einer Custom-Property, die
+ * render.php inline auf den Wrapper schreibt - siehe Regel unten.
  */
 
 .mb-accordion {
@@ -33,6 +38,29 @@
  */
 .mb-accordion__controls[hidden] {
     display: none;
+}
+
+/*
+ * AP-3.0-Spike (PLAN-CSS-Variablen-Darkmode.md): Diese Regel war vorher ein
+ * pro Button hartkodiertes Inline-Style aus render.php (siehe CLAUDE.md,
+ * bisherige Empfehlung "Buttons mit Theme-Farben"). Getestet wird hier, ob
+ * eine externe Regel, die eine vom Server inline auf den Wrapper gesetzte
+ * Custom-Property referenziert, das dort dokumentierte Override-Problem
+ * umgeht. --mb-accordion-active kommt aus render.php (Wrapper-Style),
+ * Fallback ist der bisherige Hex-Wert. !important bleibt aus Symmetrie zum
+ * bisherigen Verhalten (Buttons sollen unabhaengig von anderen Regeln auf
+ * dieser Seite immer die Theme-Farbe zeigen).
+ */
+.mb-accordion__control {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--mb-accordion-active, #e24614) !important;
+    background-color: var(--mb-accordion-active, #e24614) !important;
+    color: #fff !important;
 }
 
 .mb-accordion__control:focus-visible {
