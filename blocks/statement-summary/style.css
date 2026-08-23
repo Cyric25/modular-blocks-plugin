@@ -3,24 +3,12 @@
  * Uses theme color variables for consistency
  */
 
-/* Theme color variables (fallback values) */
-:root {
-    --color-special-text: #71230a;
-    --color-ui-surface: #e24614;
-    --color-ui-surface-dark: #c93d12;
-    --color-ui-surface-light: #f5ede9;
-    --color-sidebar-border: #e0e0e0;
-    --color-primary-text: #333333;
-    --color-background: #ffffff;
-    --color-light-background: #f8f9fa;
-}
-
 /* Block container */
 .wp-block-modular-blocks-statement-summary {
     margin: 2rem 0;
     padding: 2rem;
-    background: var(--color-background);
-    border: 1px solid var(--color-sidebar-border);
+    background: var(--color-background, #ffffff);
+    border: 1px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 8px;
 }
 
@@ -31,14 +19,14 @@
 
 .summary-title {
     margin: 0 0 0.75rem 0;
-    color: var(--color-special-text);
+    color: var(--color-special-text, #71230a);
     font-size: 1.5rem;
     font-weight: 600;
 }
 
 .summary-instruction {
     margin: 0;
-    color: var(--color-primary-text);
+    color: var(--color-text-primary, #333333);
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -56,8 +44,8 @@
     display: flex;
     align-items: flex-start;
     padding: 1rem;
-    background: var(--color-light-background);
-    border: 2px solid var(--color-sidebar-border);
+    background: var(--color-background-light, #f8f9fa);
+    border: 2px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -70,14 +58,14 @@
 }
 
 .statement-option:hover {
-    background: var(--color-ui-surface-light);
-    border-color: var(--color-ui-surface);
+    background: var(--color-ui-surface-light, #f5ede9);
+    border-color: var(--color-ui-surface, #e24614);
 }
 
 .statement-option.selected,
 .statement-option:has(.statement-checkbox:checked) {
-    background: var(--color-ui-surface-light);
-    border-color: var(--color-ui-surface);
+    background: var(--color-ui-surface-light, #f5ede9);
+    border-color: var(--color-ui-surface, #e24614);
     box-shadow: 0 2px 4px rgba(226, 70, 20, 0.1);
 }
 
@@ -87,7 +75,7 @@
     min-width: 1.25rem;
     min-height: 1.25rem;
     cursor: pointer;
-    accent-color: var(--color-ui-surface);
+    accent-color: var(--color-ui-surface, #e24614);
     pointer-events: auto !important;
 }
 
@@ -100,7 +88,7 @@
 /* Statement text */
 .statement-text {
     flex: 1;
-    color: var(--color-primary-text);
+    color: var(--color-text-primary, #333333);
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -173,20 +161,20 @@
 
 .summary-check,
 .button-primary {
-    background: var(--color-ui-surface);
+    background: var(--color-ui-surface, #e24614);
     color: #ffffff;
 }
 
 .summary-check:hover,
 .button-primary:hover {
-    background: var(--color-ui-surface-dark);
+    background: var(--color-ui-surface-dark, #c93d12);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .summary-check:disabled,
 .button-primary:disabled {
-    background: var(--color-sidebar-border);
+    background: var(--color-sidebar-border, #e0e0e0);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -194,27 +182,27 @@
 
 .summary-retry,
 .button-secondary {
-    background: var(--color-light-background);
-    color: var(--color-primary-text);
-    border: 2px solid var(--color-sidebar-border);
+    background: var(--color-background-light, #f8f9fa);
+    color: var(--color-text-primary, #333333);
+    border: 2px solid var(--color-sidebar-border, #e0e0e0);
 }
 
 .summary-retry:hover,
 .button-secondary:hover {
-    background: var(--color-ui-surface-light);
-    border-color: var(--color-ui-surface);
+    background: var(--color-ui-surface-light, #f5ede9);
+    border-color: var(--color-ui-surface, #e24614);
 }
 
 .summary-solution,
 .button-tertiary {
     background: transparent;
-    color: var(--color-special-text);
-    border: 2px solid var(--color-special-text);
+    color: var(--color-special-text, #71230a);
+    border: 2px solid var(--color-special-text, #71230a);
 }
 
 .summary-solution:hover,
 .button-tertiary:hover {
-    background: var(--color-special-text);
+    background: var(--color-special-text, #71230a);
     color: #ffffff;
 }
 
@@ -249,14 +237,14 @@
 .summary-result {
     margin-top: 2rem;
     padding: 1.5rem;
-    background: var(--color-ui-surface-light);
-    border: 2px solid var(--color-ui-surface);
+    background: var(--color-ui-surface-light, #f5ede9);
+    border: 2px solid var(--color-ui-surface, #e24614);
     border-radius: 8px;
 }
 
 .result-title {
     margin: 0 0 1rem 0;
-    color: var(--color-special-text);
+    color: var(--color-special-text, #71230a);
     font-size: 1.25rem;
     font-weight: 600;
 }
@@ -268,9 +256,9 @@
 .summary-statement {
     margin: 0 0 0.75rem 0;
     padding: 0.75rem;
-    background: var(--color-background);
-    border-left: 4px solid var(--color-ui-surface);
-    color: var(--color-primary-text);
+    background: var(--color-background, #ffffff);
+    border-left: 4px solid var(--color-ui-surface, #e24614);
+    color: var(--color-text-primary, #333333);
     font-size: 1rem;
     line-height: 1.6;
     opacity: 0;
@@ -332,12 +320,12 @@
 
 /* Accessibility improvements */
 .statement-checkbox:focus {
-    outline: 2px solid var(--color-ui-surface);
+    outline: 2px solid var(--color-ui-surface, #e24614);
     outline-offset: 2px;
 }
 
 .summary-actions button:focus {
-    outline: 2px solid var(--color-ui-surface);
+    outline: 2px solid var(--color-ui-surface, #e24614);
     outline-offset: 2px;
 }
 
