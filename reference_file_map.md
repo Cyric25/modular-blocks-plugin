@@ -78,6 +78,28 @@ versioniert) statt `style.css` direkt – eine Änderung an `style.css` wird
 erst nach `npm run build` sichtbar, siehe `PLAN-CSS-Variablen-Darkmode.md`
 Abschnitt 3.
 
+**Nachtrag AP-3.9 (`statement-summary`):** Die entfernte lokale Redefinition
+war ein `:root { --color-ui-surface: #e24614; … }`-Block – da `:root` stets
+das Dokument-Root trifft, nicht nur den Block, konnte das je nach
+Ladereihenfolge sogar die Customizer-Werte für die **gesamte Seite**
+überschreiben, nicht nur innerhalb dieses Blocks. Zusätzlicher Fund dabei:
+zwei der acht redefinierten Namen waren keine echten Namenskollisionen,
+sondern Tippfehler mit vertauschter Wortstellung gegenüber den echten
+Theme-Variablen – `--color-primary-text` (statt `--color-text-primary`)
+und `--color-light-background` (statt `--color-background-light`). Bloßes
+Entfernen des lokalen `:root`-Blocks hätte diese zwei Fälle als
+undefinierte Custom Properties zurückgelassen; beide Namen wurden daher im
+gesamten Block auf die echten Theme-Namen korrigiert. **Derselbe
+Tippfehler existiert auch in `blocks/point-of-interest/style.css`**
+(bereits `var(--color-primary-text, #333333)` /
+`var(--color-light-background, #f8f9fa)`, dort aber mit Fallback-Syntax
+statt lokaler Redefinition) – dort greift die Kopplung an die echte
+Theme-Variable dadurch nie, der Block läuft dauerhaft auf dem Fallback-Wert.
+`point-of-interest` gilt laut Statustabelle als AP-3.7 bereits ☑ erledigt;
+dieser Fund ist also ein **neuer, eigenständiger Nachtrag außerhalb des
+AP-3.9-Scopes**, keine Umsetzung – vermutlich ein kleines künftiges
+Korrektur-AP wert.
+
 ## Accordion-Block im Detail
 
 **Ein einziger Block, überschriftengesteuert.** Der früher hier beschriebene Kind-Block `modular-blocks/accordion-row` existiert nicht mehr (Verzeichnis `blocks/accordion-row/` ist entfallen); wer noch darauf verweist, liest eine überholte Fassung.
