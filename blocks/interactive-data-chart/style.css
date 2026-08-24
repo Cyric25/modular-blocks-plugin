@@ -5,8 +5,10 @@
 .wp-block-modular-blocks-interactive-data-chart {
     margin: 2em 0;
     padding: 1.5em;
-    background: #ffffff;
+    background: var(--color-background, #ffffff);
     border-radius: 8px;
+    /* rgba(0,0,0,X) Schatten: keine passende Variable im AP-1.1-Vokabular,
+       Ausnahme wie in AP-1.3/AP-1.4 */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -19,6 +21,8 @@
     margin: 0 0 1.5em 0;
     font-size: 24px;
     font-weight: 600;
+    /* #1e1e1e (Gutenberg-Standard-Überschriftenfarbe) hat keinen
+       wertexakten Treffer im AP-1.1-Vokabular, bewusst literal belassen */
     color: #1e1e1e;
     text-align: center;
 }
@@ -32,13 +36,16 @@
 .data-input-table {
     width: 100%;
     border-collapse: collapse;
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     border-radius: 4px;
     overflow: hidden;
 }
 
 .data-input-table thead th {
-    background: #0073aa;
+    background: var(--color-ui-surface, #0073aa);
+    /* Weiße Schrift auf der Akzentfläche: bewusst literal, keine Kopplung an
+       --color-background (dieselbe Begründung wie .button-primary in
+       statement-summary/style.css, AP-3.9) */
     color: #ffffff;
     padding: 12px 16px;
     text-align: left;
@@ -47,7 +54,7 @@
 }
 
 .data-input-table tbody tr {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-sidebar-border, #e0e0e0);
 }
 
 .data-input-table tbody tr:last-child {
@@ -61,21 +68,25 @@
 .data-input-table .data-cell {
     width: 100%;
     padding: 8px 12px;
+    /* #dcdcde (WordPress-Core-Formularrahmen) hat keinen wertexakten Treffer
+       im AP-1.1-Vokabular (weder --color-border #dddddd noch
+       --color-sidebar-border #e0e0e0), bewusst literal belassen */
     border: 2px solid #dcdcde;
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
-    background: #ffffff;
+    background: var(--color-background, #ffffff);
     transition: border-color 0.2s ease;
 }
 
 .data-input-table .data-cell:focus {
     outline: none;
-    border-color: #0073aa;
-    box-shadow: 0 0 0 1px #0073aa;
+    border-color: var(--color-ui-surface, #0073aa);
+    box-shadow: 0 0 0 1px var(--color-ui-surface, #0073aa);
 }
 
 .data-input-table .data-cell::placeholder {
+    /* #999 ohne wertexakten Treffer (--color-text-muted ist #666666) */
     color: #999;
     font-style: italic;
 }
@@ -103,17 +114,24 @@
 }
 
 .generate-chart-btn {
-    background: #0073aa;
+    background: var(--color-ui-surface, #0073aa);
+    /* Weiße Schrift auf der Akzentfläche: bewusst literal, siehe Begründung
+       oben bei .data-input-table thead th */
     color: #ffffff;
 }
 
 .generate-chart-btn:hover {
-    background: #005177;
+    background: var(--color-ui-surface-dark, #005177);
     transform: translateY(-1px);
+    /* rgba(0,115,170,X): kein RGB-Kanal-Pendant zu --color-ui-surface im
+       AP-1.1-Vokabular, Ausnahme wie bei image-comparison/multiple-choice */
     box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
 }
 
 .clear-chart-btn {
+    /* #dc3545/#c82333 (Bootstrap-„danger"-Rot) treffen --color-danger
+       (#cc3333) NICHT wertexakt - Kopplung würde die tatsächlich gerenderte
+       Farbe sichtbar verändern (AP-2.1-Lektion), deshalb bewusst literal */
     background: #dc3545;
     color: #ffffff;
 }
@@ -134,7 +152,7 @@
 /* Chart Display */
 .chart-display {
     min-height: 400px;
-    background: #ffffff;
+    background: var(--color-background, #ffffff);
     border-radius: 4px;
     padding: 1em;
 }
@@ -151,6 +169,10 @@
     font-size: 14px;
 }
 
+/* Bootstrap-Alert-Farbtriplets (error/success/info): keiner der drei Sätze
+   trifft --color-danger (#cc3333) bzw. --color-success (#2ecc40) wertexakt,
+   bewusst literal belassen (gleiches Muster wie AP-2.2 „Material-Design-
+   Statusfarben") */
 .chart-message.error {
     background: #f8d7da;
     color: #721c24;
