@@ -123,7 +123,7 @@ $connector_data = [
                         <?php
                         $item_id = sanitize_text_field($item['id'] ?? 'left-' . $index);
                         $item_text = wp_kses_post($item['text'] ?? '');
-                        $item_color = sanitize_hex_color($item['color'] ?? '#0073aa');
+                        $item_color = sanitize_hex_color($item['color'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
                         ?>
                         <div
                             class="connection-item left-item"
@@ -189,7 +189,7 @@ $connector_data = [
                         <?php
                         $item_id = sanitize_text_field($item['id'] ?? 'right-' . $index);
                         $item_text = wp_kses_post($item['text'] ?? '');
-                        $item_color = sanitize_hex_color($item['color'] ?? '#0073aa');
+                        $item_color = sanitize_hex_color($item['color'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
                         ?>
                         <div
                             class="connection-item right-item"
