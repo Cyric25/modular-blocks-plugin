@@ -193,6 +193,62 @@ dieser Fund ist also ein **neuer, eigenständiger Nachtrag außerhalb des
 AP-3.9-Scopes**, keine Umsetzung – vermutlich ein kleines künftiges
 Korrektur-AP wert.
 
+**Darkmode-Kontrastkorrekturen (`PLAN-Darkmode-Umschaltung.md`, Phase 3,
+AP-3.1/AP-3.2, abgeschlossen 2026-08-24):** Aufbauend auf der oben
+beschriebenen var()-Umstellung reichte die reine Variablenkopplung bei 8 der
+14 sichtgeprüften Bildungsblöcke nicht für ausreichenden Kontrast im
+Darkmode – gezielte `[data-theme="dark"]`-Zusatzregeln wurden in den
+folgenden `style.css`-Dateien ergänzt (Lightmode jeweils unverändert, kein
+Canvas-/3D-/Diagramm-Inhaltsbereich angefasst):
+- `summary-block/style.css` – Aktions-Buttons/Token-Layer, 1 Fehler behoben.
+- `drag-and-drop/style.css` – Token-Layer/Buttons, 3 Stellen behoben; vom
+  Autor gewählte Zonenfarben (Inhalt) unangetastet.
+- `image-overlay/style.css` – Layer-Buttons/Container-Hintergrund, 1 Fehler
+  behoben.
+- `point-of-interest/style.css` – Hotspot-/Legenden-Marker, 1 Fehler
+  behoben; zusätzlich 2 vorbestehende Tippfehler-Variablennamen korrigiert
+  (Fallback-Werte identisch zum echten Lightmode-Wert, keine optische
+  Änderung).
+- `multiple-choice/style.css` – zentraler Fragetext war im Darkmode
+  unlesbar (schwerwiegendster Fund), behoben.
+- `statement-summary/style.css` – Token-Layer/Zustandsfarben, 1 Fehler
+  behoben.
+- `drag-the-words/style.css` – umfangreichster Fund: 3
+  `var(--color-background, #fff)`-Fehlnutzungen auf `--color-text-on-accent`
+  korrigiert (Nachbesserung nach AP-3.rev-Befund 1) plus mehrere
+  `[data-theme="dark"]`-Ergänzungen für Grundtext-/Statusfarben; der feste
+  Chip-Hintergrund `#0073aa` bleibt bewusst literal (nie variablengekoppelt,
+  kein Verstoß gegen die var()-Konvention). Siehe Absatz „Paketierungsbug
+  `drag-the-words` behoben" unten – die Darkmode-Korrekturen dieser Datei
+  werden inzwischen tatsächlich ausgeliefert.
+- `interactive-data-chart/style.css` – nur der Titel (UI-Chrome), 1 Fehler
+  behoben; Plotly-Diagramm-Datenfarben aus `assets/js/chart-templates.js`
+  unangetastet (Nicht-Ziel).
+
+Die übrigen 6 geprüften Blöcke (`accordion`, `iframe-whitelist`,
+`molecule-viewer`, `image-comparison`, `statement-connector`,
+`svg-drawing`) hatten keinen Darkmode-Kontrastfehler. Details je Fund in
+`PLAN-Darkmode-Umschaltung.md`, AP-3.2-Übergabenotiz; die Datei
+`assets/css/blocks.css` selbst ist bereits oben unter „Kern und
+Infrastruktur" dokumentiert (AP-3.1).
+
+**Paketierungsbug `drag-the-words` behoben (außerhalb von
+`PLAN-Darkmode-Umschaltung.md`, 2026-08-24):** Als Nebenbefund von AP-3.2
+stellte sich heraus, dass `block.json` `"style": "file:./style-index.css"`
+deklariert, aber weder `index.js` noch `view.js` `style.css` importierten –
+das Frontend-CSS des Blocks (inkl. der obigen Darkmode-Korrekturen) wurde
+dadurch in einer regulär gebauten Produktivinstallation nie ausgeliefert
+(vorbestehender, von diesem Vorhaben unabhängiger Fehler, siehe auch den
+älteren, noch offen dokumentierten Fund zu `drag-the-words` weiter oben unter
+„Muster B – AP-3.11", der sich auf dieselbe Ursache bezieht und im Rahmen
+dieses APs bewusst nicht angepasst wird). Der Orchestrator hat den Bug im
+Anschluss an AP-3.2, als eigenständige, außerhalb dieses Plans liegende
+Aufgabe, behoben: `import './style.css';` in `drag-the-words/index.js`
+ergänzt sowie einen dabei aufgedeckten, unabhängigen Kommentar-Bug in
+`style.css` (ein vorzeitig endender CSS-Kommentar brach den
+Produktions-Build) korrigiert. `npm run build` danach erfolgreich, live auf
+dem Testserver verifiziert.
+
 ## Accordion-Block im Detail
 
 **Ein einziger Block, überschriftengesteuert.** Der früher hier beschriebene Kind-Block `modular-blocks/accordion-row` existiert nicht mehr (Verzeichnis `blocks/accordion-row/` ist entfallen); wer noch darauf verweist, liest eine überholte Fassung.

@@ -413,6 +413,57 @@ $iframe_attrs = [
 - PDF-Export, Downloads, komplexe JavaScript-Apps brauchen volle Berechtigungen
 - Sicherheit wird durch die Whitelist gewährleistet, nicht durch sandbox
 
+## Darkmode
+
+Seit `PLAN-Darkmode-Umschaltung.md` (Phase 3, abgeschlossen 2026-08-24)
+unterstützt das Plugin einen expliziten, getesteten Dunkelmodus.
+
+**Mechanismus (gehört dem Theme, nicht diesem Plugin):** Der Darkmode wird
+ausschließlich über das `data-theme="dark"`-Attribut gesteuert, das
+`Theme/header.php` nach einem expliziten Klick auf den Toggle-Button setzt
+und lokal speichert – **keine** automatische, systemabhängige Umschaltung
+per `@media (prefers-color-scheme: dark)`.
+
+**`assets/css/blocks.css`:** Der Kommentar „KEIN Dunkelmodus – bitte nicht
+wieder einbauen" (2026-08-16, dokumentiert einen gescheiterten
+`prefers-color-scheme`-Versuch mit weißer Schrift auf weißem Grund) wurde
+**nicht gelöscht**, sondern seit AP-3.1 um einen Update-Kommentar ergänzt:
+Der frühere Fehlschlag betraf nur die automatische, systemabhängige
+Variante; der jetzige `[data-theme="dark"]`-Mechanismus wird ausschließlich
+durch den expliziten Toggle gesetzt und ist eine andere, gezielt getestete
+Lösung – kein Wiedereinbau des alten Fehlers. Direkt danach folgt jetzt ein
+neuer `[data-theme="dark"]`-Block: Fast alle Flächen ziehen bereits über
+bestehende `var(--color-x, ...)`-Kopplungen automatisch mit; einziger echter
+Sonderfall waren die zwei fest verdrahteten `rgba(0,0,0,...)`-Kartenschatten,
+die auf `var(--color-border, #dcdcde)` umgestellt wurden.
+
+**Bildungsblöcke (AP-3.2):** 8 von 14 sichtgeprüften Blöcken hatten trotz
+bestehender `var()`-Kopplung echte Kontrastfehler im Darkmode und wurden
+korrigiert: `summary-block`, `drag-and-drop`, `image-overlay`,
+`point-of-interest`, `multiple-choice`, `statement-summary`,
+`drag-the-words`, `interactive-data-chart`. Details je Block stehen in
+`reference_file_map.md`, Abschnitt „Darkmode-Kontrastkorrekturen", und in
+`PLAN-Darkmode-Umschaltung.md`, AP-3.2-Übergabenotiz. Canvas-/3D-/
+Diagramm-Inhaltsflächen (`molecule-viewer`-Viewerhintergrund,
+`svg-drawing`-Zeichenfläche, `interactive-data-chart`-Plotly-Datenbereich)
+wurden dabei bewusst nicht angefasst.
+
+Beiläufig dazu: `drag-the-words` lud sein Frontend-CSS wegen eines
+vorbestehenden, von diesem Vorhaben unabhängigen Paketierungsfehlers
+(`block.json` deklarierte `style-index.css`, aber keine JS-Datei
+importierte `style.css`) in einer regulär gebauten Produktivinstallation gar
+nicht. Das wurde inzwischen außerhalb dieses Plans behoben (Import
+ergänzt) – die Darkmode-Korrekturen dieser Datei kommen seither tatsächlich
+beim Besucher an (CSS lädt korrekt).
+
+**Pflicht-Konvention für neue/geänderte Regeln:** Neue Blöcke bzw. neue
+Regeln in bestehenden Blöcken verwenden ausschließlich
+`var(--color-x, #fallback)` mit den projektweiten Theme-Variablen – nie
+hartcodierte Hex-Werte – damit sie automatisch darkmode-fähig sind.
+Inhaltsfarben (vom Autor/Nutzer gewählte Zeichenfarben,
+Diagramm-Datenreihen, 3D-Viewer-Hintergrund) bleiben davon ausdrücklich
+ausgenommen.
+
 ## Accordion-Block: Zeilen entstehen erst im Browser
 
 Der Block `modular-blocks/accordion` ist der einzige, dessen sichtbare
