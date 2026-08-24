@@ -96,6 +96,24 @@ git push origin main
    - Minimal plugin shell installed once on WordPress
    - Contains only core files: plugin main file, Block Manager, Admin Manager
    - Never needs to be updated unless core functionality changes
+   - **Nachtrag 2026-08-24 (`docs/PLAN-PDF-Notizen-und-Listenformeln.md`,
+     AP-1.fix1):** „Never needs to be updated" hat sich als zu absolut
+     erwiesen. Das bis dahin einzige vorhandene Basis-ZIP enthielt noch
+     einen Stand von `assets/css/blocks.css` mit einem seit 2026-08-16 im
+     Quellstand bereits behobenen Fehler (weiße/unsichtbare LaTeX-Formeln,
+     Details im Abschnitt „Farben kommen aus data-color-*" unten sowie in
+     `Plugins/CDB-Designer/docs/diagnose-latex-listen-2026-08-24.md`). Am
+     2026-08-24 wurde das Basis-ZIP mit `npm run plugin-zip-empty` aus dem
+     aktuellen Quellstand neu gebaut — **Dateiname bleibt unverändert**
+     `modular-blocks-plugin-empty-1.0.6.zip` (die Versionsnummer ist in
+     `create-empty-plugin-zip.js` hart codiert, nicht aus `package.json`
+     abgeleitet; bekannter, hier nicht behobener Nebenbefund). Die neue
+     Datei liegt nur lokal unter `plugin-zips/`, ist **nicht** in Git
+     versioniert (Projektkonvention, siehe `reference_file_map.md`) und
+     wurde nicht hochgeladen. Vor einem künftigen Redeploy dieser Basis:
+     Inhalt von `assets/css/blocks.css` im ZIP gegen den aktuellen
+     Quellstand prüfen, statt sich allein auf „never needs to be updated"
+     zu verlassen.
 
 2. **Individual Block ZIPs** (uploaded separately)
    - Each block is packaged as a standalone ZIP file
@@ -527,9 +545,28 @@ sich bei Zeilenkopf-Hintergründen deshalb bewusst nicht fest.
 
 Der Panel-Inhalt wird von `style.css` auf `#333` zurückgeholt — die Regel
 zählt `p`, `li`, `h1`–`h6` und `blockquote` **einzeln** auf. Alles andere
-erbt weiter. Wer dort ein Element ergänzt, das Text zeigt, muss es in diese
-Aufzählung aufnehmen; sonst erbt es eine Farbe, die für den Zeilenkopf
-gedacht war. Genau daran waren LaTeX-Formeln einmal unsichtbar.
+erbt weiter.
+
+**Korrektur 2026-08-24 (AP-1.doc, `docs/PLAN-PDF-Notizen-und-
+Listenformeln.md`, Befund B8 aus AP-1.rev):** Die frühere Anweisung „Wer
+dort ein Element ergänzt, das Text zeigt, muss es in diese Aufzählung
+aufnehmen" ist auf dem heutigen Stand nachweislich überholt und sollte
+künftige Agenten nicht mehr zu unnötigen Enumerationserweiterungen
+anleiten. `assets/css/blocks.css:106-110` setzt dieselbe Grundfarbe bereits
+eine Ebene weiter außen für den **gesamten** Panel-Inhalt
+(`.mb-accordion__content`) — per Laufzeittest bestätigt: Die Aufzählung
+hier vollständig abgeschaltet, blieben alle zwölf gemessenen Formeln über
+acht Blocktypen unverändert lesbar. Die Aufzählung ist damit redundant,
+schadet aber nicht.
+
+Auch der letzte Satz der ursprünglichen Fassung war ungenau: LaTeX-Formeln
+waren nicht wegen einer fehlenden Ergänzung dieser Aufzählung unsichtbar.
+Die tatsächliche, am 2026-08-16 behobene Ursache (Commits `b854060`,
+`a2737ff`) war ein zu weit gefasster Selektor in `assets/css/blocks.css`,
+der die Formelfarbe direkt am Element `.cbd-latex-content` überschrieb,
+bevor die Vererbung von dieser Aufzählung überhaupt greifen konnte. Details
+und vollständige Farbketten:
+`Plugins/CDB-Designer/docs/diagnose-latex-listen-2026-08-24.md`.
 
 ## Security Considerations
 
