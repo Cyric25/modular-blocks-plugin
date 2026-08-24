@@ -207,6 +207,43 @@
  * `Plugins/CDB-Designer/docs/PLAN-Vier-Erweiterungen.md`.
  */
 
+/*
+ * Update 2026-08-24 (PLAN-Darkmode-Umschaltung.md): Der oben beschriebene
+ * Fehlschlag betraf ausschließlich die automatische, system-abhängige
+ * Umschaltung per @media (prefers-color-scheme: dark). Der jetzt
+ * projektweite [data-theme="dark"]-Mechanismus wird NUR durch einen
+ * expliziten Klick auf den Toggle-Button gesetzt (siehe
+ * Theme/header.php) - nicht durch die Systemeinstellung des Besuchers.
+ * Der folgende Block ist deshalb eine andere, gezielt getestete Lösung,
+ * kein Wiedereinbau des früheren Fehlers.
+ */
+
+/* AP-3.1 (PLAN-Darkmode-Umschaltung.md): Fast alle Flächen dieser Datei
+ * wechseln allein durch die Variablenänderung aus Theme/style.css
+ * (:root[data-theme="dark"], AP-1.1) automatisch mit, weil sie bereits
+ * var(--color-x, #fallback) verwenden (siehe PLAN-CSS-Variablen-Darkmode.md,
+ * AP-3.14) - deshalb bleibt der Rest dieser Datei unverändert.
+ *
+ * Echter Sonderfall ist nur der Kartenschatten: --modular-blocks-shadow und
+ * --modular-blocks-shadow-hover (oben, Zeile ~13-14) sind fest auf
+ * rgba(0, 0, 0, ...) verdrahtet. Auf dem im Darkmode nahezu schwarzen
+ * Kartenhintergrund (--color-background / --color-background-light aus
+ * Theme/style.css) verschwindet ein schwarzer Schatten praktisch und
+ * verliert seine Tiefenwirkung.
+ *
+ * Statt eines neu erfundenen Hex-Werts wird hier dieselbe
+ * var(--color-x, #fallback)-Kopplung wiederverwendet, die der Lightmode-Teil
+ * dieser Datei bereits für Rahmen nutzt (Zeile ~11,
+ * --modular-blocks-border: var(--color-border, #dcdcde)). --color-border
+ * wird im Darkmode auf #444444 umgeschaltet (Theme/style.css,
+ * :root[data-theme="dark"]) und liefert damit einen sichtbaren, aber
+ * dezenten grauen Schattenton statt puren Schwarz - ohne eigenes neues
+ * Hex-Literal. */
+[data-theme="dark"] {
+    --modular-blocks-shadow: 0 2px 10px var(--color-border, #dcdcde);
+    --modular-blocks-shadow-hover: 0 4px 20px var(--color-border, #dcdcde);
+}
+
 /* Accessibility */
 .modular-block-button:focus-visible,
 [class*="wp-block-modular-blocks"] .button:focus-visible {
