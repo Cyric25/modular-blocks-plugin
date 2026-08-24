@@ -3,12 +3,12 @@
  */
 
 :root {
-    --modular-blocks-primary: #0073aa;
-    --modular-blocks-primary-hover: #005177;
-    --modular-blocks-secondary: #f0f0f1;
-    --modular-blocks-text: #1e1e1e;
-    --modular-blocks-text-light: #757575;
-    --modular-blocks-border: #dcdcde;
+    --modular-blocks-primary: var(--color-ui-surface, #0073aa);
+    --modular-blocks-primary-hover: var(--color-ui-surface-dark, #005177);
+    --modular-blocks-secondary: var(--color-background-light, #f0f0f1);
+    --modular-blocks-text: var(--color-text-primary, #1e1e1e);
+    --modular-blocks-text-light: var(--color-text-muted, #757575);
+    --modular-blocks-border: var(--color-border, #dcdcde);
     --modular-blocks-radius: 8px;
     --modular-blocks-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     --modular-blocks-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -28,8 +28,7 @@
 
 /* Common button styles */
 .modular-block-button,
-[class*="wp-block-modular-blocks"] .button,
-[class*="wp-block-modular-blocks"] [class*="button"] {
+[class*="wp-block-modular-blocks"] .button {
     display: inline-block;
     padding: 12px 24px;
     background-color: var(--modular-blocks-primary);
@@ -48,9 +47,7 @@
 .modular-block-button:hover,
 .modular-block-button:focus,
 [class*="wp-block-modular-blocks"] .button:hover,
-[class*="wp-block-modular-blocks"] .button:focus,
-[class*="wp-block-modular-blocks"] [class*="button"]:hover,
-[class*="wp-block-modular-blocks"] [class*="button"]:focus {
+[class*="wp-block-modular-blocks"] .button:focus {
     background-color: var(--modular-blocks-primary-hover);
     color: #ffffff;
     text-decoration: none;
@@ -58,15 +55,14 @@
 }
 
 .modular-block-button:active,
-[class*="wp-block-modular-blocks"] .button:active,
-[class*="wp-block-modular-blocks"] [class*="button"]:active {
+[class*="wp-block-modular-blocks"] .button:active {
     transform: translateY(0);
 }
 
 /* Common card styles */
 .modular-block-card,
 [class*="wp-block-modular-blocks"] [class*="card"] {
-    background-color: #ffffff;
+    background-color: var(--color-background, #ffffff);
     border-radius: var(--modular-blocks-radius);
     box-shadow: var(--modular-blocks-shadow);
     padding: var(--modular-blocks-spacing-large);
@@ -162,8 +158,7 @@
     }
 
     .modular-block-button,
-    [class*="wp-block-modular-blocks"] .button,
-    [class*="wp-block-modular-blocks"] [class*="button"] {
+    [class*="wp-block-modular-blocks"] .button {
         width: 100%;
         text-align: center;
     }
@@ -214,8 +209,7 @@
 
 /* Accessibility */
 .modular-block-button:focus-visible,
-[class*="wp-block-modular-blocks"] .button:focus-visible,
-[class*="wp-block-modular-blocks"] [class*="button"]:focus-visible {
+[class*="wp-block-modular-blocks"] .button:focus-visible {
     outline: 2px solid var(--modular-blocks-primary);
     outline-offset: 2px;
 }
@@ -228,8 +222,7 @@
     }
 
     .modular-block-button,
-    [class*="wp-block-modular-blocks"] .button,
-    [class*="wp-block-modular-blocks"] [class*="button"] {
+    [class*="wp-block-modular-blocks"] .button {
         background: transparent !important;
         color: var(--modular-blocks-text) !important;
         border: 1px solid var(--modular-blocks-border) !important;
