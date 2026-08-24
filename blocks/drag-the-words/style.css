@@ -159,10 +159,12 @@
        hier faelschlich als "die Farbe Weiss" verwendet, nicht als
        Seitenhintergrund - der Hintergrund dieses Chips ist fest blau, nie
        gekoppelt. Im Darkmode wurde --color-background aber zu #121212 und
-       der Text damit dunkel auf dunkel-auf-blau. Korrektur: literales
-       #ffffff, identischer Lightmode-Effekt, im Darkmode nicht mehr
-       betroffen. */
-    color: #ffffff;
+       der Text damit dunkel auf dunkel-auf-blau. Korrektur (AP-3.rev-Fund):
+       var(--color-text-on-accent, #fff) statt eines literalen Hex-Werts -
+       identischer Lightmode-Effekt, im Darkmode nicht mehr betroffen, und
+       konsistent mit der fuer genau diesen Fall (fester Text auf
+       theme-unabhaengiger Akzentflaeche) in AP-1.1 geschaffenen Variable. */
+    color: var(--color-text-on-accent, #ffffff);
     border: 2px solid #005a87;
     border-radius: 20px;
     padding: 8px 16px;
@@ -266,9 +268,10 @@
     left: 50%;
     transform: translateX(-50%);
     background: #1e1e1e;
-    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - fest #ffffff
+    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - Hintergrund
+       ist fest, nie var()-gekoppelt, daher var(--color-text-on-accent, #fff)
        statt der faelschlich als "Weiss" gemeinten var(--color-background). */
-    color: #ffffff;
+    color: var(--color-text-on-accent, #ffffff);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
@@ -307,9 +310,10 @@
 
 .drag-words-button {
     background: #0073aa;
-    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - fest #ffffff
+    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - Hintergrund
+       ist fest, nie var()-gekoppelt, daher var(--color-text-on-accent, #fff)
        statt der faelschlich als "Weiss" gemeinten var(--color-background). */
-    color: #ffffff;
+    color: var(--color-text-on-accent, #ffffff);
     border: none;
     border-radius: 6px;
     padding: 12px 24px;
