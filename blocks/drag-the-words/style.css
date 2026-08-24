@@ -4,11 +4,11 @@
  */
 
 .wp-block-modular-blocks-drag-the-words {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    font-family: var(--font-family-base, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif);
     line-height: 1.6;
     color: #1e1e1e;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
+    background: var(--color-background, #ffffff);
+    border: 1px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 8px;
     padding: 24px;
     margin: 24px 0;
@@ -38,14 +38,14 @@
 
 .drag-words-description {
     font-size: 16px;
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     margin: 0;
     line-height: 1.5;
 }
 
 /* Text Area */
 .text-area {
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     border: 2px dashed #d1d5db;
     border-radius: 8px;
     padding: 24px;
@@ -78,7 +78,7 @@
     height: 32px;
     line-height: 32px;
     text-align: center;
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-style: italic;
     background: linear-gradient(to right, transparent 0%, rgba(0, 115, 170, 0.1) 50%, transparent 100%);
     transition: all 0.3s ease;
@@ -99,8 +99,8 @@
 
 /* Word Bank */
 .word-bank {
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
+    background: var(--color-background, #ffffff);
+    border: 2px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 24px;
@@ -129,7 +129,7 @@
     padding: 12px;
     border: 2px dashed #d1d5db;
     border-radius: 6px;
-    background: #f8f9fa;
+    background: var(--color-background-light, #f8f9fa);
     transition: all 0.3s ease;
 }
 
@@ -140,7 +140,7 @@
 
 .word-bank-items:empty::after {
     content: "Alle Wörter wurden verwendet";
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-style: italic;
     display: flex;
     align-items: center;
@@ -155,7 +155,7 @@
     align-items: center;
     justify-content: center;
     background: #0073aa;
-    color: #ffffff;
+    color: var(--color-background, #ffffff);
     border: 2px solid #005a87;
     border-radius: 20px;
     padding: 8px 16px;
@@ -196,7 +196,7 @@
 }
 
 .draggable-word.distractor-word {
-    background: #666666;
+    background: var(--color-text-muted, #666666);
     border-color: #4a4a4a;
 }
 
@@ -259,7 +259,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: #1e1e1e;
-    color: #ffffff;
+    color: var(--color-background, #ffffff);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
@@ -298,7 +298,7 @@
 
 .drag-words-button {
     background: #0073aa;
-    color: #ffffff;
+    color: var(--color-background, #ffffff);
     border: none;
     border-radius: 6px;
     padding: 12px 24px;
@@ -321,8 +321,8 @@
 }
 
 .drag-words-button:disabled {
-    background: #e0e0e0;
-    color: #666666;
+    background: var(--color-sidebar-border, #e0e0e0);
+    color: var(--color-text-muted, #666666);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -346,8 +346,8 @@
 
 /* Results */
 .drag-words-results {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
+    background: var(--color-background-light, #f8f9fa);
+    border: 1px solid var(--color-sidebar-border, #e0e0e0);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 16px;
