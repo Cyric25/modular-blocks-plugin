@@ -261,3 +261,17 @@
         display: block !important;
     }
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): .chart-title ist bewusst literal
+ * #1e1e1e belassen (siehe Kommentar oben), der Block-Hintergrund selbst
+ * ist aber korrekt an --color-background gekoppelt und wird im Darkmode
+ * dunkel - der Titel war dadurch dunkler Text auf dunklem Grund. Betroffen
+ * ist ausschliesslich die UI-Chrome-Ueberschrift dieses Blocks, NICHT das
+ * von Plotly gezeichnete Diagramm selbst (eigener, unangetasteter
+ * Datenbereich/Hintergrund, siehe Nicht-Ziele). Fix: Titelfarbe folgt im
+ * Darkmode der bereits bestehenden globalen Variable --color-text-primary.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-interactive-data-chart .chart-title {
+    color: var(--color-text-primary, #e8e8e8);
+}

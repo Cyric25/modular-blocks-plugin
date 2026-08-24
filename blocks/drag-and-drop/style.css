@@ -1280,3 +1280,50 @@
         border-style: solid !important;
     }
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): Drei tatsaechliche Kontrastfunde,
+ * alle nach demselben Muster - eine Flaeche bleibt bewusst/versehentlich
+ * IMMER hell, waehrend die daraufsitzende Textfarbe ueber eine bereits
+ * gekoppelte var() im Darkmode hell wird:
+ *
+ * 1) .zone-label: das weisse Namensschildchen ueber einer Drop-Zone ist
+ *    IMMER rgba(255,255,255,0.95) (kein var(), reine UI-Chrome, keine vom
+ *    Autor gewaehlte Zonenfarbe) - der Text folgt aber
+ *    var(--color-text-primary) und wurde im Darkmode hell auf hell.
+ * 2) .result-message.success/.partial/.fail und .feedback-item.correct/
+ *    .incorrect: die Flaechen sind stark transparente rgba(...,0.1)-
+ *    Toenungen ueber dem Block-Hintergrund (var(--dd-bg), im Darkmode
+ *    dunkel) - die Textfarben sind aber fest dunkles Gruen/Gelb/Rot und
+ *    wurden dadurch dunkel auf dunkel.
+ * 3) .drag-drop-button:disabled: Hintergrund #ccc bleibt bewusst fest hell
+ *    (WordPress-Deaktiviert-Konvention), der Text folgt aber
+ *    var(--color-text-muted) und wurde im Darkmode zu hell fuer die
+ *    weiterhin helle Flaeche (Kontrast faellt von ~3:1 auf ~1.3:1).
+ *
+ * Alle drei Fixes ueberschreiben nur die Textfarbe, mit bereits im Projekt
+ * vorhandenen Werten (Fallback-Literal bzw. den passenden --dd-*-Aliassen
+ * dieser Datei) - keine neue Variable, Lightmode unveraendert, keine
+ * Draggable-/Zonen-Autorenfarbe angefasst.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .zone-label {
+    color: #333333;
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .result-message.success,
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .feedback-item.correct {
+    color: var(--dd-success, #00a32a);
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .result-message.fail,
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .feedback-item.incorrect {
+    color: var(--dd-error, #d63638);
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .result-message.partial {
+    color: #eab308;
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-and-drop .drag-drop-button:disabled {
+    color: #666666;
+}

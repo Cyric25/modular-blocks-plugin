@@ -305,7 +305,17 @@
     box-shadow: var(--poi-shadow-hover);
     opacity: 0;
     visibility: hidden;
-    color: var(--color-primary-text, #333333);
+    /* AP-3.2 (PLAN-Darkmode-Umschaltung.md): Tippfehler korrigiert - der
+       echte Theme-Variablenname ist --color-text-primary, nicht
+       --color-primary-text (bereits in reference_file_map.md als offener
+       Nachtrag zu PLAN-CSS-Variablen-Darkmode.md/AP-3.9 dokumentiert). Der
+       reale Lightmode-Wert von --color-text-primary ist #333333 - identisch
+       zum bisherigen Fallback, Lightmode bleibt also unveraendert. Im
+       Darkmode greift die Kopplung dadurch jetzt erstmals wirklich und
+       liefert den hellen Wert, der zum ebenfalls korrekt gekoppelten
+       dunklen .poi-popup-Hintergrund passt (vorher: fest dunkler Text auf
+       dunklem Hintergrund, praktisch unsichtbar). */
+    color: var(--color-text-primary, #333333);
     /* Keine Transition hier - sofortiges Schließen */
 }
 
@@ -327,8 +337,14 @@
     justify-content: space-between;
     padding: 12px 16px;
     border-bottom: 1px solid var(--color-sidebar-border, #e0e0e0);
-    background: var(--color-light-background, #f8f9fa);
-    background-color: var(--color-light-background, #f8f9fa);
+    /* AP-3.2 (PLAN-Darkmode-Umschaltung.md): Tippfehler korrigiert - der
+       echte Theme-Variablenname ist --color-background-light, nicht
+       --color-light-background (siehe Kommentar bei .poi-popup oben). Der
+       reale Lightmode-Wert ist #f8f9fa - identisch zum bisherigen Fallback,
+       Lightmode bleibt unveraendert. Im Darkmode wird der Kopf dadurch jetzt
+       korrekt dunkel, passend zum ebenfalls dunklen Titel-/Body-Text. */
+    background: var(--color-background-light, #f8f9fa);
+    background-color: var(--color-background-light, #f8f9fa);
     border-radius: var(--poi-border-radius) var(--poi-border-radius) 0 0;
 }
 
@@ -354,7 +370,8 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    color: var(--color-primary-text, #333333);
+    /* AP-3.2: Tippfehler korrigiert, siehe Kommentar bei .poi-popup oben. */
+    color: var(--color-text-primary, #333333);
     transition: var(--poi-transition);
 }
 
@@ -372,13 +389,14 @@
     padding: 16px;
     font-size: 0.9rem;
     line-height: 1.6;
-    color: var(--color-primary-text, #333333);
+    /* AP-3.2: Tippfehler korrigiert, siehe Kommentar bei .poi-popup oben. */
+    color: var(--color-text-primary, #333333);
     background: var(--color-background, #ffffff);
 }
 
 .wp-block-modular-blocks-point-of-interest .popup-body,
 .wp-block-modular-blocks-point-of-interest .popup-body p {
-    color: var(--color-primary-text, #333333);
+    color: var(--color-text-primary, #333333);
 }
 
 .popup-body p {
@@ -820,4 +838,18 @@
     .animation-bounce {
         animation: none;
     }
+}
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): .poi-header sitzt auf
+ * --poi-bg-light, einer rein lokalen, bewusst IMMER hellen Konstante
+ * (#f6f7f7, keine var()-Kopplung). Der Titel folgt aber --poi-text-color
+ * -> var(--color-special-text), das im Darkmode auf einen hellen Orangeton
+ * wechselt - auf der weiterhin hellen Kopfflaeche war der Titel dadurch
+ * kaum lesbar. Fix: Titelfarbe bleibt im Darkmode auf dem bereits
+ * vorhandenen dunklen Fallback-Wert der Variablenkette (#1e1e1e) - exakt
+ * wie im Lightmode, keine neue Variable.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-point-of-interest .poi-title {
+    color: #1e1e1e;
 }

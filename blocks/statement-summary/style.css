@@ -343,3 +343,20 @@
         border: 1px solid #000;
     }
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): Die Zustandsflaechen
+ * is-correct/is-incorrect/is-solution sind bewusst eigene, IMMER helle
+ * Toenungen (#e8f5e9/#ffebee/#e3f2fd, keine var()-Kopplung). Ihr Text
+ * (.statement-text) folgt aber var(--color-text-primary), das im Darkmode
+ * auf einen hellen Wert wechselt - auf den weiterhin hellen Zustands-
+ * flaechen war der Text dadurch praktisch unsichtbar. Fix: Textfarbe
+ * bleibt in genau diesen drei Zustaenden im Darkmode auf dem bereits
+ * vorhandenen dunklen Fallback-Wert der Variablenkette (#333333) - exakt
+ * wie im Lightmode, keine neue Variable.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-statement-summary .statement-option.is-correct .statement-text,
+[data-theme="dark"] .wp-block-modular-blocks-statement-summary .statement-option.is-incorrect .statement-text,
+[data-theme="dark"] .wp-block-modular-blocks-statement-summary .statement-option.is-solution .statement-text {
+    color: #333333;
+}

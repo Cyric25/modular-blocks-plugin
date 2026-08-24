@@ -155,7 +155,14 @@
     align-items: center;
     justify-content: center;
     background: #0073aa;
-    color: var(--color-background, #ffffff);
+    /* AP-3.2 (PLAN-Darkmode-Umschaltung.md): var(--color-background) wurde
+       hier faelschlich als "die Farbe Weiss" verwendet, nicht als
+       Seitenhintergrund - der Hintergrund dieses Chips ist fest blau, nie
+       gekoppelt. Im Darkmode wurde --color-background aber zu #121212 und
+       der Text damit dunkel auf dunkel-auf-blau. Korrektur: literales
+       #ffffff, identischer Lightmode-Effekt, im Darkmode nicht mehr
+       betroffen. */
+    color: #ffffff;
     border: 2px solid #005a87;
     border-radius: 20px;
     padding: 8px 16px;
@@ -259,7 +266,9 @@
     left: 50%;
     transform: translateX(-50%);
     background: #1e1e1e;
-    color: var(--color-background, #ffffff);
+    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - fest #ffffff
+       statt der faelschlich als "Weiss" gemeinten var(--color-background). */
+    color: #ffffff;
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
@@ -298,7 +307,9 @@
 
 .drag-words-button {
     background: #0073aa;
-    color: var(--color-background, #ffffff);
+    /* AP-3.2: dieselbe Korrektur wie bei .draggable-word oben - fest #ffffff
+       statt der faelschlich als "Weiss" gemeinten var(--color-background). */
+    color: #ffffff;
     border: none;
     border-radius: 6px;
     padding: 12px 24px;
@@ -654,4 +665,61 @@
 .word-blank.available .blank-placeholder {
     border-color: #0073aa;
     color: #0073aa;
+}
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): Der Grundtext dieses Blocks
+ * (Wrapper, Titel, der eigentliche Luecken-Satz, Wortbank-Ueberschrift,
+ * Punktestand) war ueberall fest #1e1e1e - OHNE var(--color-text-
+ * primary, ...)-Kopplung, obwohl der Block-Hintergrund selbst korrekt an
+ * --color-background gekoppelt ist und im Darkmode dunkel wird. Das ergab
+ * durchgehend dunklen Text auf dunklem Grund - der zentrale, am
+ * schwersten wiegende Fund dieses APs, da er den eigentlichen Lueckentext
+ * betrifft.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .drag-words-title,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .text-content,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .word-bank-title,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .score-display {
+    color: var(--color-text-primary, #e8e8e8);
+}
+
+/*
+ * AP-3.2: .result-message.*/.feedback-item.* sitzen auf stark
+ * transparenten rgba(...,0.1)-Toenungen ueber dem (im Darkmode dunklen)
+ * Block-Hintergrund, ihre Textfarben sind aber fest dunkles Gruen/Gelb/
+ * Rot - dieselbe Kontrastfalle wie im gleichnamigen Muster in
+ * drag-and-drop/style.css. Fix analog: Textfarbe im Darkmode auf die
+ * bereits vorhandenen globalen Erfolg-/Fehler-Variablen, fuer "partial"
+ * denselben Amberton wie --dd-warning in drag-and-drop/style.css (dort
+ * ebenfalls literal, keine block-uebergreifende var()-Referenz moeglich).
+ */
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .result-message.success,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .feedback-item.correct {
+    color: var(--color-success, #4ade80);
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .result-message.fail,
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .feedback-item.incorrect {
+    color: var(--color-danger, #f87171);
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .result-message.partial {
+    color: #eab308;
+}
+
+/*
+ * AP-3.2: .distractor-word nutzt --color-text-muted als Flaechenfarbe (ein
+ * "Text"-Alias, hier fuer den bewusst gedaempften Chip-Hintergrund
+ * zweckentfremdet). Diese Variable ist auf hellem Text auf DUNKLEM Grund
+ * ausgelegt und wird im Darkmode deshalb HELLER (#a0a0a0 statt #666666) -
+ * der feste weisse Text (.draggable-word) wurde dadurch auf dem jetzt
+ * helleren Chip fast unlesbar (per Live-Test: Kontrast faellt von ~5.7:1
+ * auf ~2.6:1). Fix: Hintergrund bleibt im Darkmode auf dem bereits
+ * vorhandenen Fallback-Wert von --color-text-muted (#666666) - exakt der
+ * Lightmode-Optik, Hover-Zustand (fest #4a4a4a) bleibt unberuehrt.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-drag-the-words .draggable-word.distractor-word {
+    background: #666666;
 }

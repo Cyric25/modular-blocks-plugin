@@ -648,3 +648,17 @@
         height: 300px;
     }
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): .overlay-header ist bewusst IMMER
+ * ein festes, helles #fafafa (keine var()-Kopplung, reine UI-Chrome). Der
+ * Titel folgt aber var(--text-color) -> var(--color-special-text), das im
+ * Darkmode auf einen hellen Orangeton wechselt - auf der weiterhin hellen
+ * Kopfflaeche war der Titel dadurch fast unsichtbar (helles Orange auf
+ * Fast-Weiss). Fix: Titelfarbe bleibt im Darkmode auf dem bereits
+ * vorhandenen dunklen Fallback-Wert der Variablenkette (#71230a) - exakt
+ * wie im Lightmode, keine neue Variable.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-image-overlay .overlay-title {
+    color: #71230a !important;
+}

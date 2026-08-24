@@ -464,3 +464,39 @@
 .quiz-loading .quiz-button {
     cursor: wait;
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): --text-color war anders als bei
+ * den uebrigen Bloecken dieses Plugins eine rein lokale Konstante
+ * (#1e1e1e), OHNE var(--color-text-primary, ...)-Kopplung. Der Container-
+ * Hintergrund (.multiple-choice-container) IST an --color-background
+ * gekoppelt und wird im Darkmode dunkel - Frage, Antworttext, Feedback und
+ * Punktestand blieben dabei fest dunkel und waren praktisch unsichtbar
+ * (dunkler Text auf dunklem Grund). Das deckt sich mit dem offenen Hinweis
+ * im Plan, genau diesen Block live gegen Weiss-auf-Weiss/Dunkel-auf-Dunkel
+ * zu pruefen.
+ *
+ * Fix: --text-color folgt im Darkmode --color-text-primary, einer bereits
+ * bestehenden globalen Variable. Lightmode bleibt unveraendert, da diese
+ * Umdefinition ausschliesslich unter [data-theme="dark"] gilt.
+ *
+ * Vier Stellen behalten dabei bewusst die feste dunkle Textfarbe: Die
+ * Antwort-Zustandsflaechen is-correct/is-incorrect/is-unanswered
+ * (--bg-success/--bg-error/--bg-warning) und der "Erneut versuchen"-Button
+ * (--warning-color) sind eigene, unveraenderte helle Flaechenfarben - mit
+ * der neuen hellen --text-color waere der Text dort auf den weiterhin
+ * hellen Flaechen unlesbar geworden.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice {
+    --text-color: var(--color-text-primary, #e8e8e8);
+}
+
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-correct .answer-text,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-correct .feedback-content,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-incorrect .answer-text,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-incorrect .feedback-content,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-unanswered .answer-text,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .answer-option.is-unanswered .feedback-content,
+[data-theme="dark"] .wp-block-modular-blocks-multiple-choice .quiz-button.quiz-retry {
+    color: #1e1e1e;
+}

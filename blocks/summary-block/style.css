@@ -632,3 +632,25 @@
     outline: 2px solid var(--summary-primary);
     outline-offset: 2px;
 }
+
+/*
+ * AP-3.2 (PLAN-Darkmode-Umschaltung.md): Die Zustandsflaechen der
+ * Aussagen (richtig/falsch/ausgewaehlt/Loesung) sind bewusst eigene,
+ * theme-unabhaengige helle Toenungen aus der urspruenglichen H5P/Google-
+ * Palette (siehe Dateikopf-Kommentar) und bleiben in JEDEM Modus hell.
+ * Ihr Text erbt aber regulaer color: var(--summary-text) von
+ * .statement-option, das ueber --color-text-primary im Darkmode auf einen
+ * hellen Wert wechselt - auf den weiterhin hellen Zustandsflaechen war der
+ * Text dadurch praktisch unsichtbar (naeherungsweise helles Grau auf
+ * Hellgruen/-rot/-blau/-grau). Fix: in genau diesen vier Zustaenden bleibt
+ * die Textfarbe im Darkmode auf dem bereits vorhandenen hellen
+ * Fallback-Wert von --summary-text (#202124) - identisch zur Wirkung im
+ * Lightmode, keine neue Variable.
+ */
+[data-theme="dark"] .wp-block-modular-blocks-summary-block .statement-option.correct,
+[data-theme="dark"] .wp-block-modular-blocks-summary-block .statement-option.incorrect,
+[data-theme="dark"] .wp-block-modular-blocks-summary-block .statement-option.selected,
+[data-theme="dark"] .wp-block-modular-blocks-summary-block .statement-option.solution-correct,
+[data-theme="dark"] .wp-block-modular-blocks-summary-block .statement-option.solution-incorrect {
+    color: #202124;
+}
