@@ -686,12 +686,12 @@
 }
 
 /*
- * AP-3.2: .result-message.*/.feedback-item.* sitzen auf stark
- * transparenten rgba(...,0.1)-Toenungen ueber dem (im Darkmode dunklen)
- * Block-Hintergrund, ihre Textfarben sind aber fest dunkles Gruen/Gelb/
- * Rot - dieselbe Kontrastfalle wie im gleichnamigen Muster in
- * drag-and-drop/style.css. Fix analog: Textfarbe im Darkmode auf die
- * bereits vorhandenen globalen Erfolg-/Fehler-Variablen, fuer "partial"
+ * AP-3.2: .result-message und .feedback-item (jeweils Erfolgs-/Fehler-
+ * Varianten) sitzen auf stark transparenten rgba(...,0.1)-Toenungen ueber
+ * dem (im Darkmode dunklen) Block-Hintergrund, ihre Textfarben sind aber
+ * fest dunkles Gruen/Gelb/Rot - dieselbe Kontrastfalle wie im gleichnamigen
+ * Muster in drag-and-drop/style.css. Fix analog: Textfarbe im Darkmode auf
+ * die bereits vorhandenen globalen Erfolg-/Fehler-Variablen, fuer "partial"
  * denselben Amberton wie --dd-warning in drag-and-drop/style.css (dort
  * ebenfalls literal, keine block-uebergreifende var()-Referenz moeglich).
  */

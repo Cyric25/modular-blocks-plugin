@@ -3,6 +3,20 @@
  * WordPress Compatible Version
  */
 
+/**
+ * Internal dependencies
+ *
+ * Fehlten bisher komplett - webpack.config.js verwendet index.js als
+ * einzigen Entry-Punkt je Block (siehe blocks/statement-summary/index.js
+ * fuer dasselbe Muster). Ohne diese Imports erzeugt der Build nie eine
+ * style-index.css, obwohl block.json genau diese Datei referenziert -
+ * das Frontend-CSS des Blocks laedt dadurch in einer regulaer gebauten
+ * Installation ueberhaupt nicht (gefunden waehrend AP-3.2,
+ * PLAN-Darkmode-Umschaltung.md, 2026-08-24).
+ */
+import './editor.css';
+import './style.css';
+
 (function() {
     const { registerBlockType } = wp.blocks;
     const { __ } = wp.i18n;
