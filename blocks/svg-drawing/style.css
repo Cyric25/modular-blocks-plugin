@@ -21,15 +21,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px dashed #ccc;
-    background: #f9f9f9;
-    color: #999;
+    border: 2px dashed #ccc; /* kein exakter Treffer im AP-1.1-Vokabular (--color-border ist #dddddd) */
+    background: #f9f9f9; /* kein exakter Treffer (--color-background-light ist #f8f9fa) */
+    color: #999; /* kein exakter Treffer (--color-text-muted ist #666666) */
     font-size: 14px;
 }
 
 .wp-block-modular-blocks-svg-drawing figcaption {
     text-align: center;
     font-size: 0.875em;
-    color: #666;
+    color: var(--color-text-muted, #666);
     margin-top: 6px;
 }
