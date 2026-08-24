@@ -265,42 +265,125 @@ The admin interface uses AJAX (`wp_ajax_modular_blocks_toggle_block`) to enable/
 
 ### Buttons mit Theme-Farben (WICHTIG!)
 
-**Problem:** CSS-Variablen (`var(--color-ui-surface)`) in externen Stylesheets oder sogar in Inline-Styles werden oft von WordPress-Core-Styles oder anderen Plugins überschrieben. Selbst mit `!important` funktionieren CSS-Variablen nicht zuverlässig.
+**Historie:** Diese Sektion enthielt bis 2026-08 die unbelegte Vermutung
+„CSS-Variablen werden oft überschrieben, GRUNDSÄTZLICH hardcoded
+Inline-Styles verwenden". `PLAN-CSS-Variablen-Darkmode.md`, AP-3.0, hat das
+an einem echten Block (`accordion`) auf einer Produktivseite mit voller
+Stylesheet-Ladereihenfolge (Theme + CDB-Designer + Eigene WP Blocks
+gemeinsam geladen) tatsächlich getestet: **Spike positiv** – ein CSS-Custom-
+Property-Wrapper-Muster löst das historische Override-Problem zuverlässig.
+Das Muster wurde in AP-3.1–3.3 auf drei weitere Blöcke ausgerollt
+(`iframe-whitelist`, `summary-block`, `molecule-viewer`). Es gibt also
+**zwei aktuell gültige Muster für zwei unterschiedliche Situationen** – das
+eine ersetzt nicht das andere:
 
-**Lösung:** Theme-Farben direkt in PHP mit `get_theme_mod()` holen und als Inline-Styles mit hardcoded Hex-Werten ausgeben.
+#### Muster A (empfohlen seit AP-3.0): Custom-Property-Wrapper
+
+**Wann:** Theme-Farbe eines Elements, das über eine externe, per Klasse
+geltende `style.css`-Regel gestylt wird (z. B. ein Button mit eigener
+CSS-Klasse) – der Normalfall für UI-Chrome-Buttons/Toolbars in den
+Bildungsblöcken.
+
+**Muster:** `get_theme_mod()`-Wert in PHP lesen, als Custom-Property auf den
+**äußeren Block-Wrapper** schreiben (nicht auf den Button selbst!),
+`style.css` referenziert die Property per `var(--x, #fallback)` in der
+jeweiligen Klassenregel. Vorbild: `cbd_get_icon_position_style()` im
+CDB-Plugin (`Plugins/CDB-Designer/includes/functions.php`).
 
 ```php
-// In render.php - Theme-Farben aus WordPress Customizer holen
-$color_ui_surface = get_theme_mod('color_ui_surface', '#e24614');
-$color_ui_surface_dark = get_theme_mod('color_ui_surface_dark', '#c93d12');
-$color_ui_surface_light = get_theme_mod('color_ui_surface_light', '#f5ede9');
+// In render.php – Theme-Farben aus WordPress Customizer holen
+$color_active = get_theme_mod('color_ui_surface', '#e24614');
+$color_hover  = get_theme_mod('color_ui_surface_dark', '#c93d12');
 
-// Button-Styles mit PHP-Variablen (NICHT CSS-Variablen!)
-$button_style = 'display: inline-flex !important; align-items: center !important; ' .
-                'padding: 8px 16px !important; border: none !important; border-radius: 4px !important; ' .
-                'background: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'background-color: ' . esc_attr($color_ui_surface) . ' !important; ' .
-                'color: #fff !important; cursor: pointer !important; text-decoration: none !important;';
+// NICHT auf den Button schreiben, sondern als Custom-Property auf den
+// äusseren Wrapper (get_block_wrapper_attributes()) – style.css uebernimmt
+// die eigentliche Faerbung ueber die Klassenregel:
+$wrapper_style_vars = sprintf(
+    '--mb-myblock-active: %s; --mb-myblock-hover: %s;',
+    esc_attr($color_active),
+    esc_attr($color_hover)
+);
+echo '<div ' . get_block_wrapper_attributes(['style' => $wrapper_style_vars]) . '>';
 
-// HTML mit Inline-Styles ausgeben
-echo '<button style="' . esc_attr($button_style) . '">Button Text</button>';
+// Der Button selbst bekommt KEINEN Farb-Inline-Style mehr:
+echo '<button type="button" class="mb-myblock__button">Text</button>';
 ```
 
-**Warum das funktioniert:**
-1. `get_theme_mod()` liest die tatsächlichen Customizer-Werte aus der Datenbank
-2. Inline-Styles mit hardcoded Hex-Werten haben höchste Spezifität
-3. Keine Abhängigkeit von CSS-Variable-Unterstützung oder -Überschreibung
-4. Fallback-Werte garantieren Funktion auch ohne Theme-Customization
-
-**NICHT verwenden:**
 ```css
-/* CSS-Variablen werden oft überschrieben - VERMEIDEN */
-background: var(--color-ui-surface, #e24614) !important;
+/* In style.css */
+.mb-myblock__button {
+    background-color: var(--mb-myblock-active, #e24614);
+}
+.mb-myblock__button:hover {
+    background-color: var(--mb-myblock-hover, #c93d12);
+}
 ```
 
-**Auch für andere Elemente anwenden:**
-- Toolbar-Hintergründe: `$color_ui_surface_light`
-- Hover-States: `$color_ui_surface_dark`
+**Warum das funktioniert (Testnachweis AP-3.0):** Eine Inline-Custom-Property
+auf dem Wrapper hat als Inline-Style ohnehin höchste Spezifität – anders als
+eine `.klasse { background: var(--color-ui-surface); }`-Regel in einer
+externen Datei kann sie nicht durch die Ladereihenfolge anderer Stylesheets
+verdrängt werden. Das eigentliche historische Risiko lag vermutlich darin,
+eine **globale** Custom Property direkt in einer Stylesheet-Regel ohne
+Wrapper-Isolation zu referenzieren – das wurde bewusst NICHT erneut
+getestet (siehe Architekturentscheidungen im Plan), das Wrapper-Muster
+umgeht das Risiko strukturell. Live bestätigt in AP-3.0–3.3, jeweils inkl.
+Customizer-Farbänderung → Seite neu laden → Button zeigt neue Farbe.
+
+**Bekannte Falle dabei – zu weite globale CSS-Selektoren:** `assets/css/
+blocks.css` enthielt bis AP-3.14 einen Selektor `[class*="wp-block-modular-
+blocks"] [class*="button"]`, der per Teilstring-Suche auch block-eigene,
+nicht als Aktions-Button gedachte Elemente traf (z. B. `.slider-button` in
+`image-comparison`) und deren `var()`-Kopplung mit einer fremden,
+zufällig gleich aussehenden Variable überschrieb. Beim Anlegen neuer
+Button-Klassen in `blocks.css` immer mit der tatsächlichen Klasse
+matchen, nicht mit einer Teilstring-Suche.
+
+#### Muster B (weiterhin gültig): Direkter PHP-Wert ohne Wrapper-Property
+
+**Wann:** (a) Nicht-Farb-Eigenschaften von PHP-generierten Buttons (Padding,
+`border-radius`, `display`, `font-size` – das war nie das eigentliche
+Problem und bleibt regulär inline, siehe z. B. `$button_style` in
+`blocks/summary-block/render.php`); (b) echte Content-Fallbackwerte für vom
+Autor **pro Instanz** editierbare Attribute (z. B. Rahmenfarbe einer
+einzelnen Drag-and-Drop-Zone, Farbe eines einzelnen Hotspots) – hier gibt
+es keine einzelne Klassenregel, die für alle Instanzen gleichzeitig gilt,
+der aufgelöste Wert muss also weiterhin direkt in den Stil des jeweiligen
+Einzelelements geschrieben werden (als literaler Wert oder als
+Inline-Custom-Property mit literalem statt `var()`-Wert):
+
+```php
+// Content-Fallback fuer ein Autoren-editierbares Attribut (z. B. Rahmenfarbe
+// einer einzelnen Zone) – get_theme_mod() nur als PHP-Default, Autoren-Wert
+// hat Vorrang:
+$zone_border = sanitize_hex_color($zone['borderColor'] ?? get_theme_mod('color_ui_surface', '#0073aa'));
+echo '<div style="border-color: ' . esc_attr($zone_border) . ';">';
+```
+
+**Bekannte, strukturelle Falle bei Muster B (AP-3.3/3.4/3.5/3.7/3.12
+gefunden):** `block.json` trägt für solche Attribute meist bereits einen
+eigenen Hex-Default ein, den WordPress **vor** `render.php` in
+`$block_attributes` einträgt. Ein `$attr['x'] ?? get_theme_mod(...)`-Fallback
+greift dadurch bei unverändertem Standard-Content praktisch **nie** – jede
+Bestandsseite ohne manuelle Autoren-Anpassung bekommt weiterhin exakt den
+alten `block.json`-Default, nicht den Theme-Wert. Das ist meist nur ein
+kleiner Nebenaspekt (Fallback wirkungslos, aber auch keine sichtbare
+Regression) – bei `image-comparison` (AP-3.5) zerstörte es aber das
+eigentliche AP-Ziel vollständig, weil `render.php` den PHP-aufgelösten Wert
+zusätzlich als LITERALE Inline-Custom-Property auf den Wrapper schrieb, die
+die CSS-`var()`-Kopplung von Muster A komplett überschrieb (Inline-Styles
+gewinnen immer gegen Stylesheet-Regeln). **Korrekte Lösung (AP-3.5.fix1,
+siehe `blocks/image-comparison/render.php`):** Die Inline-Custom-Property
+nur setzen, wenn der Attributwert vom bekannten `block.json`-Default
+abweicht (= echte Autoren-Anpassung); entspricht er dem Default, die
+Property ganz weglassen, damit `style.css`s `var(--color-ui-surface, …)`-
+Kopplung ungehindert greift. Dieses Fix-Muster ist noch **nicht** auf
+`drag-and-drop`, `molecule-viewer`, `point-of-interest` und
+`statement-connector` übertragen (dort weiterhin offener Nebenbefund, siehe
+`reference_file_map.md`, Abschnitt „Strukturelle Falle bei
+Content-Fallbacks").
+
+**Auch für andere Elemente anwenden (Muster B, unverändert):**
 - Icons innerhalb von Buttons: explizit `color: #fff !important; background: transparent !important;`
 - Text-Spans innerhalb von Buttons: explizit stylen, nicht vererben lassen
 

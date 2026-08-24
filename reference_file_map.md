@@ -1,6 +1,6 @@
 # Datei-Map: Modulare Blöcke Plugin (Eigene WP Blocks)
 
-_Stand: 2026-08-16_
+_Stand: 2026-08-24_
 
 Navigationshilfe: Welche Datei ist für was zuständig. Details zur Architektur stehen in `CLAUDE.md` (Plugin-Verzeichnis), der Leitfaden für neue Blöcke in `BLOCK-DEVELOPMENT.md`.
 
@@ -60,23 +60,116 @@ Jeder Block liegt autark in `blocks/<Ordner>/` und wird automatisch entdeckt, so
 | `accordion` | `modular-blocks/accordion` | Klappzeilen aus normalem Inhalt: Jede Überschrift der eingestellten Ebene beginnt im Frontend eine aufklappbare Zeile. **Ein** Block, kein Kind-Block | `block.json`, `index.js`, `render.php`, `view.js`, `style.css`, `editor.css` |
 
 **CSS-Variablen-Umstellung (Phase 3, `PLAN-CSS-Variablen-Darkmode.md`,
-2026-08-23):** `accordion`, `iframe-whitelist`, `molecule-viewer` und
-`summary-block` folgten alle demselben, in AP-3.0 (`accordion`) validierten
-Muster: `get_theme_mod()`-Werte in `render.php` landen nicht mehr als
-hartkodierter Hex-Wert im Inline-Style von Buttons, sondern als
-block-eigene Custom-Properties (`--mb-accordion-*`, `--iw-*`, `--mv-*`,
-`--sb-*`) auf dem äußeren Wrapper; `style.css` referenziert sie per `var()`.
-`drag-and-drop`, `image-comparison`, `image-overlay`, `point-of-interest`,
-`multiple-choice`, `statement-summary` (lokale Redefinition entfernt),
-`drag-the-words` und `assets/css/blocks.css` erhielten stattdessen direkte
-`var(--color-ui-surface, …)`-Kopplung ihrer lokalen Token-Layer bzw.
-verbleibender Rest-Hex-Werte, ohne eigenes Wrapper-Custom-Property (kein
-Anti-Pattern-Fund in diesen Blöcken). **Wichtig:** `block.json` registriert
-bei `accordion`/`iframe-whitelist`/`molecule-viewer`/`summary-block`
-`style-index.css` (Webpack-Build-Artefakt, per `.gitignore` nicht
-versioniert) statt `style.css` direkt – eine Änderung an `style.css` wird
-erst nach `npm run build` sichtbar, siehe `PLAN-CSS-Variablen-Darkmode.md`
-Abschnitt 3.
+AP-3.0–3.14 + Review AP-3.rev/AP-3.rev.fix1, abgeschlossen 2026-08-24):**
+Alle 14 Bildungsblöcke sowie `assets/css/blocks.css` sind auf
+Theme-CSS-Variablen umgestellt. Details je Block/AP in den jeweiligen
+Übergabenotizen in `PLAN-CSS-Variablen-Darkmode.md` – hier nur die für
+künftige Arbeit relevante Kurzfassung. Zwei Muster kamen zum Einsatz:
+
+**Muster A – Custom-Property-Wrapper** (`accordion`, `iframe-whitelist`,
+`molecule-viewer`, `summary-block` – AP-3.0–3.3): Der frühere
+Anti-Pattern-Fund (`get_theme_mod()`-Wert als hartkodierter Hex-Wert direkt
+im Inline-Style von Buttons, siehe `CLAUDE.md` „Buttons mit Theme-Farben")
+wurde durch das an `accordion` gespikte (AP-3.0) und auf einer
+Produktivseite mit voller Stylesheet-Ladereihenfolge (Theme + CDB-Designer
++ Eigene WP Blocks) live bestätigte Muster ersetzt: `get_theme_mod()`-Werte
+landen als Custom-Properties (`--mb-accordion-*`, `--iw-*`, `--mv-*`,
+`--sb-*`) im `style`-Attribut des äußeren Block-Wrappers, `style.css`
+referenziert sie per `var(--x, #fallback)`. `block.json` registriert bei
+diesen vier Blöcken `style-index.css` (Webpack-Build-Artefakt, per
+`.gitignore` nicht versioniert) statt `style.css` direkt – eine Änderung an
+`style.css` wird erst nach `npm run build` sichtbar. Details/Testnachweis
+siehe `CLAUDE.md`, Abschnitt „Buttons mit Theme-Farben".
+
+**Muster B – direkte `var()`-Kopplung lokaler Token-Layer bzw.
+verbleibender Rest-Hex-Werte** (kein Anti-Pattern-Fund, kein eigenes
+Wrapper-Custom-Property nötig):
+- `drag-and-drop` (AP-3.4): Token-Layer `--dd-*` gekoppelt; Content-Fallback
+  `$drag_color`/`$zone_border` in `render.php` auf `get_theme_mod()`
+  umgestellt – siehe „Strukturelle Falle bei Content-Fallbacks" unten.
+- `image-comparison` (AP-3.5/AP-3.5.fix1/AP-3.rev.fix1): siehe eigener
+  Absatz unten – Sonderfall mit mehrstufiger Korrektur.
+- `image-overlay` (AP-3.6): Token-Layer war bereits vorher gekoppelt, Rest-
+  Hex + Content-Fallback ergänzt. `$layer_color` bleibt toter Code
+  (berechnet, aber nirgends ausgegeben) – nicht behoben, außerhalb Scope.
+- `point-of-interest` (AP-3.7): 5 CSS-Weißwerte auf
+  `var(--color-background, #fff)` umgestellt, live bestätigt (kein
+  Live-Content vorhanden, nur Verwendung des Musters geprüft). Enthält
+  zusätzlich die unten beschriebenen vertauschten Variablennamen; Content-
+  Fallback für Hotspot-/Legendenfarbe strukturell wie `drag-and-drop`
+  eingeschränkt (siehe unten).
+- `multiple-choice` (AP-3.8): Token-Layer `--primary-color`/`--primary-hover`
+  auf `var(--color-ui-surface, …)`/`var(--color-ui-surface-dark, …)`.
+- `statement-summary` (AP-3.9): lokale `:root`-Redefinition entfernt statt
+  umgestellt – siehe eigener Absatz unten.
+- `interactive-data-chart` (AP-3.10): nur UI-Chrome (Rahmen, Hintergrund,
+  Werkzeugleiste, Tabellenkopf, „Diagramm generieren"-Button) auf
+  `--color-ui-surface`/`-ui-surface-dark`/`-background`/`-background-light`/
+  `-sidebar-border` umgestellt; Plotly-Diagramm-Datenfarben aus
+  `assets/js/chart-templates.js` bewusst unangetastet (Nicht-Ziel).
+- `drag-the-words` (AP-3.11): 13 wertexakte Hex-Treffer umgestellt,
+  `font-family` auf `var(--font-family-base, …)`. **Offener Fund, nicht
+  behoben:** `block.json` registriert `"style": "file:./style-index.css"`,
+  aber weder `index.js` noch `view.js` importieren `style.css` – Webpack
+  erzeugt `style-index.css` dadurch nie (auch nicht in `build/`). Auf einer
+  echten Produktivseite ohne lokalen `build/`-Ordner liefe die
+  `style`-Registrierung ins Leere; vorbestehender Konfigurationsfehler,
+  unabhängig von dieser CSS-Umstellung. Für ein Korrektur-AP vorgemerkt
+  (`index.js`/`view.js` müsste `import './style.css';` ergänzen).
+- `statement-connector` (AP-3.12): nur Content-Fallback in `render.php`
+  (`$item_color` für `leftItems`/`rightItems`) auf `get_theme_mod()`
+  umgestellt. Die dabei geschriebene `--item-color`-Inline-Property wird von
+  keiner CSS-Datei referenziert (toter Code, 0 sichtbare Wirkung) – die
+  tatsächliche Verbindungslinienfarbe liest `view.js` Zeile 82 direkt aus
+  dem eingebetteten JSON, unabhängig davon.
+- `svg-drawing` (AP-3.13): nur 1 von 4 UI-Chrome-Rest-Hex-Werten traf das
+  Variablen-Vokabular wertexakt (`figcaption`-Textfarbe `#666` →
+  `var(--color-text-muted, #666)`, live bestätigt); die übrigen 3
+  (Platzhalter-Rahmen/-Hintergrund/-Text) blieben bewusst literal.
+  Zeichenfarbpalette (Nutzerinhalt) unangetastet (Nicht-Ziel).
+- `assets/css/blocks.css` (AP-3.14): siehe eigene Zeile oben unter „Kern und
+  Infrastruktur" (Token-Layer-Kopplung + Button-Selektor-Fix).
+
+**`image-comparison` im Detail (AP-3.5 → AP-3.5.fix1 → AP-3.rev.fix1,
+mehrstufige Korrektur):** AP-3.5 stellte `--slider-color`/`--label-color` in
+`style.css` auf `var(--color-ui-surface, …)` um, der Live-Test schlug aber
+fehl: `block.json` trägt für `sliderColor`/`labelColor` eigene Defaults
+(`#0073aa`/`#ffffff`), die WordPress vor `render.php` in die Attribute
+einträgt – der `?? get_theme_mod()`-Fallback griff nie, UND `render.php`
+schrieb den stets aufgelösten Wert als LITERALE Inline-Custom-Property auf
+den Wrapper, die die CSS-`var()`-Kopplung vollständig überschrieb
+(Inline-Styles gewinnen gegen Stylesheet-Regeln). **AP-3.5.fix1** behob das
+strukturell: `render.php` setzt `--slider-color`/`--label-color` seither nur
+noch inline, wenn der Attributwert vom bekannten `block.json`-Default
+abweicht (echte Autoren-Anpassung, siehe `$slider_color_is_custom`/
+`$label_color_is_custom` in `render.php`); entspricht er dem Default, bleibt
+die Property ganz weg und `style.css`s `var()`-Kopplung greift ungehindert.
+**AP-3.rev fand dabei einen zweiten, unabhängigen Fehler:** Die Zeile
+`--label-color: var(--color-ui-surface, #ffffff)` in `style.css` war selbst
+falsch – `--color-ui-surface` ist sitewide praktisch immer definiert
+(Orange), der `#ffffff`-Fallback griff daher nie; der „Vorher"/„Nachher"-
+Chip-Text war orange statt weiß (Kontrastfehler gegenüber dem
+`block.json`-Default). **AP-3.rev.fix1** vereinfachte `--label-color` in
+`style.css` deshalb bewusst auf den literalen Wert `#ffffff` – **keine**
+Theme-Kopplung mehr, live bestätigt (`getComputedStyle` liefert
+`rgb(255, 255, 255)`). `--slider-color` bleibt dagegen korrekt an
+`--color-ui-surface` gekoppelt. Der PHP-seitige Autoren-Override aus
+AP-3.5.fix1 funktioniert für beide Properties unverändert.
+
+**Strukturelle Falle bei Content-Fallbacks (`drag-and-drop`,
+`molecule-viewer`, `point-of-interest`, `statement-connector`):** Wo
+`render.php` einen `get_theme_mod()`-Wert nur als PHP-Fallback für ein vom
+Autor editierbares Block-Attribut nutzt (`$attr['x'] ?? get_theme_mod(...)`),
+trägt `block.json` für dasselbe Attribut meist bereits einen eigenen
+Hex-Default ein, den WordPress VOR `render.php` in die Attribute einträgt –
+der Fallback greift dadurch bei unverändertem Standard-Content praktisch
+nie. Nur bei `image-comparison` wurde das (AP-3.5.fix1, siehe oben)
+tatsächlich behoben; bei `drag-and-drop` (AP-3.4), `molecule-viewer`
+(AP-3.3, Attribut `backgroundColor`), `point-of-interest` (AP-3.7,
+Hotspot-/Legendenfarbe) und `statement-connector` (AP-3.12, `--item-color`,
+ohnehin toter Code) ist es weiterhin nur als Randbefund dokumentiert (kein
+Kernziel des jeweiligen APs, siehe deren Übergabenotizen) – Übertragung des
+AP-3.5.fix1-Musters wäre ein eigenes künftiges Korrektur-AP wert.
 
 **Nachtrag AP-3.9 (`statement-summary`):** Die entfernte lokale Redefinition
 war ein `:root { --color-ui-surface: #e24614; … }`-Block – da `:root` stets
