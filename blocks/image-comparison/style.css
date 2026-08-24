@@ -11,7 +11,13 @@
     --slider-handle-size: 48px;
     --slider-button-size: 32px;
     --label-bg: rgba(0, 0, 0, 0.7);
-    --label-color: var(--color-ui-surface, #ffffff);
+    /* AP-3.rev.fix1: KEINE Kopplung an --color-ui-surface - Textfarbe auf dem
+       dunklen rgba(0,0,0,0.7)-Label-Chip, block.json-Default ist #ffffff
+       (siehe render.php $label_color_is_custom). Faelschliche var()-Kopplung
+       aus AP-3.5 machte den Label-Text seit AP-3.5.fix1 (Wegfall des
+       Shadowing-Bugs) live sichtbar orange statt weiss - live bestaetigt
+       auf Seite ID 372 vor diesem Fix. */
+    --label-color: #ffffff;
     --transition-duration: 0.3s;
 
     margin: 1.5em 0;
