@@ -281,6 +281,22 @@ fehlte in einer per Einzel-Block-ZIP installierten Instanz. Anders als bei
 bewusst entfernt, DSGVO), ein Fehlen der Datei wäre also nicht bloß langsamer,
 sondern ein toter PDF-Knopf.
 
+**Erste Naht dieses Plugins zum Theme** (AP-1.3). `render.php` ruft
+`simple_clean_ist_lehrperson()` (`Theme/includes/sichtbarkeit.php`) auf, um
+zu entscheiden, ob der Übungs-PDF-Knopf überhaupt ausgegeben wird. Sie folgt
+dem in der Root-`CLAUDE.md` unter „Direkte Theme-Funktionsaufrufe des
+Plugins" dokumentierten Muster: Aufruf hinter `function_exists()`, Rückfall
+`false`. Fehlt das Theme, erscheint der Knopf für niemanden — kein Fatal
+Error (live geprüft, indem die Funktion auf der Testinstallation
+umbenannt wurde). Diese Funktion ist die projektweit **einzige** Definition
+von „Lehrperson"; sie bedeutet aktuell nur „angemeldet"
+(`apply_filters('simple_clean_ist_lehrperson', is_user_logged_in())`). Das
+ist bekannt und bewusst übernommen — eine eigene `current_user_can()`-Prüfung
+im Plugin wäre eine zweite, abweichende Definition (Architekturentscheidung
+A2). **Die Prüfung läuft serverseitig:** Wer keine Lehrperson ist, bekommt
+weder den Knopf noch den Aussagen-Pool ins HTML; ein reines
+Verstecken per CSS wäre per DevTools aufzuheben.
+
 **Zwei Fallen, die den Inhalt des PDFs betreffen** (AP-1.2, jeweils live
 belegt):
 
@@ -304,7 +320,11 @@ kaputtes ZIP zu erzeugen.
 | Datei | Zweck | Wichtige Funktionen/Inhalte | Hängt ab von |
 |---|---|---|---|
 | `blocks/summary-block/jspdf.umd.min.js` | Lokal gebündelte jsPDF-Bibliothek 2.5.1 (UMD-Build) für den PDF-Export des Blocks | Fremdcode, **nicht von Hand bearbeiten**; erneuern ausschließlich über `npm run download-jspdf`. Exponiert den Konstruktor als `window.jspdf.jsPDF` | – (keine) |
-| `blocks/summary-block/render.php` | Serverseitiges Rendering | Baut `$summary_data` (als `data-summary`-JSON am Wurzel-`div`) und das Markup. **Seit AP-1.1** zusätzlich ein unbedingtes `wp_enqueue_script('modular-blocks-summary-jspdf', …, MODULAR_BLOCKS_PLUGIN_VERSION, true)` auf die lokale Bibliothek — bewusst unabhängig von `$enable_pdf_download` | `block.json`-Attribute, `jspdf.umd.min.js` |
+| `blocks/summary-block/render.php` | Serverseitiges Rendering | Baut `$summary_data` (als `data-summary`-JSON am Wurzel-`div`) und das Markup. **Seit AP-1.1** zusätzlich ein unbedingtes `wp_enqueue_script('modular-blocks-summary-jspdf', …, MODULAR_BLOCKS_PLUGIN_VERSION, true)` auf die lokale Bibliothek — bewusst unabhängig von `$enable_pdf_download`. **Seit AP-1.3** ermittelt es `$ist_lehrperson` (Theme-Naht, s. u.), baut daraus `$all_statement_texts` und gibt drei neue JSON-Schlüssel aus (`isTeacher`, `teacherPdfCount`, `allStatementTexts`); der Knopf `.teacher-practice-pdf-button` wird **nur bei `$ist_lehrperson`** und nur im Blockkopf (`.summary-teacher-tools`) gerendert, nicht in `.summary-controls` | `block.json`-Attribute, `jspdf.umd.min.js`, optional Theme-Funktion `simple_clean_ist_lehrperson()` |
+| `blocks/summary-block/block.json` | Metadaten und Attribute | **Seit AP-1.3** zusätzlich `teacherPdfCount` (`number`, Vorgabe 10) | – |
+| `blocks/summary-block/index.js` | Editor-Registrierung | **Seit AP-1.3** ein `RangeControl` „Anzahl Aussagen im Übungs-PDF" (1–50) im Panel neben `pdfDownloadThreshold`. Bewusst **nicht** hinter `{enablePdfDownload && …}` wie die zwei Regler darüber: Der Lehrer-Knopf hängt nicht am Schüler-PDF-Download und wäre sonst unkonfigurierbar, sobald jemand den Schüler-Download abschaltet | `block.json` |
+| `blocks/summary-block/style.css` | Frontend-Styling | **Seit AP-1.3** teilt sich `.teacher-practice-pdf-button` die Umriss-Optik von `.retry-button` (`var(--sb-primary, #e24614)`); ohne diese Regel bliebe der Knopf ungefärbt, weil `$button_secondary_style` in `render.php` zwar `border-style`, aber keine `border-color` setzt. Dazu `.summary-teacher-tools` (nur Abstand) | `render.php`-Wrapper-Properties `--sb-primary`/`--sb-primary-hover` |
+| `blocks/summary-block/view.js` (AP-1.3) | Übungs-PDF | Neue Funktion `generateTeacherPracticePDF()`: Fisher-Yates auf einer Kopie von `allStatementTexts`, dann `min(teacherPdfCount, Poolgröße)` Einträge; Titel „Übungsblatt", je Aussage eine Ankreuzzeile `[  ] Richtig     [  ] Falsch`, **kein** Richtig/Falsch, **kein** Prozentwert; eigener Dateiname `uebungsblatt_<ts>.pdf`. Click-Listener nur, wenn der Knopf im DOM steht — eine zweite, client-seitige Rechteprüfung gibt es bewusst nicht | `render.php`-JSON, jsPDF |
 | `blocks/summary-block/view.js` | Frontend-Logik | **Seit AP-1.1** liefert `getJsPDF()` den Konstruktor synchron aus `window.jspdf.jsPDF` (Rückfall auf `window.jsPDF` für abweichende Builds); die frühere `loadJsPDF()` mit dynamischem `<script src="https://cdnjs.cloudflare.com/…">` ist ersatzlos entfallen. Fehlt die Bibliothek, zeigt `generatePDF()` eine sichtbare Meldung statt still abzubrechen. **Seit AP-1.2** listet `generatePDF()` **alle** Aussagen aus **allen** Gruppen der `data-summary`-JSON (Konstante `groups`) statt nur der im DOM aufgelaufenen `.summary-item`-Elemente, jede mit Marke `[RICHTIG]`/`[FALSCH]` nach `statement.isCorrect`, gegliedert nach Gruppenüberschriften „Frage N von M"; darunter die Zeile `Ergebnis: N% richtig`. Neue Hilfsfunktionen: `htmlToText()` (Modulebene) und `ensureSpace()` (lokal in `generatePDF()`) | `render.php`-Markup, per `wp_enqueue_script` geladenes jsPDF |
 
 ## Pflegeregel

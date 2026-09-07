@@ -29,6 +29,7 @@ $enable_pdf_download = $block_attributes['enablePdfDownload'] ?? true;
 $pdf_download_threshold = $block_attributes['pdfDownloadThreshold'] ?? 100;
 $pdf_message = $block_attributes['pdfMessage'] ?? '';
 $penalty_per_wrong = $block_attributes['penaltyPerWrongAnswer'] ?? 1;
+$teacher_pdf_count = $block_attributes['teacherPdfCount'] ?? 10;
 $success_text = $block_attributes['successText'] ?? 'Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden.';
 $partial_success_text = $block_attributes['partialSuccessText'] ?? 'Gut gemacht! Sie haben die meisten richtigen Aussagen gefunden.';
 $fail_text = $block_attributes['failText'] ?? 'Versuchen Sie es noch einmal.';
@@ -40,6 +41,8 @@ $summary_title = $block_attributes['summaryTitle'] ?? 'Ihre Zusammenfassung:';
 $title = wp_kses_post($title);
 $description = wp_kses_post($description);
 $penalty_per_wrong = max(0, min(10, intval($penalty_per_wrong)));
+// AP-1.3: gleiche Grenzen wie der RangeControl in index.js (1..50)
+$teacher_pdf_count = max(1, min(50, intval($teacher_pdf_count)));
 
 // Validate statement groups
 if (empty($statement_groups) || !is_array($statement_groups)) {
@@ -94,6 +97,40 @@ if ($shuffle_groups) {
     shuffle($groups_data);
 }
 
+// AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md): Lehrperson-Erkennung.
+//
+// Erste Naht dieses Plugins zum Theme. Sie folgt dem in der Root-CLAUDE.md
+// unter "Direkte Theme-Funktionsaufrufe des Plugins" dokumentierten Muster:
+// Aufruf hinter function_exists(), Rueckfall false. Fehlt das Theme oder ist
+// es deaktiviert, gilt niemand als Lehrperson - der Knopf erscheint dann fuer
+// niemanden, statt dass ein Fatal Error die Seite zerlegt.
+//
+// simple_clean_ist_lehrperson() (Theme/includes/sichtbarkeit.php) ist die
+// projektweit EINZIGE Definition von "Lehrperson"; sie bedeutet aktuell
+// lediglich apply_filters('simple_clean_ist_lehrperson', is_user_logged_in()),
+// also "angemeldet". Das ist bekannt und bewusst so uebernommen - eine eigene
+// current_user_can()-Pruefung waere eine zweite, abweichende Definition.
+//
+// Die Pruefung laeuft SERVERSEITIG: Ist sie falsch, wird der Knopf gar nicht
+// erst ausgegeben. Ein blosses Verstecken per CSS/JS waere per DevTools
+// aufzuheben.
+$ist_lehrperson = function_exists('simple_clean_ist_lehrperson') && simple_clean_ist_lehrperson();
+
+// Flache Liste aller Aussagetexte ueber alle Gruppen hinweg - ohne
+// isCorrect, weil das Uebungsblatt keine Loesung enthaelt (Nicht-Ziel).
+// Pool ist ausschliesslich dieses Block-Exemplar (Architekturentscheidung A4).
+$all_statement_texts = [];
+if ($ist_lehrperson) {
+    foreach ($groups_data as $group) {
+        foreach ($group['statements'] as $statement) {
+            $text = $statement['text'] ?? '';
+            if ($text !== '') {
+                $all_statement_texts[] = wp_kses_post($text);
+            }
+        }
+    }
+}
+
 // Build CSS classes
 $css_classes = [
     'wp-block-modular-blocks-summary-block',
@@ -139,6 +176,14 @@ $summary_data = [
     'pdfDownloadThreshold' => $pdf_download_threshold,
     'pdfMessage' => $pdf_message,
     'penaltyPerWrong' => $penalty_per_wrong,
+    // AP-1.3: Bruecke ans Frontend fuer das Lehrer-Uebungs-PDF.
+    // allStatementTexts ist absichtlich leer, wenn der Betrachter keine
+    // Lehrperson ist - so steht der Aussagen-Pool nicht ohnehin schon im
+    // Quelltext der Seite (die Aussagetexte selbst stehen zwar sichtbar in
+    // den Knoepfen, ihre Vollstaendigkeit als fertige Liste aber nicht).
+    'isTeacher' => $ist_lehrperson,
+    'teacherPdfCount' => $teacher_pdf_count,
+    'allStatementTexts' => $all_statement_texts,
     'successText' => $success_text,
     'partialSuccessText' => $partial_success_text,
     'failText' => $fail_text,
@@ -192,6 +237,35 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
 
             <?php if (!empty($description)): ?>
                 <div class="summary-description"><?php echo $description; ?></div>
+            <?php endif; ?>
+
+            <?php
+            // AP-1.3: Uebungs-PDF-Knopf fuer Lehrpersonen.
+            //
+            // Bewusst hier im Kopf und NICHT in .summary-controls: Der Knopf
+            // muss unabhaengig vom Spielzustand sichtbar sein, also auch vor
+            // Beginn der Uebung. .summary-controls steht bis showResults()
+            // auf display:none, der Knopf waere dort erst nach Abschluss
+            // erreichbar.
+            //
+            // Die Sichtbarkeit haengt allein an $ist_lehrperson, also an einer
+            // serverseitigen Pruefung - fuer alle anderen existiert der Knopf
+            // gar nicht erst im HTML.
+            ?>
+            <?php if ($ist_lehrperson && !empty($all_statement_texts)): ?>
+                <div class="summary-teacher-tools">
+                    <button type="button"
+                            class="summary-button teacher-practice-pdf-button"
+                            style="<?php echo esc_attr($button_secondary_style); ?>">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;" aria-hidden="true" focusable="false">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        <?php echo esc_html__('Übungs-PDF erzeugen', 'modular-blocks-plugin'); ?>
+                    </button>
+                </div>
             <?php endif; ?>
         </div>
 

@@ -81,7 +81,13 @@
             failText = '',
             correctFeedback = '',
             incorrectFeedback = '',
-            strings = {}
+            strings = {},
+            // AP-1.3: Lehrer-Uebungs-PDF. teacherPdfCount und
+            // allStatementTexts kommen aus derselben data-summary-JSON wie
+            // alles andere; allStatementTexts ist leer, wenn render.php den
+            // Betrachter nicht als Lehrperson erkannt hat.
+            teacherPdfCount = 10,
+            allStatementTexts = []
         } = data;
 
         // State
@@ -111,6 +117,9 @@
         const retryButton = block.querySelector('.retry-button');
         const solutionButton = block.querySelector('.solution-button');
         const pdfButton = block.querySelector('.pdf-download-button');
+        // AP-1.3: nur vorhanden, wenn render.php den Betrachter serverseitig
+        // als Lehrperson erkannt hat.
+        const teacherPdfButton = block.querySelector('.teacher-practice-pdf-button');
 
         /**
          * Update progress bar
@@ -455,6 +464,117 @@
         }
 
         /**
+         * Übungsblatt-PDF für Lehrpersonen erzeugen.
+         *
+         * AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md): Zieht `N` zufällige,
+         * sich nicht wiederholende Aussagen aus dem Pool DIESES
+         * Block-Exemplars (Architekturentscheidung A4 — kein Pool über Block-
+         * oder Seitengrenzen hinweg) und setzt daraus ein leeres Aufgabenblatt.
+         *
+         * Bewusst OHNE Lösung: kein Richtig/Falsch, kein Prozentwert, keine
+         * zweite Seite mit Antworten (Nicht-Ziel, Nutzerentscheidung
+         * 2026-09-07). `allStatementTexts` enthält deshalb serverseitig gar
+         * kein `isCorrect` — die Information steht hier nicht zur Verfügung
+         * und kann auch nicht versehentlich durchrutschen.
+         */
+        function generateTeacherPracticePDF() {
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            const pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            if (pool.length === 0) {
+                alert('Für dieses Element stehen keine Aussagen für ein Übungsblatt zur Verfügung.');
+                return;
+            }
+
+            try {
+                // Fisher-Yates auf einer Kopie: zieht ohne Zurücklegen, also
+                // garantiert ohne Wiederholung innerhalb eines PDFs.
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const tmp = pool[i];
+                    pool[i] = pool[j];
+                    pool[j] = tmp;
+                }
+                const count = Math.min(
+                    Math.max(1, parseInt(teacherPdfCount, 10) || 1),
+                    pool.length
+                );
+                const picked = pool.slice(0, count);
+
+                const doc = new jsPDF();
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const lineHeight = 8;
+                const numberIndent = 10;
+                const textWidth = pageWidth - 2 * margin - numberIndent;
+
+                // Ankreuzfelder in ASCII, nicht als "☐" (U+2610): jsPDF setzt
+                // mit den eingebauten Standardschriften in WinAnsiEncoding,
+                // in dem dieses Zeichen nicht enthalten ist (siehe AP-1.2).
+                const CHECKBOXES = '[  ] Richtig     [  ] Falsch';
+
+                const titleEl = block.querySelector('.summary-title');
+                const blockTitle = titleEl ? titleEl.textContent.trim() : '';
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Übungsblatt', margin, 20);
+
+                let yPosition = 32;
+                if (blockTitle) {
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    const wrappedTitle = doc.splitTextToSize(blockTitle, pageWidth - 2 * margin);
+                    doc.text(wrappedTitle, margin, yPosition);
+                    yPosition += wrappedTitle.length * lineHeight;
+                }
+
+                yPosition += 6;
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont(undefined, 'normal');
+
+                picked.forEach((rawText, index) => {
+                    const text = htmlToText(rawText);
+                    const wrappedText = doc.splitTextToSize(text, textWidth);
+                    // Aussage + Ankreuffzeile + Leerzeile müssen zusammen auf
+                    // eine Seite passen, sonst steht die Frage auf der einen
+                    // und ihr Ankreuzfeld auf der nächsten.
+                    const needed = (wrappedText.length + 1) * lineHeight + 6;
+                    if (yPosition + needed > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+
+                    doc.text(`${index + 1}.`, margin, yPosition);
+                    doc.text(wrappedText, margin + numberIndent, yPosition);
+                    yPosition += wrappedText.length * lineHeight;
+
+                    doc.text(CHECKBOXES, margin + numberIndent, yPosition);
+                    yPosition += lineHeight + 6;
+                });
+
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Eigener Dateiname zur Unterscheidung vom Schüler-Ergebnis-PDF
+                doc.save(`uebungsblatt_${Date.now()}.pdf`);
+            } catch (error) {
+                console.error('Teacher practice PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
+        }
+
+        /**
          * Show final results
          */
         function showResults() {
@@ -747,6 +867,13 @@
 
         if (pdfButton) {
             pdfButton.addEventListener('click', generatePDF);
+        }
+
+        // AP-1.3: Der Knopf existiert nur, wenn render.php den Betrachter als
+        // Lehrperson erkannt hat - hier ist keine zweite Rechteprüfung nötig
+        // (und eine client-seitige wäre ohnehin wertlos).
+        if (teacherPdfButton) {
+            teacherPdfButton.addEventListener('click', generateTeacherPracticePDF);
         }
 
         // Initialize

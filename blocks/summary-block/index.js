@@ -118,6 +118,7 @@ registerBlockType('modular-blocks/summary-block', {
             pdfDownloadThreshold,
             pdfMessage,
             penaltyPerWrongAnswer,
+            teacherPdfCount,
             successText,
             partialSuccessText,
             failText,
@@ -419,6 +420,25 @@ registerBlockType('modular-blocks/summary-block', {
                             onChange={(value) => setAttributes({ penaltyPerWrongAnswer: value })}
                             min={0}
                             max={5}
+                        />
+                        {/*
+                          * AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md):
+                          * Anzahl der Aussagen im Uebungs-PDF, das nur
+                          * Lehrpersonen im Frontend erzeugen koennen. Der
+                          * Regler steht bewusst NICHT hinter
+                          * {enablePdfDownload && ...} wie die beiden Regler
+                          * darueber - der Lehrer-Knopf haengt nicht am
+                          * Schueler-PDF-Download und bliebe sonst
+                          * unkonfigurierbar, sobald jemand den
+                          * Schueler-Download abschaltet.
+                          */}
+                        <RangeControl
+                            label={__('Anzahl Aussagen im Übungs-PDF', 'modular-blocks-plugin')}
+                            help={__('Nur für Lehrpersonen sichtbar: Anzahl zufällig gezogener Aussagen im Übungsblatt-PDF', 'modular-blocks-plugin')}
+                            value={teacherPdfCount}
+                            onChange={(value) => setAttributes({ teacherPdfCount: value })}
+                            min={1}
+                            max={50}
                         />
                     </PanelBody>
 
