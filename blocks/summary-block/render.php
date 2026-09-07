@@ -48,6 +48,22 @@ if (empty($statement_groups) || !is_array($statement_groups)) {
     return;
 }
 
+// jsPDF lokal einbinden (AP-1.1, PLAN-Summary-PDF-und-Content-Links.md).
+// Vorher lud view.js die Bibliothek zur Laufzeit von cdnjs.cloudflare.com
+// nach - das verstiess gegen die Projektkonvention "keine CDN-Einbindungen
+// zur Laufzeit" (DSGVO). Die Datei liegt jetzt im Block-Ordner selbst, damit
+// sie die modulare ZIP-Distribution (npm run block-zips) ueberlebt; ein
+// plugin-weiter assets/vendor/-Ordner waere im Einzel-Block-ZIP nicht dabei.
+// Bewusst unbedingt (nicht nur bei $enable_pdf_download): der in AP-1.3
+// ergaenzte Lehrer-Button erzeugt sein Uebungs-PDF unabhaengig davon.
+wp_enqueue_script(
+    'modular-blocks-summary-jspdf',
+    plugins_url('jspdf.umd.min.js', __FILE__),
+    array(),
+    defined('MODULAR_BLOCKS_PLUGIN_VERSION') ? MODULAR_BLOCKS_PLUGIN_VERSION : false,
+    true
+);
+
 // Generate unique ID for this block instance
 $block_id = 'summary-block-' . wp_unique_id();
 

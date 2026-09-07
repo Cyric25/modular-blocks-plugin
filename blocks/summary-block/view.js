@@ -13,30 +13,27 @@
 (function() {
     'use strict';
 
-    // Load jsPDF from CDN for PDF export
-    let jsPDFLoaded = false;
-    function loadJsPDF(callback) {
-        if (typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined') {
-            jsPDFLoaded = true;
-            callback();
-            return;
+    /**
+     * jsPDF-Konstruktor holen.
+     *
+     * AP-1.1 (PLAN-Summary-PDF-und-Content-Links.md): Die Bibliothek wird
+     * nicht mehr zur Laufzeit von einem CDN nachgeladen, sondern liegt lokal
+     * im Block-Ordner und wird von render.php per wp_enqueue_script()
+     * eingebunden (Handle "modular-blocks-summary-jspdf"). Der UMD-Build von
+     * jsPDF 2.5.1 haengt den Konstruktor an window.jspdf.jsPDF.
+     *
+     * @returns {Function|null} Der jsPDF-Konstruktor oder null, wenn das
+     *                          Skript (noch) nicht geladen ist.
+     */
+    function getJsPDF() {
+        if (window.jspdf && typeof window.jspdf.jsPDF === 'function') {
+            return window.jspdf.jsPDF;
         }
-
-        if (jsPDFLoaded) {
-            callback();
-            return;
+        // Aeltere/abweichende Builds legen den Konstruktor direkt auf window.
+        if (typeof window.jsPDF === 'function') {
+            return window.jsPDF;
         }
-
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        script.onload = function() {
-            jsPDFLoaded = true;
-            callback();
-        };
-        script.onerror = function() {
-            console.error('Failed to load jsPDF library');
-        };
-        document.head.appendChild(script);
+        return null;
     }
 
     /**
@@ -287,92 +284,94 @@
          * Generate PDF of summary
          */
         function generatePDF() {
-            loadJsPDF(() => {
-                try {
-                    const { jsPDF } = window.jspdf || window;
-                    if (!jsPDF) {
-                        alert('PDF library not loaded. Please try again.');
-                        return;
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                // AP-1.1: Sichtbare Meldung statt stillem Abbruch. Tritt nur
+                // auf, wenn jspdf.umd.min.js nicht ausgeliefert wurde oder
+                // beim Laden ein Fehler auftrat.
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            try {
+                const doc = new jsPDF();
+
+                // Get block title
+                const titleEl = block.querySelector('.summary-title');
+                const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
+
+                // Add title
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text(title, 20, 20);
+
+                // Add summary title
+                const summaryTitleEl = block.querySelector('.summary-section-title');
+                const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
+                doc.setFontSize(14);
+                doc.text(summaryTitle, 20, 35);
+
+                // Add statements (only correct ones)
+                const items = summaryStatements.querySelectorAll('.summary-item');
+                let yPosition = 45;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+                const lineHeight = 8;
+
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+
+                items.forEach((item, index) => {
+                    const isCorrect = item.getAttribute('data-correct') !== 'false';
+                    if (!isCorrect && deferredFeedback) return; // Skip wrong items in deferred mode
+
+                    const text = item.querySelector('.summary-text')?.textContent || '';
+
+                    // Check if we need a new page
+                    if (yPosition > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
                     }
 
-                    const doc = new jsPDF();
+                    // Add bullet and text
+                    const bulletText = `${index + 1}. `;
+                    const wrappedText = doc.splitTextToSize(text, 170);
 
-                    // Get block title
-                    const titleEl = block.querySelector('.summary-title');
-                    const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
+                    doc.text(bulletText, margin, yPosition);
+                    doc.text(wrappedText, margin + 10, yPosition);
 
-                    // Add title
-                    doc.setFontSize(18);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(title, 20, 20);
+                    yPosition += wrappedText.length * lineHeight;
+                });
 
-                    // Add summary title
-                    const summaryTitleEl = block.querySelector('.summary-section-title');
-                    const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
-                    doc.setFontSize(14);
-                    doc.text(summaryTitle, 20, 35);
-
-                    // Add statements (only correct ones)
-                    const items = summaryStatements.querySelectorAll('.summary-item');
-                    let yPosition = 45;
-                    const pageHeight = doc.internal.pageSize.height;
-                    const margin = 20;
-                    const lineHeight = 8;
-
+                // Add custom message if set
+                if (pdfMessage) {
+                    yPosition += 10;
+                    if (yPosition > pageHeight - margin - 20) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
                     doc.setFontSize(11);
+                    doc.setTextColor(80, 80, 80);
+                    doc.setFont(undefined, 'italic');
+                    const wrappedMessage = doc.splitTextToSize(pdfMessage, 170);
+                    doc.text(wrappedMessage, margin, yPosition);
                     doc.setFont(undefined, 'normal');
-
-                    items.forEach((item, index) => {
-                        const isCorrect = item.getAttribute('data-correct') !== 'false';
-                        if (!isCorrect && deferredFeedback) return; // Skip wrong items in deferred mode
-
-                        const text = item.querySelector('.summary-text')?.textContent || '';
-
-                        // Check if we need a new page
-                        if (yPosition > pageHeight - margin) {
-                            doc.addPage();
-                            yPosition = margin;
-                        }
-
-                        // Add bullet and text
-                        const bulletText = `${index + 1}. `;
-                        const wrappedText = doc.splitTextToSize(text, 170);
-
-                        doc.text(bulletText, margin, yPosition);
-                        doc.text(wrappedText, margin + 10, yPosition);
-
-                        yPosition += wrappedText.length * lineHeight;
-                    });
-
-                    // Add custom message if set
-                    if (pdfMessage) {
-                        yPosition += 10;
-                        if (yPosition > pageHeight - margin - 20) {
-                            doc.addPage();
-                            yPosition = margin;
-                        }
-                        doc.setFontSize(11);
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFont(undefined, 'italic');
-                        const wrappedMessage = doc.splitTextToSize(pdfMessage, 170);
-                        doc.text(wrappedMessage, margin, yPosition);
-                        doc.setFont(undefined, 'normal');
-                    }
-
-                    // Add date
-                    const today = new Date().toLocaleDateString('de-DE');
-                    doc.setFontSize(9);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
-
-                    // Save PDF
-                    const filename = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
-                    doc.save(filename);
-                } catch (error) {
-                    console.error('PDF generation error:', error);
-                    alert('Fehler beim Erstellen der PDF-Datei.');
                 }
-            });
+
+                // Add date
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Save PDF
+                const filename = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+                doc.save(filename);
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
         }
 
         /**
