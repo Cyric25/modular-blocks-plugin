@@ -37,6 +37,26 @@
     }
 
     /**
+     * Aussagetext in reinen Text umwandeln.
+     *
+     * AP-1.2 (PLAN-Summary-PDF-und-Content-Links.md): Das PDF listet seit
+     * diesem AP alle Aussagen aus der data-summary-JSON statt nur der im DOM
+     * sichtbar gewordenen. Die Texte dort kommen unveraendert aus
+     * wp_kses_post() und duerfen Markup enthalten (<strong>, <em>, ...); im
+     * DOM-Weg loeste das vorher .textContent auf. jsPDF wuerde solche Tags
+     * dagegen woertlich drucken.
+     *
+     * @param {string} html - Aussagetext, moeglicherweise mit Markup.
+     * @returns {string} Reiner Text ohne Tags, Whitespace normalisiert.
+     */
+    function htmlToText(html) {
+        if (!html) return '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = String(html);
+        return (tmp.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    /**
      * Initialize a summary block
      * @param {HTMLElement} block - The summary block element
      */
@@ -72,6 +92,12 @@
         let wrongSelections = []; // Tracks wrong statement texts (for deferred mode)
         let allSelections = []; // All selected statement objects (for deferred mode)
         let isCompleted = false;
+        // AP-1.2: Der im Ergebnis-PDF gedruckte Prozentwert muss exakt dem auf
+        // dem Bildschirm angezeigten entsprechen. Deshalb wird der in
+        // showResults() berechnete Wert hier gemerkt statt in generatePDF()
+        // ein zweites Mal berechnet - eine zweite Rechnung koennte bei
+        // kuenftigen Aenderungen an calculateFinalScore() auseinanderlaufen.
+        let lastPercentage = null;
 
         // DOM elements
         const container = block.querySelector('.summary-container');
@@ -312,37 +338,91 @@
                 doc.setFontSize(14);
                 doc.text(summaryTitle, 20, 35);
 
-                // Add statements (only correct ones)
-                const items = summaryStatements.querySelectorAll('.summary-item');
+                // AP-1.2: Alle Aussagen aus ALLEN Gruppen, jeweils mit
+                // Richtig/Falsch-Kennzeichnung. Vorher listete das PDF nur die
+                // im DOM aufgelaufenen .summary-item-Elemente, also allein die
+                // vom Lernenden ausgewaehlten. Als Lernunterlage muss aber
+                // jede Aussage samt ihrem Wahrheitswert drinstehen.
+                // Datenquelle ist bewusst dieselbe wie fuer die
+                // Interaktionslogik: das bereits geparste data-summary-JSON
+                // (Konstante `groups`), keine zweite Quelle.
                 let yPosition = 45;
                 const pageHeight = doc.internal.pageSize.height;
                 const margin = 20;
                 const lineHeight = 8;
+                const textIndent = 26; // Platz fuer die Marke "[RICHTIG] "
+                // Rechter Rand aus der echten Seitenbreite, nicht die bisher
+                // fest verdrahteten 170 - die liefen von x = margin + 10 aus
+                // bis x = 200 und damit 10 mm ueber den rechten Seitenrand.
+                const textWidth = doc.internal.pageSize.width - 2 * margin - textIndent;
 
-                doc.setFontSize(11);
-                doc.setFont(undefined, 'normal');
+                // Bewusst ASCII statt "✓"/"✗": jsPDF setzt mit den
+                // eingebauten Standardschriften (Helvetica) in WinAnsi. Haken
+                // und Kreuz liegen dort NICHT im Zeichensatz und kaemen als
+                // leere oder falsche Glyphe heraus. Deutsche Umlaute sind in
+                // WinAnsi enthalten und funktionieren weiterhin.
+                const MARK_CORRECT = '[RICHTIG]';
+                const MARK_WRONG = '[FALSCH]';
 
-                items.forEach((item, index) => {
-                    const isCorrect = item.getAttribute('data-correct') !== 'false';
-                    if (!isCorrect && deferredFeedback) return; // Skip wrong items in deferred mode
-
-                    const text = item.querySelector('.summary-text')?.textContent || '';
-
-                    // Check if we need a new page
-                    if (yPosition > pageHeight - margin) {
+                /**
+                 * Seitenumbruch, wenn der naechste Block nicht mehr passt.
+                 * @param {number} needed - Benoetigte Hoehe in mm.
+                 */
+                function ensureSpace(needed) {
+                    if (yPosition + needed > pageHeight - margin) {
                         doc.addPage();
                         yPosition = margin;
                     }
+                }
 
-                    // Add bullet and text
-                    const bulletText = `${index + 1}. `;
-                    const wrappedText = doc.splitTextToSize(text, 170);
+                groups.forEach((group, groupIndex) => {
+                    const statements = Array.isArray(group.statements) ? group.statements : [];
+                    if (statements.length === 0) return;
 
-                    doc.text(bulletText, margin, yPosition);
-                    doc.text(wrappedText, margin + 10, yPosition);
+                    // Gruppenueberschrift in derselben Form wie im Frontend
+                    // ("Frage 1 von 2"), damit die PDF-Struktur der Struktur
+                    // der Uebung entspricht. Die Gruppen selbst tragen im
+                    // Datenmodell keinen eigenen Namen, nur eine `id`.
+                    const groupLabel = `${strings.group || 'Frage'} ${groupIndex + 1} ${strings.of || 'von'} ${groups.length}`;
+                    ensureSpace(lineHeight + 4);
+                    yPosition += 4;
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(groupLabel, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
 
-                    yPosition += wrappedText.length * lineHeight;
+                    doc.setFontSize(11);
+
+                    statements.forEach(stmt => {
+                        const text = htmlToText(stmt && stmt.text);
+                        const isCorrect = !!(stmt && stmt.isCorrect);
+                        const wrappedText = doc.splitTextToSize(text, textWidth);
+
+                        ensureSpace(wrappedText.length * lineHeight);
+
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(isCorrect ? MARK_CORRECT : MARK_WRONG, margin, yPosition);
+                        doc.text(wrappedText, margin + textIndent, yPosition);
+
+                        yPosition += wrappedText.length * lineHeight;
+                    });
                 });
+
+                // AP-1.2: Gesamtprozentsatz. `lastPercentage` stammt aus
+                // showResults() - derselbe Wert, der auf dem Bildschirm in
+                // .score-display steht, nicht neu berechnet.
+                if (typeof lastPercentage === 'number') {
+                    yPosition += 6;
+                    ensureSpace(lineHeight);
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Ergebnis: ${lastPercentage}% richtig`, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
+                }
 
                 // Add custom message if set
                 if (pdfMessage) {
@@ -354,7 +434,7 @@
                     doc.setFontSize(11);
                     doc.setTextColor(80, 80, 80);
                     doc.setFont(undefined, 'italic');
-                    const wrappedMessage = doc.splitTextToSize(pdfMessage, 170);
+                    const wrappedMessage = doc.splitTextToSize(htmlToText(pdfMessage), 170);
                     doc.text(wrappedMessage, margin, yPosition);
                     doc.setFont(undefined, 'normal');
                 }
@@ -383,6 +463,7 @@
             // Calculate final score
             const finalScore = calculateFinalScore();
             const percentage = totalCorrect > 0 ? Math.round((finalScore / totalCorrect) * 100) : 0;
+            lastPercentage = percentage; // AP-1.2: Quelle fuer die Ergebniszeile im PDF
 
             // In deferred mode, update summary with correct/incorrect marks
             if (deferredFeedback) {
@@ -500,6 +581,7 @@
             wrongSelections = [];
             allSelections = [];
             isCompleted = false;
+            lastPercentage = null; // AP-1.2
 
             // Reset UI
             groupElements.forEach((groupEl, index) => {

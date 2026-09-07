@@ -281,6 +281,20 @@ fehlte in einer per Einzel-Block-ZIP installierten Instanz. Anders als bei
 bewusst entfernt, DSGVO), ein Fehlen der Datei wäre also nicht bloß langsamer,
 sondern ein toter PDF-Knopf.
 
+**Zwei Fallen, die den Inhalt des PDFs betreffen** (AP-1.2, jeweils live
+belegt):
+
+1. **Keine Unicode-Symbole in der PDF-Ausgabe.** jsPDF setzt mit den
+   eingebauten Standardschriften (Helvetica) in **WinAnsiEncoding**. „✓" und
+   „✗" liegen dort nicht im Zeichensatz und kämen als leere oder falsche
+   Glyphe heraus. Deshalb `[RICHTIG]`/`[FALSCH]` in ASCII. Deutsche Umlaute
+   sind in WinAnsi enthalten und funktionieren.
+2. **Aussagetexte dürfen Markup enthalten** (`wp_kses_post()` in
+   `render.php`). Der frühere DOM-Weg löste das beiläufig über
+   `.textContent` auf; wer die Texte direkt aus der JSON liest, muss sie
+   selbst durch `htmlToText()` schicken, sonst druckt jsPDF die Tags
+   wörtlich.
+
 Aus demselben Grund ist `blocks/summary-block/jspdf.umd.min.js` — anders als
 `assets/js/vendor/` — **in Git versioniert**: `.gitignore` schließt nur
 `vendor/` aus, und ein frischer Clone müsste sonst vor jedem `npm run
@@ -291,7 +305,7 @@ kaputtes ZIP zu erzeugen.
 |---|---|---|---|
 | `blocks/summary-block/jspdf.umd.min.js` | Lokal gebündelte jsPDF-Bibliothek 2.5.1 (UMD-Build) für den PDF-Export des Blocks | Fremdcode, **nicht von Hand bearbeiten**; erneuern ausschließlich über `npm run download-jspdf`. Exponiert den Konstruktor als `window.jspdf.jsPDF` | – (keine) |
 | `blocks/summary-block/render.php` | Serverseitiges Rendering | Baut `$summary_data` (als `data-summary`-JSON am Wurzel-`div`) und das Markup. **Seit AP-1.1** zusätzlich ein unbedingtes `wp_enqueue_script('modular-blocks-summary-jspdf', …, MODULAR_BLOCKS_PLUGIN_VERSION, true)` auf die lokale Bibliothek — bewusst unabhängig von `$enable_pdf_download` | `block.json`-Attribute, `jspdf.umd.min.js` |
-| `blocks/summary-block/view.js` | Frontend-Logik | **Seit AP-1.1** liefert `getJsPDF()` den Konstruktor synchron aus `window.jspdf.jsPDF` (Rückfall auf `window.jsPDF` für abweichende Builds); die frühere `loadJsPDF()` mit dynamischem `<script src="https://cdnjs.cloudflare.com/…">` ist ersatzlos entfallen. Fehlt die Bibliothek, zeigt `generatePDF()` eine sichtbare Meldung statt still abzubrechen | `render.php`-Markup, per `wp_enqueue_script` geladenes jsPDF |
+| `blocks/summary-block/view.js` | Frontend-Logik | **Seit AP-1.1** liefert `getJsPDF()` den Konstruktor synchron aus `window.jspdf.jsPDF` (Rückfall auf `window.jsPDF` für abweichende Builds); die frühere `loadJsPDF()` mit dynamischem `<script src="https://cdnjs.cloudflare.com/…">` ist ersatzlos entfallen. Fehlt die Bibliothek, zeigt `generatePDF()` eine sichtbare Meldung statt still abzubrechen. **Seit AP-1.2** listet `generatePDF()` **alle** Aussagen aus **allen** Gruppen der `data-summary`-JSON (Konstante `groups`) statt nur der im DOM aufgelaufenen `.summary-item`-Elemente, jede mit Marke `[RICHTIG]`/`[FALSCH]` nach `statement.isCorrect`, gegliedert nach Gruppenüberschriften „Frage N von M"; darunter die Zeile `Ergebnis: N% richtig`. Neue Hilfsfunktionen: `htmlToText()` (Modulebene) und `ensureSpace()` (lokal in `generatePDF()`) | `render.php`-Markup, per `wp_enqueue_script` geladenes jsPDF |
 
 ## Pflegeregel
 
