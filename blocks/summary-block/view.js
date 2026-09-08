@@ -87,13 +87,28 @@
             // alles andere; allStatementTexts ist leer, wenn render.php den
             // Betrachter nicht als Lehrperson erkannt hat.
             teacherPdfCount = 10,
-            allStatementTexts = []
+            allStatementTexts = [],
+            // AP-1.5 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+            // Titel der obersten Vorfahren-Seite, von render.php ermittelt.
+            // Leer, wenn kein Seitenkontext vorliegt - dann gibt keines der
+            // drei PDFs eine Kapitelzeile aus.
+            kapitelTitel = ''
         } = data;
 
         // State
         let currentGroupIndex = 0;
         let score = totalCorrect; // Start with max score, deduct for wrong answers
         let wrongAttempts = 0;
+        // AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+        // Fehlklicks je Aussagensatz (Gruppe), Schluessel ist der
+        // data-group-index des jeweiligen .summary-group-Elements.
+        //
+        // Bewusst eine EIGENE Struktur neben dem bestehenden, globalen
+        // `wrongAttempts` und nicht dessen Umbau (Architekturentscheidung B2
+        // des Plans): `wrongAttempts` haengt an der Punktelogik
+        // (`penaltyPerWrong`), dieser Zaehler ist rein informativ und darf die
+        // Punktzahl unter keinen Umstaenden beeinflussen.
+        let wrongAttemptsByGroup = {};
         let correctSelections = []; // Tracks correct statement texts
         let wrongSelections = []; // Tracks wrong statement texts (for deferred mode)
         let allSelections = []; // All selected statement objects (for deferred mode)
@@ -120,6 +135,40 @@
         // AP-1.3: nur vorhanden, wenn render.php den Betrachter serverseitig
         // als Lehrperson erkannt hat.
         const teacherPdfButton = block.querySelector('.teacher-practice-pdf-button');
+        // AP-1.3 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+        // Zahlenfeld neben dem Knopf, aus derselben serverseitigen Bedingung
+        // heraus gerendert. Bewusst ueber `block.querySelector` und nicht
+        // ueber `document.querySelector` wie im Planvorschlag: Stehen mehrere
+        // summary-blocks auf einer Seite, wuerde die dokumentweite Suche
+        // immer das Feld des ERSTEN Blocks liefern und alle weiteren Bloecke
+        // mit dessen Wert exportieren.
+        const teacherPdfCountInput = block.querySelector('.teacher-pdf-count-input');
+        // AP-1.4 des Nachtrags: zweiter Lehrer-Knopf, Loesungsblatt. Gleiche
+        // serverseitige Sichtbarkeitsbedingung wie die beiden Elemente darueber.
+        const teacherSolutionSheetButton = block.querySelector('.teacher-solution-sheet-button');
+
+        /**
+         * Einen Fehlklick der zugehoerigen Gruppe zuschreiben.
+         *
+         * AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+         * Schluessel ist `data-group-index` des umgebenden
+         * `.summary-group`-Elements, nicht `currentGroupIndex` — bei
+         * abgeschaltetem `progressiveReveal` stehen alle Gruppen gleichzeitig
+         * offen und der Lernende kann in beliebiger Reihenfolge klicken;
+         * `currentGroupIndex` waere dann die falsche Zuordnung.
+         *
+         * `render.php` gibt `data-group-index` in derselben Reihenfolge aus,
+         * in der `$groups_data` in die `data-summary`-JSON wandert — der
+         * Index passt also 1:1 auf die Konstante `groups`, die
+         * `showSolution()` durchlaeuft.
+         *
+         * @param {HTMLElement} groupEl - Das .summary-group-Element.
+         */
+        function countWrongAttempt(groupEl) {
+            const rohIndex = groupEl ? parseInt(groupEl.dataset.groupIndex, 10) : NaN;
+            const key = Number.isNaN(rohIndex) ? 0 : rohIndex;
+            wrongAttemptsByGroup[key] = (wrongAttemptsByGroup[key] || 0) + 1;
+        }
 
         /**
          * Update progress bar
@@ -204,6 +253,33 @@
             });
 
             // No scroll - stay at current position
+        }
+
+        /**
+         * Zeile mit der Zahl der Fehlversuche eines Aussagensatzes anhaengen.
+         *
+         * AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md). Bewusst
+         * eine EIGENE Klasse `.summary-wrong-count` und ausdruecklich KEIN
+         * `.summary-item`: `updateSummaryAfterEvaluation()` laeuft im
+         * verzoegerten Feedback ueber alle `.summary-item`-Elemente und
+         * erwartet dort ein `.summary-bullet` und ein `.summary-text` — diese
+         * Zeile hat beides nicht und wuerde die Schleife zum Absturz bringen.
+         *
+         * @param {number} anzahl - Fehlversuche in diesem Aussagensatz.
+         */
+        function addWrongCountLine(anzahl) {
+            if (!summarySection || !summaryStatements) return;
+
+            summarySection.style.display = 'block';
+
+            const zeile = document.createElement('div');
+            zeile.className = 'summary-wrong-count';
+            zeile.setAttribute('data-wrong-count', String(anzahl));
+            zeile.textContent = anzahl === 1
+                ? '1 falscher Versuch in diesem Aussagensatz'
+                : `${anzahl} falsche Versuche in diesem Aussagensatz`;
+
+            summaryStatements.appendChild(zeile);
         }
 
         /**
@@ -316,6 +392,49 @@
         }
 
         /**
+         * Kapitelzeile in ein PDF schreiben, sofern ein Kapitel bekannt ist.
+         *
+         * AP-1.5 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md).
+         * Eine gemeinsame Funktion fuer alle drei PDF-Wege, damit die Zeile in
+         * Schueler-Ergebnis-, Uebungs- und Loesungsblatt gleich aussieht und
+         * eine spaetere Aenderung nur an einer Stelle noetig ist.
+         *
+         * Ist `kapitelTitel` leer (z. B. weil der Block ausserhalb eines
+         * Seitenkontexts steht), passiert nichts: keine Zeile, kein
+         * Leerraum, kein Fehler.
+         *
+         * `htmlToText()` laeuft aus demselben Grund darueber wie ueber die
+         * Aussagetexte: Der Wert kommt aus der JSON, nicht aus dem DOM -
+         * HTML-Entities (z. B. `&amp;`) wuerde jsPDF sonst woertlich drucken.
+         * Markup kann nicht mehr enthalten sein, das raeumt render.php schon
+         * serverseitig mit wp_strip_all_tags() weg.
+         *
+         * @param {Object} doc        - jsPDF-Dokument.
+         * @param {number} startY     - Obere Kante in mm.
+         * @param {number} margin     - Linker Rand in mm.
+         * @param {number} maxWidth   - Verfuegbare Textbreite in mm.
+         * @param {number} lineHeight - Zeilenhoehe in mm.
+         * @returns {number} Die neue y-Position (unveraendert, wenn nichts
+         *                   geschrieben wurde).
+         */
+        function writeChapterLine(doc, startY, margin, maxWidth, lineHeight) {
+            const text = htmlToText(kapitelTitel);
+            if (!text) return startY;
+
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(120, 120, 120);
+            const wrapped = doc.splitTextToSize(text, maxWidth);
+            doc.text(wrapped, margin, startY);
+
+            // Farbe und Schnitt bewusst zurueckstellen: Die Aufrufer setzen
+            // danach zwar beides selbst, aber so bleibt diese Funktion ohne
+            // Nebenwirkung auf den Dokumentzustand.
+            doc.setTextColor(0, 0, 0);
+            return startY + wrapped.length * lineHeight;
+        }
+
+        /**
          * Generate PDF of summary
          */
         function generatePDF() {
@@ -336,16 +455,23 @@
                 const titleEl = block.querySelector('.summary-title');
                 const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
 
+                // AP-1.5 des Nachtrags: Kapitelzeile ueber dem Blocktitel.
+                // Ohne Kapitel liefert writeChapterLine() den Startwert
+                // unveraendert zurueck - der Kopf steht dann Zeile fuer Zeile
+                // exakt dort, wo er vorher stand (Titel y=20,
+                // Zusammenfassungs-Ueberschrift y=35, Inhalt ab y=45).
+                const titelY = writeChapterLine(doc, 20, 20, doc.internal.pageSize.width - 40, 8);
+
                 // Add title
                 doc.setFontSize(18);
                 doc.setFont(undefined, 'bold');
-                doc.text(title, 20, 20);
+                doc.text(title, 20, titelY);
 
                 // Add summary title
                 const summaryTitleEl = block.querySelector('.summary-section-title');
                 const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
                 doc.setFontSize(14);
-                doc.text(summaryTitle, 20, 35);
+                doc.text(summaryTitle, 20, titelY + 15);
 
                 // AP-1.2: Alle Aussagen aus ALLEN Gruppen, jeweils mit
                 // Richtig/Falsch-Kennzeichnung. Vorher listete das PDF nur die
@@ -355,7 +481,7 @@
                 // Datenquelle ist bewusst dieselbe wie fuer die
                 // Interaktionslogik: das bereits geparste data-summary-JSON
                 // (Konstante `groups`), keine zweite Quelle.
-                let yPosition = 45;
+                let yPosition = titelY + 25;
                 const pageHeight = doc.internal.pageSize.height;
                 const margin = 20;
                 const lineHeight = 8;
@@ -500,8 +626,23 @@
                     pool[i] = pool[j];
                     pool[j] = tmp;
                 }
+                // AP-1.3 des Nachtrags: Der Wert aus dem Frontend-Zahlenfeld
+                // uebersteuert das Blockattribut - aber nur fuer diesen einen
+                // Export. Gespeichert wird nichts (Architekturentscheidung
+                // B3); nach einem Neuladen der Seite steht wieder der im
+                // Editor gesetzte Wert im Feld.
+                //
+                // Rueckfall auf das Attribut, wenn das Feld fehlt (kein
+                // Lehrer-Kontext), leer ist oder etwas Unlesbares enthaelt.
+                // Die anschliessende Deckelung auf die Poolgroesse ist
+                // unveraendert die aus dem Vorgaengerplan - eine Eingabe von
+                // 999 bei 6 Aussagen liefert weiterhin 6 Zeilen.
+                const eingabeRoh = teacherPdfCountInput ? parseInt(teacherPdfCountInput.value, 10) : NaN;
+                const gewuenschteAnzahl = Number.isNaN(eingabeRoh)
+                    ? (parseInt(teacherPdfCount, 10) || 1)
+                    : eingabeRoh;
                 const count = Math.min(
-                    Math.max(1, parseInt(teacherPdfCount, 10) || 1),
+                    Math.max(1, gewuenschteAnzahl || 1),
                     pool.length
                 );
                 const picked = pool.slice(0, count);
@@ -526,7 +667,10 @@
                 doc.setFont(undefined, 'bold');
                 doc.text('Übungsblatt', margin, 20);
 
-                let yPosition = 32;
+                // AP-1.5 des Nachtrags: Kapitelzeile ueber dem Blocktitel,
+                // also zwischen Dokumentueberschrift und Blocktitel. Ohne
+                // Kapitel bleibt yPosition bei 32 wie zuvor.
+                let yPosition = writeChapterLine(doc, 32, margin, pageWidth - 2 * margin, lineHeight);
                 if (blockTitle) {
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');
@@ -570,6 +714,126 @@
                 doc.save(`uebungsblatt_${Date.now()}.pdf`);
             } catch (error) {
                 console.error('Teacher practice PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
+        }
+
+        /**
+         * Lösungsblatt-PDF für Lehrpersonen erzeugen.
+         *
+         * AP-1.4 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md). Aufbau und
+         * Dokument-Setup folgen `generateTeacherPracticePDF()`, der Inhalt ist
+         * bewusst das Gegenstück dazu:
+         * - ALLE Aussagen aus ALLEN Gruppen, keine Zufallsauswahl. Das
+         *   Zahlenfeld aus AP-1.3 wird hier absichtlich NICHT gelesen.
+         * - je Aussage `[RICHTIG]`/`[FALSCH]` nach `statement.isCorrect`,
+         *   in ASCII wie im Schüler-Ergebnis-PDF (jsPDF setzt mit den
+         *   eingebauten Standardschriften in WinAnsiEncoding, in dem „✓"/„✗"
+         *   nicht enthalten sind).
+         * - KEIN Prozentwert: Das Blatt gehört zu keinem konkreten
+         *   Schüler-Durchlauf.
+         *
+         * Datenquelle ist die Konstante `groups` aus der `data-summary`-JSON —
+         * dieselbe, aus der `generatePDF()` liest. `allStatementTexts` taugt
+         * hier nicht: Diese Liste trägt bewusst kein `isCorrect`.
+         */
+        function generateSolutionSheetPDF() {
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            if (!Array.isArray(groups) || groups.length === 0) {
+                alert('Für dieses Element stehen keine Aussagen für ein Lösungsblatt zur Verfügung.');
+                return;
+            }
+
+            try {
+                const doc = new jsPDF();
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const lineHeight = 8;
+                const textIndent = 26; // Platz fuer die Marke "[RICHTIG] "
+                const textWidth = pageWidth - 2 * margin - textIndent;
+
+                const MARK_CORRECT = '[RICHTIG]';
+                const MARK_WRONG = '[FALSCH]';
+
+                const titleEl = block.querySelector('.summary-title');
+                const blockTitle = titleEl ? titleEl.textContent.trim() : '';
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Lösungsblatt', margin, 20);
+
+                // AP-1.5 des Nachtrags: Kapitelzeile, gleiche Stelle wie im
+                // Uebungsblatt.
+                let yPosition = writeChapterLine(doc, 32, margin, pageWidth - 2 * margin, lineHeight);
+                if (blockTitle) {
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    const wrappedTitle = doc.splitTextToSize(blockTitle, pageWidth - 2 * margin);
+                    doc.text(wrappedTitle, margin, yPosition);
+                    yPosition += wrappedTitle.length * lineHeight;
+                }
+
+                /**
+                 * Seitenumbruch, wenn der naechste Block nicht mehr passt.
+                 * @param {number} needed - Benoetigte Hoehe in mm.
+                 */
+                function ensureSpace(needed) {
+                    if (yPosition + needed > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                }
+
+                groups.forEach((group, groupIndex) => {
+                    const statements = Array.isArray(group.statements) ? group.statements : [];
+                    if (statements.length === 0) return;
+
+                    const groupLabel = `${strings.group || 'Frage'} ${groupIndex + 1} ${strings.of || 'von'} ${groups.length}`;
+                    ensureSpace(lineHeight + 4);
+                    yPosition += 4;
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(groupLabel, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
+
+                    doc.setFontSize(11);
+
+                    statements.forEach(stmt => {
+                        const text = htmlToText(stmt && stmt.text);
+                        const isCorrect = !!(stmt && stmt.isCorrect);
+                        const wrappedText = doc.splitTextToSize(text, textWidth);
+
+                        ensureSpace(wrappedText.length * lineHeight);
+
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(isCorrect ? MARK_CORRECT : MARK_WRONG, margin, yPosition);
+                        doc.text(wrappedText, margin + textIndent, yPosition);
+
+                        yPosition += wrappedText.length * lineHeight;
+                    });
+                });
+
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Eigener Dateiname, klar unterscheidbar von
+                // uebungsblatt_<ts>.pdf (AP-1.3 des Vorgaengerplans) und vom
+                // Schueler-PDF (<Blocktitel>_<ts>.pdf).
+                doc.save(`loesungsblatt_${Date.now()}.pdf`);
+            } catch (error) {
+                console.error('Solution sheet PDF generation error:', error);
                 alert('Fehler beim Erstellen der PDF-Datei.');
             }
         }
@@ -656,12 +920,18 @@
                 summaryStatements.innerHTML = '';
             }
 
-            groups.forEach(group => {
+            groups.forEach((group, groupIndex) => {
                 group.statements.forEach(stmt => {
                     if (stmt.isCorrect) {
                         addToSummary(stmt.text, true);
                     }
                 });
+                // AP-1.2: Fehlversuchszaehler dieses Aussagensatzes. Wird
+                // fuer JEDE Gruppe ausgegeben, auch bei 0 - so ist auf einen
+                // Blick erkennbar, welche Gruppen fehlerfrei liefen, statt
+                // dass eine fehlende Zeile mehrdeutig bleibt (Plan: einheitlich
+                // fuer alle Gruppen, nicht gruppenabhaengig formatiert).
+                addWrongCountLine(wrongAttemptsByGroup[groupIndex] || 0);
             });
 
             // Mark all correct statements in UI
@@ -697,6 +967,7 @@
             currentGroupIndex = 0;
             score = totalCorrect;
             wrongAttempts = 0;
+            wrongAttemptsByGroup = {}; // AP-1.2: keine Reste aus dem vorherigen Versuch
             correctSelections = [];
             wrongSelections = [];
             allSelections = [];
@@ -779,6 +1050,12 @@
                     correctSelections.push(statementText);
                 } else {
                     wrongSelections.push(statementText);
+                    // AP-1.2: Im verzoegerten Feedback wurde bislang gar kein
+                    // Fehlklick gezaehlt (auch nicht der globale
+                    // `wrongAttempts`). Die Punktelogik bleibt unberuehrt -
+                    // sie wertet in diesem Modus ausschliesslich
+                    // `allSelections` in calculateFinalScore() aus.
+                    countWrongAttempt(groupEl);
                 }
 
                 // Add to summary (no checkmark yet)
@@ -835,6 +1112,10 @@
                     // Wrong answer
                     showStatementFeedback(statementEl, false);
                     wrongAttempts++;
+                    // AP-1.2: zusaetzlich zur bestehenden globalen Zaehlung,
+                    // die Reihenfolge zur Punktezeile darunter ist bewusst
+                    // unveraendert geblieben.
+                    countWrongAttempt(groupEl);
                     score -= penaltyPerWrong;
                 }
             }
@@ -874,6 +1155,13 @@
         // (und eine client-seitige wäre ohnehin wertlos).
         if (teacherPdfButton) {
             teacherPdfButton.addEventListener('click', generateTeacherPracticePDF);
+        }
+
+        // AP-1.4 des Nachtrags: derselbe Weg wie beim Knopf darueber - der
+        // Knopf existiert nur, wenn render.php den Betrachter serverseitig als
+        // Lehrperson erkannt hat.
+        if (teacherSolutionSheetButton) {
+            teacherSolutionSheetButton.addEventListener('click', generateSolutionSheetPDF);
         }
 
         // Initialize

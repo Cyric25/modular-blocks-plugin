@@ -131,6 +131,43 @@ if ($ist_lehrperson) {
     }
 }
 
+// AP-1.5 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md): Kapitel-Titel
+// fuer die drei PDF-Ausgaben.
+//
+// "Kapitel" ist hier die OBERSTE Vorfahren-Seite der aktuellen Seite, also
+// Ebene 0 der Seitenhierarchie - dasselbe Verstaendnis wie in
+// get_root_page_id() (Theme/sidebar.php), nur mit WordPress-Bordmitteln
+// nachgebaut. get_post_ancestors() liefert die Vorfahren von innen nach
+// aussen, end() greift damit die aeusserste.
+//
+// Bewusst OHNE function_exists()-Bruecke zum Theme (anders als bei
+// simple_clean_ist_lehrperson() oben): get_post_ancestors() ist
+// WordPress-Bordmittel - Architekturentscheidung B4 des Plans. Das Plugin
+// bleibt fuer diese Funktion vollstaendig theme-unabhaengig.
+//
+// is_singular() als Torwaechter: get_queried_object_id() liefert AUCH auf
+// Archivseiten einen Wert, dort aber eine Term-ID. Ohne die Pruefung wuerde
+// ein summary-block in einem Widget auf einer Kategorieseite die Term-ID als
+// Post-ID weiterreichen und im schlimmsten Fall den Titel eines voellig
+// fremden Beitrags ins PDF schreiben. Trifft die Pruefung nicht zu, bleibt
+// $kapitel_titel leer und view.js gibt gar keine Zeile aus (kein Fehler,
+// keine Leerzeile) - die im Plan verlangte Gegenmassnahme zum Sonderfall
+// "kein Seitenkontext".
+//
+// wp_strip_all_tags() statt wp_kses_post(): Der Wert landet ausschliesslich
+// als reiner Text in einem PDF. Markup waere dort sinnlos, und so kann
+// clientseitig auch nichts anderes als Text ankommen.
+$kapitel_titel = '';
+$aktuelle_seite_id = is_singular() ? get_queried_object_id() : 0;
+if ($aktuelle_seite_id) {
+    $kapitel_id = $aktuelle_seite_id;
+    $vorfahren = get_post_ancestors($aktuelle_seite_id);
+    if (!empty($vorfahren)) {
+        $kapitel_id = end($vorfahren);
+    }
+    $kapitel_titel = wp_strip_all_tags(get_the_title($kapitel_id));
+}
+
 // Build CSS classes
 $css_classes = [
     'wp-block-modular-blocks-summary-block',
@@ -184,6 +221,11 @@ $summary_data = [
     'isTeacher' => $ist_lehrperson,
     'teacherPdfCount' => $teacher_pdf_count,
     'allStatementTexts' => $all_statement_texts,
+    // AP-1.5 des Nachtrags: Titel der obersten Vorfahren-Seite, leer wenn
+    // kein Seitenkontext vorliegt. Wird nur in den PDFs verwendet, nirgends
+    // im sichtbaren Markup - die Ausgabe hier laeuft wie alle anderen
+    // Schluessel ueber json_encode() + esc_attr() am Wurzel-div.
+    'kapitelTitel' => $kapitel_titel,
     'successText' => $success_text,
     'partialSuccessText' => $partial_success_text,
     'failText' => $fail_text,
@@ -253,7 +295,44 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
             // gar nicht erst im HTML.
             ?>
             <?php if ($ist_lehrperson && !empty($all_statement_texts)): ?>
+                <?php
+                // AP-1.3 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+                // Zahlenfeld fuer die Anzahl der Aufgaben im Uebungsblatt.
+                //
+                // Zweck: Eine Lehrperson, die nur die veroeffentlichte Seite
+                // ansieht, kann die Anzahl aendern, ohne den Block-Editor zu
+                // oeffnen. Der Wert wirkt AUSSCHLIESSLICH auf den naechsten
+                // Export dieses Seitenaufrufs - es wird nichts gespeichert
+                // (Architekturentscheidung B3): kein AJAX, keine
+                // REST-Route, keine neue Schreibberechtigung. Nach einem
+                // Neuladen steht wieder der im Editor gespeicherte Wert da.
+                //
+                // Das Feld sitzt im selben if ($ist_lehrperson)-Zweig wie der
+                // Knopf. Fuer alle anderen existiert es damit gar nicht erst
+                // im HTML - dieselbe serverseitige Bedingung, kein zweiter,
+                // schwaecherer Sichtbarkeitsweg per CSS.
+                //
+                // max = tatsaechliche Poolgroesse. Der Plan nannte hier die
+                // Summe der statements-Arrays; genommen wird stattdessen
+                // count($all_statement_texts) - das ist genau der Pool, aus
+                // dem view.js zieht (Aussagen mit leerem Text fallen oben
+                // heraus). Sonst verspraeche das Feld eine Anzahl, die das
+                // PDF gar nicht liefern kann.
+                $anzahl_feld_id  = $block_id . '-teacher-pdf-count';
+                $gesamt_aussagen = count($all_statement_texts);
+                ?>
                 <div class="summary-teacher-tools">
+                    <label class="teacher-pdf-count-label" for="<?php echo esc_attr($anzahl_feld_id); ?>">
+                        <?php echo esc_html__('Anzahl:', 'modular-blocks-plugin'); ?>
+                    </label>
+                    <input type="number"
+                           id="<?php echo esc_attr($anzahl_feld_id); ?>"
+                           class="teacher-pdf-count-input"
+                           min="1"
+                           max="<?php echo esc_attr($gesamt_aussagen); ?>"
+                           step="1"
+                           inputmode="numeric"
+                           value="<?php echo esc_attr($teacher_pdf_count); ?>">
                     <button type="button"
                             class="summary-button teacher-practice-pdf-button"
                             style="<?php echo esc_attr($button_secondary_style); ?>">
@@ -264,6 +343,27 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                             <line x1="16" y1="17" x2="8" y2="17"/>
                         </svg>
                         <?php echo esc_html__('Übungs-PDF erzeugen', 'modular-blocks-plugin'); ?>
+                    </button>
+                    <?php
+                    // AP-1.4 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+                    // Zweiter Lehrer-Knopf, Loesungsblatt. Bewusst im selben
+                    // if ($ist_lehrperson)-Zweig und derselben Zeile wie der
+                    // Uebungsblatt-Knopf - er zeigt die richtigen Antworten und
+                    // darf Lernenden genauso wenig im HTML begegnen wie der
+                    // Aussagen-Pool.
+                    //
+                    // Das Zahlenfeld darueber gilt fuer ihn NICHT: Das
+                    // Loesungsblatt gibt immer alle Aussagen aus, ohne
+                    // Zufallsauswahl und ohne Begrenzung.
+                    ?>
+                    <button type="button"
+                            class="summary-button teacher-solution-sheet-button"
+                            style="<?php echo esc_attr($button_secondary_style); ?>">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;" aria-hidden="true" focusable="false">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <?php echo esc_html__('Lösungsblatt erzeugen', 'modular-blocks-plugin'); ?>
                     </button>
                 </div>
             <?php endif; ?>

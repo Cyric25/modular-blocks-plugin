@@ -682,6 +682,180 @@ Kein html2canvas, kein Screenshot, keine Kopplung an die
 PDF-Infrastruktur des CDB-Designers (Architekturentscheidung A7 des Plans)
 — beide Export-Wege bleiben reine jsPDF-Textausgabe wie der Bestandscode.
 
+### Nachtrag: Fünf Nachbesserungen (Phase 1, `PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md`, 2026-09-08)
+
+Nach dem Live-Test durch den Betreiber wurden fünf weitere Punkte am
+`summary-block` nachgebessert. Unabhängig review-geprüft (eigenes
+AP-1.rev dieses Nachtragsplans, nicht zu verwechseln mit dem
+gleichnamigen AP des Vorgängerplans oben): kein kritischer Befund, ein
+Befund mittlerer Schwere (**M1**, betrifft nur den Plantext, siehe Punkt 1
+unten) und sieben geringe (siehe „Bekannte Einschränkungen — Nachtrag"
+weiter unten). Kein `AP-1.fix1` nötig, Phase merge-fähig. Vollständige
+Befundliste inkl. Belegen:
+`PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md`, Übergabenotiz AP-1.rev.
+
+1. **`pdfDownloadThreshold`-Standardwert von 100 auf 0 (AP-1.1,
+   `block.json`).** Der Schüler-Download-Knopf erscheint damit nach jedem
+   Ergebnis, auch bei 0 %, statt praktisch nur bei einem fehlerfreien
+   Durchlauf. Der Inspector-Regler bleibt unverändert nutzbar, falls eine
+   Lehrperson doch eine Mindestpunktzahl verlangen will.
+
+   **Wichtig — wirkt rückwirkend auf alle Bestandsseiten ohne explizit
+   gesetzten Wert, entgegen der ursprünglichen Planannahme.** Der
+   Nachtragsplan (`PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md`,
+   Abschnitt 2 „Nicht-Ziele") behauptet, bestehende Blockinstanzen
+   behielten „ihren gespeicherten Wert (in der Regel 100, da nie
+   geändert)". **Das trifft nachweislich nicht zu** (Review-Befund
+   **M1**, Schweregrad mittel — der Fehler liegt im Plantext, nicht im
+   Code, der Abschnitt bleibt dort unverändert als Historie stehen):
+   Gutenberg serialisiert ein Blockattribut nicht in den
+   Blockkommentar, wenn dessen Wert dem in `block.json` hinterlegten
+   Default entspricht, und `WP_Block_Type::prepare_attributes_for_render()`
+   trägt vor jedem `render.php`-Aufruf stets den aktuellen
+   `block.json`-Default ein, wenn im Markup kein Wert steht. Auf dem
+   Testserver hatte **keine einzige** der 26 Produktivseiten mit
+   summary-block `pdfDownloadThreshold` je explizit gesetzt (der Regler
+   stand dort immer auf dem alten Default 100, der deshalb nie
+   serialisiert wurde) — alle 26 übernehmen den neuen Standard 0
+   automatisch, ohne Datenbankschreibung, ohne Migrations-Hook, allein
+   durch die eine geänderte Zeile in `block.json`. Wer für eine einzelne
+   Seite weiterhin eine Mindestpunktzahl will, setzt sie im
+   Inspector-Regler „PDF-Download ab (%)" — sobald der Wert vom Default
+   abweicht, wird er serialisiert und gewinnt. Das ist **keine
+   Datenmigration** (kein Code fasst die Datenbank an) und entspricht
+   inhaltlich dem Projektziel „Download standardmäßig ohne
+   Mindestpunktzahl verfügbar", geht aber weiter als der ursprüngliche
+   Plantext erwartete.
+
+2. **Falsch-Zähler pro Aussagensatz in der Lösungsanzeige (AP-1.2,
+   `view.js`, `style.css`).** Neue, von der bestehenden Punkteberechnung
+   unabhängige Struktur `wrongAttemptsByGroup` (Gruppenindex → Anzahl,
+   Schlüssel `groupEl.dataset.groupIndex`, bewusst **nicht**
+   `currentGroupIndex` — bei `progressiveReveal: false` liegen alle
+   Gruppen gleichzeitig offen und die Klickreihenfolge ist frei). Gefüllt
+   an **beiden** Fehlklick-Stellen von `handleStatementClick()`, also auch
+   im `deferredFeedback`-Zweig, wo zuvor überhaupt nichts gezählt wurde.
+   „Lösung anzeigen" zeigt je Gruppe eine eigene Zeile
+   (`.summary-wrong-count`, bewusst **kein** `.summary-item`, sonst bricht
+   `updateSummaryAfterEvaluation()` mit einem `TypeError` ab).
+   `calculateFinalScore()`/`percentage` sind dabei nachweislich
+   byteidentisch geblieben (Review-Gegenprüfung: einziger Unterschied im
+   Diff ist eine Kommentarzeile).
+
+3. **Frontend-Eingabefeld für die Anzahl der Übungsaufgaben (AP-1.3,
+   `render.php`, `view.js`, `style.css`).** Zahlenfeld neben dem
+   Übungsblatt-Knopf, nur im selben `if ($ist_lehrperson)`-Zweig, daher im
+   DOM nur für Lehrpersonen. Übersteuert `teacherPdfCount` **nur
+   clientseitig** für den jeweiligen Export (Architekturentscheidung B3
+   des Nachtragsplans) — kein `fetch`/`apiFetch`, kein
+   `update_post_meta()`; der gespeicherte Blockattributwert bleibt
+   unverändert, nach Neuladen zeigt das Feld wieder den Editor-Wert. Der
+   Wert wird `block`-weit gelesen (`block.querySelector('.teacher-pdf-count-input')`,
+   bewusst **nicht** `document.querySelector(...)`) — bei mehreren
+   summary-blocks auf einer Seite läse sonst jeder Block das Feld des
+   ersten.
+
+4. **Zweiter Lehrer-Knopf „Lösungsblatt erzeugen" (AP-1.4, `render.php`,
+   `view.js`: neue Funktion `generateSolutionSheetPDF()`).** Erzeugt,
+   anders als das Übungsblatt, **alle** Aussagen **aller** Gruppen mit
+   `[RICHTIG]`/`[FALSCH]`-Kennzeichnung nach `isCorrect` (ASCII wegen der
+   WinAnsiEncoding-Einschränkung von jsPDF), **ohne** Zufallsauswahl,
+   **ohne** Deckelung durch das Zahlenfeld aus AP-1.3, **ohne**
+   Prozentwert. Eigener Dateiname `loesungsblatt_<timestamp>.pdf`,
+   unterscheidbar von `uebungsblatt_<timestamp>.pdf` und dem
+   Schüler-Ergebnis-PDF-Dateinamen. Datenquelle ist dieselbe
+   `groups`-Struktur wie im Schüler-PDF, nicht `allStatementTexts` (die
+   trägt bewusst kein `isCorrect`).
+
+5. **Kapitel-Titel in allen drei PDF-Dokumenten (AP-1.5, `render.php`,
+   `view.js`).** `render.php` ermittelt den Titel der **obersten**
+   Vorfahren-Seite über `get_post_ancestors()` + `end()` (Fallback: die
+   Seite selbst, wenn keine Vorfahren vorhanden sind) und gibt ihn als
+   JSON-Schlüssel `kapitelTitel` aus — **ohne** `function_exists()`-Brücke
+   zum Theme, `get_post_ancestors()` ist WordPress-Bordmittel
+   (Architekturentscheidung B4 des Nachtragsplans). Zwei Absicherungen
+   über den ursprünglichen Planvorschlag hinaus: (a) `is_singular()` als
+   Torwächter vor `get_queried_object_id()` — auf Archiv-/Taxonomieseiten
+   liefert diese Funktion sonst eine **Term**-ID, die als Post-ID
+   fälschlich den Titel eines fremden Beitrags ins PDF schreiben könnte;
+   (b) `wp_strip_all_tags()`, weil `get_the_title()` durch den
+   `the_title`-Filter läuft, den fremde Erweiterungen mit Markup füllen
+   könnten, der Wert aber ausschließlich als reiner PDF-Text landet.
+   `view.js` bekommt eine gemeinsame Hilfsfunktion `writeChapterLine()`,
+   aufgerufen von allen drei PDF-Wegen; ist `kapitelTitel` leer, kehrt sie
+   sofort zurück, ohne Dokumentzustand oder y-Position zu verändern — kein
+   Fehler, keine leere Zeile.
+
+### Bekannte Einschränkungen — Nachtrag Phase 1 (Review AP-1.rev, `PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md`, 2026-09-08)
+
+Die restlichen sechs Review-Befunde (alle „gering"; **M1** ist oben bei
+AP-1.1 bereits eingearbeitet):
+
+- **G1 — zwei tote Rückfallwerte, die noch die alte Schwelle 100 nennen**
+  (`render.php:29`: `$pdf_download_threshold = $block_attributes['pdfDownloadThreshold'] ?? 100;`;
+  `view.js:76`: Destrukturierungs-Default `pdfDownloadThreshold = 100`).
+  Praktisch tot — WordPress trägt den `block.json`-Default immer in
+  `$block_attributes` ein, `render.php` schreibt den Schlüssel immer in
+  die JSON —, aber irreführend beim Lesen. Keine Verhaltensänderung zu
+  erwarten, falls aufgeräumt.
+- **G2 — `block.json`-`version` (weiterhin `2.2.2`) trotz sichtbarer
+  Layoutänderung nicht erhöht** (`.summary-teacher-tools` von `block` auf
+  `inline-flex` mit `flex-wrap`/`gap` umgestellt). Derselbe Befund wie
+  weiter oben aus dem Review des Vorgängerplans, der Nachtrag hat ihn
+  nicht behoben — betrifft `register_block_style_handle()`s
+  `?ver=`-Parameter für das Blockstylesheet. Auf dem Testserver ohne
+  Wirkung (Stylesheet wird inline eingebettet), auf Produktiv nicht
+  garantiert, falls `style-index.css` (14 194 Byte) dort das
+  20 000-Byte-Inline-Budget sprengt.
+- **G3 — Zahlenfeld aus AP-1.3 kann `value` größer als `max` rendern**
+  (`render.php`): Ist der gespeicherte `teacherPdfCount` größer als die
+  Poolgröße (Regelfall, da Attribut-Default 10), rendert das Feld z. B.
+  `value="10" max="6"` — HTML-technisch ungültig (Browser markiert es als
+  `:invalid`), aber ohne Funktionsverlust: Die Deckelung in `view.js`
+  greift beim Klick, das PDF enthält korrekt 6 Zeilen. Die Lehrperson
+  liest allerdings „10" statt „6".
+- **G4 — doppelte Kopfzeile im PDF, wenn Kapitel- und Blocktitel
+  identisch sind** (`view.js`, `writeChapterLine()`/alle drei PDF-Wege):
+  Auf einer Seite ohne Elternseite ist der Kapiteltitel per Definition der
+  Seitentitel selbst; trägt der Block denselben Titel wie die Seite
+  (häufig bei „Übungen zu …"-Seiten), steht dieselbe Zeile zweimal
+  untereinander im Kopf. Rein kosmetisch, kein verletztes
+  Akzeptanzkriterium.
+- **G5 — neue Frontend-Texte sind fest auf Deutsch verdrahtet**
+  (`view.js`: „N falsche(r) Versuch(e) in diesem Aussagensatz",
+  „Lösungsblatt", beide `alert()`-Meldungen in
+  `generateSolutionSheetPDF()`). Setzt die bereits im Review des
+  Vorgängerplans dokumentierte Einschränkung (siehe oben, „Neue PDF-Texte
+  … deutsch fest verdrahtet") fort; die `strings`-Brücke aus der
+  `data-summary`-JSON wird weiterhin nur für `strings.group`/`strings.of`
+  genutzt. Nur bei künftiger Mehrsprachigkeit relevant.
+- **G7 — `htmlToText()` bleibt ein `innerHTML`-Sink, jetzt auch von
+  `generateSolutionSheetPDF()` durchlaufen** (`view.js`): Kein neuer
+  Befund — derselbe Pfad existiert bereits seit `generatePDF()` des
+  Vorgängerplans (dort bereits dokumentiert, siehe Bullet oben zur
+  Datei-Map-Behauptung über `wp_kses_post()`) und läuft, anders als der
+  sichtbare `<span>`-Ausgabepfad, nicht durch `wp_kses_post()`. AP-1.4
+  benutzt ihn nur erneut, ohne ihn zu erweitern. `kapitelTitel` (AP-1.5)
+  macht es an seiner eigenen Stelle besser: serverseitig durch
+  `wp_strip_all_tags()` geführt, bevor es überhaupt bei `htmlToText()`
+  ankommt.
+
+**Zusätzlich, außerhalb der G-Liste des Reviews — vorbestehender, durch
+den Nachtrag nicht verursachter Mangel:** Der `deferredFeedback`-Modus
+lässt sich über die Oberfläche **nicht abschließen**. Der deferred-Zweig
+in `handleStatementClick()` setzt die Klasse `selected`, `isGroupCompleted()`
+prüft für denselben Modus aber auf `.statement-option.correct`/
+`.statement-option.incorrect`, die dort nie gesetzt werden —
+`showResults()` läuft folglich nie, `.summary-controls` (und damit der
+Knopf „Lösung anzeigen") bleibt verborgen. Bestätigt unverändert bereits
+auf `main` vor diesem Nachtrag (`git show main:blocks/summary-block/view.js`);
+**keine** Produktivseite verwendet `deferredFeedback: true` (nur eine
+Testseite). Der neue Falsch-Zähler aus AP-1.2 funktioniert im
+deferred-Zweig trotzdem korrekt, wenn der Knopf „Lösung anzeigen" direkt
+angesprochen wird. Empfehlung für ein eigenes, künftiges AP:
+`isGroupCompleted()` im deferred-Zweig zusätzlich auf
+`.statement-option.selected` prüfen.
+
 ### Bekannte Einschränkungen (Review AP-1.rev, 2026-09-08)
 
 Das unabhängige Review der Phase fand keinen kritischen und einen Befund

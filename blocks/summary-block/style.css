@@ -392,6 +392,32 @@
     color: var(--summary-text);
 }
 
+/*
+ * Fehlversuchszaehler je Aussagensatz in der Loesungsanzeige
+ * (AP-1.2, PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md).
+ *
+ * Bewusst zurueckhaltender als .summary-item: keine Karte, kein Rahmen,
+ * kleinere und gedaempfte Schrift - die Zeile ist eine Fussnote zur
+ * darueberstehenden Gruppe, keine eigene Aussage. Farben ueber die
+ * bestehenden --summary-*-Variablen, damit der Darkmode automatisch
+ * mitzieht (Pflicht-Konvention aus CLAUDE.md, Abschnitt "Darkmode").
+ */
+.wp-block-modular-blocks-summary-block .summary-wrong-count {
+    margin: -2px 0 6px 0;
+    padding: 0 16px;
+    font-size: 13px;
+    line-height: 18px;
+    font-style: italic;
+    color: var(--summary-text-light);
+}
+
+/* Fehlerfreie Gruppen ruhig lassen, Gruppen mit Fehlern hervorheben. */
+.wp-block-modular-blocks-summary-block .summary-wrong-count:not([data-wrong-count="0"]) {
+    color: var(--summary-danger, #ea4335);
+    font-style: normal;
+    font-weight: 500;
+}
+
 /* Results Section - H5P Style */
 .wp-block-modular-blocks-summary-block .summary-results {
     padding: 40px 32px;
@@ -520,20 +546,62 @@
  * border-style, aber keine border-color, sodass currentColor greifen wuerde.
  */
 .wp-block-modular-blocks-summary-block .retry-button,
-.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button {
+/*
+ * Der Loesungsblatt-Knopf (AP-1.4 des Nachtrags,
+ * PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md) teilt sich die
+ * Umriss-Optik mit dem Uebungsblatt-Knopf. Ohne diesen Eintrag bliebe er
+ * ungefaerbt: $button_secondary_style in render.php setzt zwar border-style,
+ * aber keine border-color.
+ */
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button,
+.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button {
     border-color: var(--sb-primary, #e24614) !important;
     color: var(--sb-primary, #e24614) !important;
 }
 
 .wp-block-modular-blocks-summary-block .retry-button:hover,
-.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover {
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover,
+.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button:hover {
     border-color: var(--sb-primary-hover, #c93d12) !important;
     color: var(--sb-primary-hover, #c93d12) !important;
 }
 
-/* Abstand zum Blockkopf, in dem der Lehrer-Knopf sitzt. */
+/*
+ * Abstand zum Blockkopf, in dem der Lehrer-Knopf sitzt.
+ *
+ * Seit AP-1.3 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md)
+ * steht davor ein Zahlenfeld: Label, Feld und Knopf bilden eine Zeile.
+ * inline-flex statt block, damit die Gruppe nur so breit wird wie noetig;
+ * flex-wrap, damit sie auf schmalen Bildschirmen umbricht statt aus dem
+ * Block zu laufen.
+ */
 .wp-block-modular-blocks-summary-block .summary-teacher-tools {
     margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wp-block-modular-blocks-summary-block .teacher-pdf-count-label {
+    font-size: 14px;
+    color: var(--summary-text-light);
+}
+
+.wp-block-modular-blocks-summary-block .teacher-pdf-count-input {
+    width: 5em;
+    padding: 9px 8px;
+    border: 1px solid var(--summary-border);
+    border-radius: 4px;
+    background: var(--color-background, #fff);
+    color: var(--summary-text);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.wp-block-modular-blocks-summary-block .teacher-pdf-count-input:focus {
+    outline: 2px solid var(--sb-primary, #e24614);
+    outline-offset: 1px;
 }
 
 /* Error State */
