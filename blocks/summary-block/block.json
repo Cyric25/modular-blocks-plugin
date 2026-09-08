@@ -95,7 +95,7 @@
         },
         "pdfDownloadThreshold": {
             "type": "number",
-            "default": 100
+            "default": 0
         },
         "pdfMessage": {
             "type": "string",
