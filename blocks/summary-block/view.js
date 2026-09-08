@@ -87,7 +87,12 @@
             // alles andere; allStatementTexts ist leer, wenn render.php den
             // Betrachter nicht als Lehrperson erkannt hat.
             teacherPdfCount = 10,
-            allStatementTexts = []
+            allStatementTexts = [],
+            // AP-1.5 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+            // Titel der obersten Vorfahren-Seite, von render.php ermittelt.
+            // Leer, wenn kein Seitenkontext vorliegt - dann gibt keines der
+            // drei PDFs eine Kapitelzeile aus.
+            kapitelTitel = ''
         } = data;
 
         // State
@@ -387,6 +392,49 @@
         }
 
         /**
+         * Kapitelzeile in ein PDF schreiben, sofern ein Kapitel bekannt ist.
+         *
+         * AP-1.5 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md).
+         * Eine gemeinsame Funktion fuer alle drei PDF-Wege, damit die Zeile in
+         * Schueler-Ergebnis-, Uebungs- und Loesungsblatt gleich aussieht und
+         * eine spaetere Aenderung nur an einer Stelle noetig ist.
+         *
+         * Ist `kapitelTitel` leer (z. B. weil der Block ausserhalb eines
+         * Seitenkontexts steht), passiert nichts: keine Zeile, kein
+         * Leerraum, kein Fehler.
+         *
+         * `htmlToText()` laeuft aus demselben Grund darueber wie ueber die
+         * Aussagetexte: Der Wert kommt aus der JSON, nicht aus dem DOM -
+         * HTML-Entities (z. B. `&amp;`) wuerde jsPDF sonst woertlich drucken.
+         * Markup kann nicht mehr enthalten sein, das raeumt render.php schon
+         * serverseitig mit wp_strip_all_tags() weg.
+         *
+         * @param {Object} doc        - jsPDF-Dokument.
+         * @param {number} startY     - Obere Kante in mm.
+         * @param {number} margin     - Linker Rand in mm.
+         * @param {number} maxWidth   - Verfuegbare Textbreite in mm.
+         * @param {number} lineHeight - Zeilenhoehe in mm.
+         * @returns {number} Die neue y-Position (unveraendert, wenn nichts
+         *                   geschrieben wurde).
+         */
+        function writeChapterLine(doc, startY, margin, maxWidth, lineHeight) {
+            const text = htmlToText(kapitelTitel);
+            if (!text) return startY;
+
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(120, 120, 120);
+            const wrapped = doc.splitTextToSize(text, maxWidth);
+            doc.text(wrapped, margin, startY);
+
+            // Farbe und Schnitt bewusst zurueckstellen: Die Aufrufer setzen
+            // danach zwar beides selbst, aber so bleibt diese Funktion ohne
+            // Nebenwirkung auf den Dokumentzustand.
+            doc.setTextColor(0, 0, 0);
+            return startY + wrapped.length * lineHeight;
+        }
+
+        /**
          * Generate PDF of summary
          */
         function generatePDF() {
@@ -407,16 +455,23 @@
                 const titleEl = block.querySelector('.summary-title');
                 const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
 
+                // AP-1.5 des Nachtrags: Kapitelzeile ueber dem Blocktitel.
+                // Ohne Kapitel liefert writeChapterLine() den Startwert
+                // unveraendert zurueck - der Kopf steht dann Zeile fuer Zeile
+                // exakt dort, wo er vorher stand (Titel y=20,
+                // Zusammenfassungs-Ueberschrift y=35, Inhalt ab y=45).
+                const titelY = writeChapterLine(doc, 20, 20, doc.internal.pageSize.width - 40, 8);
+
                 // Add title
                 doc.setFontSize(18);
                 doc.setFont(undefined, 'bold');
-                doc.text(title, 20, 20);
+                doc.text(title, 20, titelY);
 
                 // Add summary title
                 const summaryTitleEl = block.querySelector('.summary-section-title');
                 const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
                 doc.setFontSize(14);
-                doc.text(summaryTitle, 20, 35);
+                doc.text(summaryTitle, 20, titelY + 15);
 
                 // AP-1.2: Alle Aussagen aus ALLEN Gruppen, jeweils mit
                 // Richtig/Falsch-Kennzeichnung. Vorher listete das PDF nur die
@@ -426,7 +481,7 @@
                 // Datenquelle ist bewusst dieselbe wie fuer die
                 // Interaktionslogik: das bereits geparste data-summary-JSON
                 // (Konstante `groups`), keine zweite Quelle.
-                let yPosition = 45;
+                let yPosition = titelY + 25;
                 const pageHeight = doc.internal.pageSize.height;
                 const margin = 20;
                 const lineHeight = 8;
@@ -612,7 +667,10 @@
                 doc.setFont(undefined, 'bold');
                 doc.text('Übungsblatt', margin, 20);
 
-                let yPosition = 32;
+                // AP-1.5 des Nachtrags: Kapitelzeile ueber dem Blocktitel,
+                // also zwischen Dokumentueberschrift und Blocktitel. Ohne
+                // Kapitel bleibt yPosition bei 32 wie zuvor.
+                let yPosition = writeChapterLine(doc, 32, margin, pageWidth - 2 * margin, lineHeight);
                 if (blockTitle) {
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');
@@ -711,7 +769,9 @@
                 doc.setFont(undefined, 'bold');
                 doc.text('Lösungsblatt', margin, 20);
 
-                let yPosition = 32;
+                // AP-1.5 des Nachtrags: Kapitelzeile, gleiche Stelle wie im
+                // Uebungsblatt.
+                let yPosition = writeChapterLine(doc, 32, margin, pageWidth - 2 * margin, lineHeight);
                 if (blockTitle) {
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');

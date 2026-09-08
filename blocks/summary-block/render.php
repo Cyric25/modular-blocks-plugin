@@ -131,6 +131,43 @@ if ($ist_lehrperson) {
     }
 }
 
+// AP-1.5 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md): Kapitel-Titel
+// fuer die drei PDF-Ausgaben.
+//
+// "Kapitel" ist hier die OBERSTE Vorfahren-Seite der aktuellen Seite, also
+// Ebene 0 der Seitenhierarchie - dasselbe Verstaendnis wie in
+// get_root_page_id() (Theme/sidebar.php), nur mit WordPress-Bordmitteln
+// nachgebaut. get_post_ancestors() liefert die Vorfahren von innen nach
+// aussen, end() greift damit die aeusserste.
+//
+// Bewusst OHNE function_exists()-Bruecke zum Theme (anders als bei
+// simple_clean_ist_lehrperson() oben): get_post_ancestors() ist
+// WordPress-Bordmittel - Architekturentscheidung B4 des Plans. Das Plugin
+// bleibt fuer diese Funktion vollstaendig theme-unabhaengig.
+//
+// is_singular() als Torwaechter: get_queried_object_id() liefert AUCH auf
+// Archivseiten einen Wert, dort aber eine Term-ID. Ohne die Pruefung wuerde
+// ein summary-block in einem Widget auf einer Kategorieseite die Term-ID als
+// Post-ID weiterreichen und im schlimmsten Fall den Titel eines voellig
+// fremden Beitrags ins PDF schreiben. Trifft die Pruefung nicht zu, bleibt
+// $kapitel_titel leer und view.js gibt gar keine Zeile aus (kein Fehler,
+// keine Leerzeile) - die im Plan verlangte Gegenmassnahme zum Sonderfall
+// "kein Seitenkontext".
+//
+// wp_strip_all_tags() statt wp_kses_post(): Der Wert landet ausschliesslich
+// als reiner Text in einem PDF. Markup waere dort sinnlos, und so kann
+// clientseitig auch nichts anderes als Text ankommen.
+$kapitel_titel = '';
+$aktuelle_seite_id = is_singular() ? get_queried_object_id() : 0;
+if ($aktuelle_seite_id) {
+    $kapitel_id = $aktuelle_seite_id;
+    $vorfahren = get_post_ancestors($aktuelle_seite_id);
+    if (!empty($vorfahren)) {
+        $kapitel_id = end($vorfahren);
+    }
+    $kapitel_titel = wp_strip_all_tags(get_the_title($kapitel_id));
+}
+
 // Build CSS classes
 $css_classes = [
     'wp-block-modular-blocks-summary-block',
@@ -184,6 +221,11 @@ $summary_data = [
     'isTeacher' => $ist_lehrperson,
     'teacherPdfCount' => $teacher_pdf_count,
     'allStatementTexts' => $all_statement_texts,
+    // AP-1.5 des Nachtrags: Titel der obersten Vorfahren-Seite, leer wenn
+    // kein Seitenkontext vorliegt. Wird nur in den PDFs verwendet, nirgends
+    // im sichtbaren Markup - die Ausgabe hier laeuft wie alle anderen
+    // Schluessel ueber json_encode() + esc_attr() am Wurzel-div.
+    'kapitelTitel' => $kapitel_titel,
     'successText' => $success_text,
     'partialSuccessText' => $partial_success_text,
     'failText' => $fail_text,
