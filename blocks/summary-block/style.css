@@ -546,13 +546,22 @@
  * border-style, aber keine border-color, sodass currentColor greifen wuerde.
  */
 .wp-block-modular-blocks-summary-block .retry-button,
-.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button {
+/*
+ * Der Loesungsblatt-Knopf (AP-1.4 des Nachtrags,
+ * PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md) teilt sich die
+ * Umriss-Optik mit dem Uebungsblatt-Knopf. Ohne diesen Eintrag bliebe er
+ * ungefaerbt: $button_secondary_style in render.php setzt zwar border-style,
+ * aber keine border-color.
+ */
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button,
+.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button {
     border-color: var(--sb-primary, #e24614) !important;
     color: var(--sb-primary, #e24614) !important;
 }
 
 .wp-block-modular-blocks-summary-block .retry-button:hover,
-.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover {
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover,
+.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button:hover {
     border-color: var(--sb-primary-hover, #c93d12) !important;
     color: var(--sb-primary-hover, #c93d12) !important;
 }

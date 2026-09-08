@@ -302,6 +302,27 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                         </svg>
                         <?php echo esc_html__('Übungs-PDF erzeugen', 'modular-blocks-plugin'); ?>
                     </button>
+                    <?php
+                    // AP-1.4 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+                    // Zweiter Lehrer-Knopf, Loesungsblatt. Bewusst im selben
+                    // if ($ist_lehrperson)-Zweig und derselben Zeile wie der
+                    // Uebungsblatt-Knopf - er zeigt die richtigen Antworten und
+                    // darf Lernenden genauso wenig im HTML begegnen wie der
+                    // Aussagen-Pool.
+                    //
+                    // Das Zahlenfeld darueber gilt fuer ihn NICHT: Das
+                    // Loesungsblatt gibt immer alle Aussagen aus, ohne
+                    // Zufallsauswahl und ohne Begrenzung.
+                    ?>
+                    <button type="button"
+                            class="summary-button teacher-solution-sheet-button"
+                            style="<?php echo esc_attr($button_secondary_style); ?>">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;" aria-hidden="true" focusable="false">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <?php echo esc_html__('Lösungsblatt erzeugen', 'modular-blocks-plugin'); ?>
+                    </button>
                 </div>
             <?php endif; ?>
         </div>

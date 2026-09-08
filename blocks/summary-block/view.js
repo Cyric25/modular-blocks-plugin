@@ -138,6 +138,9 @@
         // immer das Feld des ERSTEN Blocks liefern und alle weiteren Bloecke
         // mit dessen Wert exportieren.
         const teacherPdfCountInput = block.querySelector('.teacher-pdf-count-input');
+        // AP-1.4 des Nachtrags: zweiter Lehrer-Knopf, Loesungsblatt. Gleiche
+        // serverseitige Sichtbarkeitsbedingung wie die beiden Elemente darueber.
+        const teacherSolutionSheetButton = block.querySelector('.teacher-solution-sheet-button');
 
         /**
          * Einen Fehlklick der zugehoerigen Gruppe zuschreiben.
@@ -658,6 +661,124 @@
         }
 
         /**
+         * Lösungsblatt-PDF für Lehrpersonen erzeugen.
+         *
+         * AP-1.4 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md). Aufbau und
+         * Dokument-Setup folgen `generateTeacherPracticePDF()`, der Inhalt ist
+         * bewusst das Gegenstück dazu:
+         * - ALLE Aussagen aus ALLEN Gruppen, keine Zufallsauswahl. Das
+         *   Zahlenfeld aus AP-1.3 wird hier absichtlich NICHT gelesen.
+         * - je Aussage `[RICHTIG]`/`[FALSCH]` nach `statement.isCorrect`,
+         *   in ASCII wie im Schüler-Ergebnis-PDF (jsPDF setzt mit den
+         *   eingebauten Standardschriften in WinAnsiEncoding, in dem „✓"/„✗"
+         *   nicht enthalten sind).
+         * - KEIN Prozentwert: Das Blatt gehört zu keinem konkreten
+         *   Schüler-Durchlauf.
+         *
+         * Datenquelle ist die Konstante `groups` aus der `data-summary`-JSON —
+         * dieselbe, aus der `generatePDF()` liest. `allStatementTexts` taugt
+         * hier nicht: Diese Liste trägt bewusst kein `isCorrect`.
+         */
+        function generateSolutionSheetPDF() {
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            if (!Array.isArray(groups) || groups.length === 0) {
+                alert('Für dieses Element stehen keine Aussagen für ein Lösungsblatt zur Verfügung.');
+                return;
+            }
+
+            try {
+                const doc = new jsPDF();
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const lineHeight = 8;
+                const textIndent = 26; // Platz fuer die Marke "[RICHTIG] "
+                const textWidth = pageWidth - 2 * margin - textIndent;
+
+                const MARK_CORRECT = '[RICHTIG]';
+                const MARK_WRONG = '[FALSCH]';
+
+                const titleEl = block.querySelector('.summary-title');
+                const blockTitle = titleEl ? titleEl.textContent.trim() : '';
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Lösungsblatt', margin, 20);
+
+                let yPosition = 32;
+                if (blockTitle) {
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    const wrappedTitle = doc.splitTextToSize(blockTitle, pageWidth - 2 * margin);
+                    doc.text(wrappedTitle, margin, yPosition);
+                    yPosition += wrappedTitle.length * lineHeight;
+                }
+
+                /**
+                 * Seitenumbruch, wenn der naechste Block nicht mehr passt.
+                 * @param {number} needed - Benoetigte Hoehe in mm.
+                 */
+                function ensureSpace(needed) {
+                    if (yPosition + needed > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                }
+
+                groups.forEach((group, groupIndex) => {
+                    const statements = Array.isArray(group.statements) ? group.statements : [];
+                    if (statements.length === 0) return;
+
+                    const groupLabel = `${strings.group || 'Frage'} ${groupIndex + 1} ${strings.of || 'von'} ${groups.length}`;
+                    ensureSpace(lineHeight + 4);
+                    yPosition += 4;
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(groupLabel, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
+
+                    doc.setFontSize(11);
+
+                    statements.forEach(stmt => {
+                        const text = htmlToText(stmt && stmt.text);
+                        const isCorrect = !!(stmt && stmt.isCorrect);
+                        const wrappedText = doc.splitTextToSize(text, textWidth);
+
+                        ensureSpace(wrappedText.length * lineHeight);
+
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(isCorrect ? MARK_CORRECT : MARK_WRONG, margin, yPosition);
+                        doc.text(wrappedText, margin + textIndent, yPosition);
+
+                        yPosition += wrappedText.length * lineHeight;
+                    });
+                });
+
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Eigener Dateiname, klar unterscheidbar von
+                // uebungsblatt_<ts>.pdf (AP-1.3 des Vorgaengerplans) und vom
+                // Schueler-PDF (<Blocktitel>_<ts>.pdf).
+                doc.save(`loesungsblatt_${Date.now()}.pdf`);
+            } catch (error) {
+                console.error('Solution sheet PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
+        }
+
+        /**
          * Show final results
          */
         function showResults() {
@@ -974,6 +1095,13 @@
         // (und eine client-seitige wäre ohnehin wertlos).
         if (teacherPdfButton) {
             teacherPdfButton.addEventListener('click', generateTeacherPracticePDF);
+        }
+
+        // AP-1.4 des Nachtrags: derselbe Weg wie beim Knopf darueber - der
+        // Knopf existiert nur, wenn render.php den Betrachter serverseitig als
+        // Lehrperson erkannt hat.
+        if (teacherSolutionSheetButton) {
+            teacherSolutionSheetButton.addEventListener('click', generateSolutionSheetPDF);
         }
 
         // Initialize
