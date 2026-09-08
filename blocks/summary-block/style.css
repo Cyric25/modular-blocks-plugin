@@ -392,6 +392,32 @@
     color: var(--summary-text);
 }
 
+/*
+ * Fehlversuchszaehler je Aussagensatz in der Loesungsanzeige
+ * (AP-1.2, PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md).
+ *
+ * Bewusst zurueckhaltender als .summary-item: keine Karte, kein Rahmen,
+ * kleinere und gedaempfte Schrift - die Zeile ist eine Fussnote zur
+ * darueberstehenden Gruppe, keine eigene Aussage. Farben ueber die
+ * bestehenden --summary-*-Variablen, damit der Darkmode automatisch
+ * mitzieht (Pflicht-Konvention aus CLAUDE.md, Abschnitt "Darkmode").
+ */
+.wp-block-modular-blocks-summary-block .summary-wrong-count {
+    margin: -2px 0 6px 0;
+    padding: 0 16px;
+    font-size: 13px;
+    line-height: 18px;
+    font-style: italic;
+    color: var(--summary-text-light);
+}
+
+/* Fehlerfreie Gruppen ruhig lassen, Gruppen mit Fehlern hervorheben. */
+.wp-block-modular-blocks-summary-block .summary-wrong-count:not([data-wrong-count="0"]) {
+    color: var(--summary-danger, #ea4335);
+    font-style: normal;
+    font-weight: 500;
+}
+
 /* Results Section - H5P Style */
 .wp-block-modular-blocks-summary-block .summary-results {
     padding: 40px 32px;

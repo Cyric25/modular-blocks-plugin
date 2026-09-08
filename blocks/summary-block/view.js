@@ -94,6 +94,16 @@
         let currentGroupIndex = 0;
         let score = totalCorrect; // Start with max score, deduct for wrong answers
         let wrongAttempts = 0;
+        // AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+        // Fehlklicks je Aussagensatz (Gruppe), Schluessel ist der
+        // data-group-index des jeweiligen .summary-group-Elements.
+        //
+        // Bewusst eine EIGENE Struktur neben dem bestehenden, globalen
+        // `wrongAttempts` und nicht dessen Umbau (Architekturentscheidung B2
+        // des Plans): `wrongAttempts` haengt an der Punktelogik
+        // (`penaltyPerWrong`), dieser Zaehler ist rein informativ und darf die
+        // Punktzahl unter keinen Umstaenden beeinflussen.
+        let wrongAttemptsByGroup = {};
         let correctSelections = []; // Tracks correct statement texts
         let wrongSelections = []; // Tracks wrong statement texts (for deferred mode)
         let allSelections = []; // All selected statement objects (for deferred mode)
@@ -120,6 +130,29 @@
         // AP-1.3: nur vorhanden, wenn render.php den Betrachter serverseitig
         // als Lehrperson erkannt hat.
         const teacherPdfButton = block.querySelector('.teacher-practice-pdf-button');
+
+        /**
+         * Einen Fehlklick der zugehoerigen Gruppe zuschreiben.
+         *
+         * AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+         * Schluessel ist `data-group-index` des umgebenden
+         * `.summary-group`-Elements, nicht `currentGroupIndex` — bei
+         * abgeschaltetem `progressiveReveal` stehen alle Gruppen gleichzeitig
+         * offen und der Lernende kann in beliebiger Reihenfolge klicken;
+         * `currentGroupIndex` waere dann die falsche Zuordnung.
+         *
+         * `render.php` gibt `data-group-index` in derselben Reihenfolge aus,
+         * in der `$groups_data` in die `data-summary`-JSON wandert — der
+         * Index passt also 1:1 auf die Konstante `groups`, die
+         * `showSolution()` durchlaeuft.
+         *
+         * @param {HTMLElement} groupEl - Das .summary-group-Element.
+         */
+        function countWrongAttempt(groupEl) {
+            const rohIndex = groupEl ? parseInt(groupEl.dataset.groupIndex, 10) : NaN;
+            const key = Number.isNaN(rohIndex) ? 0 : rohIndex;
+            wrongAttemptsByGroup[key] = (wrongAttemptsByGroup[key] || 0) + 1;
+        }
 
         /**
          * Update progress bar
@@ -204,6 +237,33 @@
             });
 
             // No scroll - stay at current position
+        }
+
+        /**
+         * Zeile mit der Zahl der Fehlversuche eines Aussagensatzes anhaengen.
+         *
+         * AP-1.2 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md). Bewusst
+         * eine EIGENE Klasse `.summary-wrong-count` und ausdruecklich KEIN
+         * `.summary-item`: `updateSummaryAfterEvaluation()` laeuft im
+         * verzoegerten Feedback ueber alle `.summary-item`-Elemente und
+         * erwartet dort ein `.summary-bullet` und ein `.summary-text` — diese
+         * Zeile hat beides nicht und wuerde die Schleife zum Absturz bringen.
+         *
+         * @param {number} anzahl - Fehlversuche in diesem Aussagensatz.
+         */
+        function addWrongCountLine(anzahl) {
+            if (!summarySection || !summaryStatements) return;
+
+            summarySection.style.display = 'block';
+
+            const zeile = document.createElement('div');
+            zeile.className = 'summary-wrong-count';
+            zeile.setAttribute('data-wrong-count', String(anzahl));
+            zeile.textContent = anzahl === 1
+                ? '1 falscher Versuch in diesem Aussagensatz'
+                : `${anzahl} falsche Versuche in diesem Aussagensatz`;
+
+            summaryStatements.appendChild(zeile);
         }
 
         /**
@@ -656,12 +716,18 @@
                 summaryStatements.innerHTML = '';
             }
 
-            groups.forEach(group => {
+            groups.forEach((group, groupIndex) => {
                 group.statements.forEach(stmt => {
                     if (stmt.isCorrect) {
                         addToSummary(stmt.text, true);
                     }
                 });
+                // AP-1.2: Fehlversuchszaehler dieses Aussagensatzes. Wird
+                // fuer JEDE Gruppe ausgegeben, auch bei 0 - so ist auf einen
+                // Blick erkennbar, welche Gruppen fehlerfrei liefen, statt
+                // dass eine fehlende Zeile mehrdeutig bleibt (Plan: einheitlich
+                // fuer alle Gruppen, nicht gruppenabhaengig formatiert).
+                addWrongCountLine(wrongAttemptsByGroup[groupIndex] || 0);
             });
 
             // Mark all correct statements in UI
@@ -697,6 +763,7 @@
             currentGroupIndex = 0;
             score = totalCorrect;
             wrongAttempts = 0;
+            wrongAttemptsByGroup = {}; // AP-1.2: keine Reste aus dem vorherigen Versuch
             correctSelections = [];
             wrongSelections = [];
             allSelections = [];
@@ -779,6 +846,12 @@
                     correctSelections.push(statementText);
                 } else {
                     wrongSelections.push(statementText);
+                    // AP-1.2: Im verzoegerten Feedback wurde bislang gar kein
+                    // Fehlklick gezaehlt (auch nicht der globale
+                    // `wrongAttempts`). Die Punktelogik bleibt unberuehrt -
+                    // sie wertet in diesem Modus ausschliesslich
+                    // `allSelections` in calculateFinalScore() aus.
+                    countWrongAttempt(groupEl);
                 }
 
                 // Add to summary (no checkmark yet)
@@ -835,6 +908,10 @@
                     // Wrong answer
                     showStatementFeedback(statementEl, false);
                     wrongAttempts++;
+                    // AP-1.2: zusaetzlich zur bestehenden globalen Zaehlung,
+                    // die Reihenfolge zur Punktezeile darunter ist bewusst
+                    // unveraendert geblieben.
+                    countWrongAttempt(groupEl);
                     score -= penaltyPerWrong;
                 }
             }
