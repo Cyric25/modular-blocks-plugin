@@ -253,7 +253,44 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
             // gar nicht erst im HTML.
             ?>
             <?php if ($ist_lehrperson && !empty($all_statement_texts)): ?>
+                <?php
+                // AP-1.3 (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+                // Zahlenfeld fuer die Anzahl der Aufgaben im Uebungsblatt.
+                //
+                // Zweck: Eine Lehrperson, die nur die veroeffentlichte Seite
+                // ansieht, kann die Anzahl aendern, ohne den Block-Editor zu
+                // oeffnen. Der Wert wirkt AUSSCHLIESSLICH auf den naechsten
+                // Export dieses Seitenaufrufs - es wird nichts gespeichert
+                // (Architekturentscheidung B3): kein AJAX, keine
+                // REST-Route, keine neue Schreibberechtigung. Nach einem
+                // Neuladen steht wieder der im Editor gespeicherte Wert da.
+                //
+                // Das Feld sitzt im selben if ($ist_lehrperson)-Zweig wie der
+                // Knopf. Fuer alle anderen existiert es damit gar nicht erst
+                // im HTML - dieselbe serverseitige Bedingung, kein zweiter,
+                // schwaecherer Sichtbarkeitsweg per CSS.
+                //
+                // max = tatsaechliche Poolgroesse. Der Plan nannte hier die
+                // Summe der statements-Arrays; genommen wird stattdessen
+                // count($all_statement_texts) - das ist genau der Pool, aus
+                // dem view.js zieht (Aussagen mit leerem Text fallen oben
+                // heraus). Sonst verspraeche das Feld eine Anzahl, die das
+                // PDF gar nicht liefern kann.
+                $anzahl_feld_id  = $block_id . '-teacher-pdf-count';
+                $gesamt_aussagen = count($all_statement_texts);
+                ?>
                 <div class="summary-teacher-tools">
+                    <label class="teacher-pdf-count-label" for="<?php echo esc_attr($anzahl_feld_id); ?>">
+                        <?php echo esc_html__('Anzahl:', 'modular-blocks-plugin'); ?>
+                    </label>
+                    <input type="number"
+                           id="<?php echo esc_attr($anzahl_feld_id); ?>"
+                           class="teacher-pdf-count-input"
+                           min="1"
+                           max="<?php echo esc_attr($gesamt_aussagen); ?>"
+                           step="1"
+                           inputmode="numeric"
+                           value="<?php echo esc_attr($teacher_pdf_count); ?>">
                     <button type="button"
                             class="summary-button teacher-practice-pdf-button"
                             style="<?php echo esc_attr($button_secondary_style); ?>">

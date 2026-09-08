@@ -130,6 +130,14 @@
         // AP-1.3: nur vorhanden, wenn render.php den Betrachter serverseitig
         // als Lehrperson erkannt hat.
         const teacherPdfButton = block.querySelector('.teacher-practice-pdf-button');
+        // AP-1.3 des Nachtrags (PLAN-Nachtraege-Summary-PDF-und-Kapitellinks.md):
+        // Zahlenfeld neben dem Knopf, aus derselben serverseitigen Bedingung
+        // heraus gerendert. Bewusst ueber `block.querySelector` und nicht
+        // ueber `document.querySelector` wie im Planvorschlag: Stehen mehrere
+        // summary-blocks auf einer Seite, wuerde die dokumentweite Suche
+        // immer das Feld des ERSTEN Blocks liefern und alle weiteren Bloecke
+        // mit dessen Wert exportieren.
+        const teacherPdfCountInput = block.querySelector('.teacher-pdf-count-input');
 
         /**
          * Einen Fehlklick der zugehoerigen Gruppe zuschreiben.
@@ -560,8 +568,23 @@
                     pool[i] = pool[j];
                     pool[j] = tmp;
                 }
+                // AP-1.3 des Nachtrags: Der Wert aus dem Frontend-Zahlenfeld
+                // uebersteuert das Blockattribut - aber nur fuer diesen einen
+                // Export. Gespeichert wird nichts (Architekturentscheidung
+                // B3); nach einem Neuladen der Seite steht wieder der im
+                // Editor gesetzte Wert im Feld.
+                //
+                // Rueckfall auf das Attribut, wenn das Feld fehlt (kein
+                // Lehrer-Kontext), leer ist oder etwas Unlesbares enthaelt.
+                // Die anschliessende Deckelung auf die Poolgroesse ist
+                // unveraendert die aus dem Vorgaengerplan - eine Eingabe von
+                // 999 bei 6 Aussagen liefert weiterhin 6 Zeilen.
+                const eingabeRoh = teacherPdfCountInput ? parseInt(teacherPdfCountInput.value, 10) : NaN;
+                const gewuenschteAnzahl = Number.isNaN(eingabeRoh)
+                    ? (parseInt(teacherPdfCount, 10) || 1)
+                    : eingabeRoh;
                 const count = Math.min(
-                    Math.max(1, parseInt(teacherPdfCount, 10) || 1),
+                    Math.max(1, gewuenschteAnzahl || 1),
                     pool.length
                 );
                 const picked = pool.slice(0, count);
