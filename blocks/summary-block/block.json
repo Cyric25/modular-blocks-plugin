@@ -105,6 +105,10 @@
             "type": "number",
             "default": 1
         },
+        "teacherPdfCount": {
+            "type": "number",
+            "default": 10
+        },
         "successText": {
             "type": "string",
             "default": "Ausgezeichnet! Sie haben alle richtigen Aussagen gefunden."

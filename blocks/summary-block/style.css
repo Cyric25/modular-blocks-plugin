@@ -510,14 +510,30 @@
     background-color: var(--sb-primary-hover, #c93d12) !important;
 }
 
-.wp-block-modular-blocks-summary-block .retry-button {
+/*
+ * AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md): Der Lehrer-Knopf
+ * "Uebungs-PDF erzeugen" teilt sich die Umriss-Optik mit dem
+ * Wiederholen-Knopf. Bewusst nicht die gefuellte Variante oben: Er steht
+ * dauerhaft im Blockkopf und wuerde sonst optisch mit den Knoepfen des
+ * eigentlichen Uebungsablaufs konkurrieren. Ohne diese Regel bliebe der
+ * Knopf ungefaerbt - $button_secondary_style in render.php setzt zwar
+ * border-style, aber keine border-color, sodass currentColor greifen wuerde.
+ */
+.wp-block-modular-blocks-summary-block .retry-button,
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button {
     border-color: var(--sb-primary, #e24614) !important;
     color: var(--sb-primary, #e24614) !important;
 }
 
-.wp-block-modular-blocks-summary-block .retry-button:hover {
+.wp-block-modular-blocks-summary-block .retry-button:hover,
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover {
     border-color: var(--sb-primary-hover, #c93d12) !important;
     color: var(--sb-primary-hover, #c93d12) !important;
+}
+
+/* Abstand zum Blockkopf, in dem der Lehrer-Knopf sitzt. */
+.wp-block-modular-blocks-summary-block .summary-teacher-tools {
+    margin-top: 12px;
 }
 
 /* Error State */

@@ -26,6 +26,7 @@
         "test:unit": "wp-scripts test-unit-js",
         "download-3dmol": "curl -o assets/js/vendor/3Dmol-min.js https://3dmol.csb.pitt.edu/build/3Dmol-min.js",
         "download-plotly": "curl -o assets/js/vendor/plotly-2.27.1.min.js https://cdn.plot.ly/plotly-2.27.1.min.js",
+        "download-jspdf": "curl -o blocks/summary-block/jspdf.umd.min.js https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
         "download-libs": "npm run download-3dmol && npm run download-plotly"
     },
     "keywords": [

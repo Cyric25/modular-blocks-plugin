@@ -13,30 +13,47 @@
 (function() {
     'use strict';
 
-    // Load jsPDF from CDN for PDF export
-    let jsPDFLoaded = false;
-    function loadJsPDF(callback) {
-        if (typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined') {
-            jsPDFLoaded = true;
-            callback();
-            return;
+    /**
+     * jsPDF-Konstruktor holen.
+     *
+     * AP-1.1 (PLAN-Summary-PDF-und-Content-Links.md): Die Bibliothek wird
+     * nicht mehr zur Laufzeit von einem CDN nachgeladen, sondern liegt lokal
+     * im Block-Ordner und wird von render.php per wp_enqueue_script()
+     * eingebunden (Handle "modular-blocks-summary-jspdf"). Der UMD-Build von
+     * jsPDF 2.5.1 haengt den Konstruktor an window.jspdf.jsPDF.
+     *
+     * @returns {Function|null} Der jsPDF-Konstruktor oder null, wenn das
+     *                          Skript (noch) nicht geladen ist.
+     */
+    function getJsPDF() {
+        if (window.jspdf && typeof window.jspdf.jsPDF === 'function') {
+            return window.jspdf.jsPDF;
         }
-
-        if (jsPDFLoaded) {
-            callback();
-            return;
+        // Aeltere/abweichende Builds legen den Konstruktor direkt auf window.
+        if (typeof window.jsPDF === 'function') {
+            return window.jsPDF;
         }
+        return null;
+    }
 
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        script.onload = function() {
-            jsPDFLoaded = true;
-            callback();
-        };
-        script.onerror = function() {
-            console.error('Failed to load jsPDF library');
-        };
-        document.head.appendChild(script);
+    /**
+     * Aussagetext in reinen Text umwandeln.
+     *
+     * AP-1.2 (PLAN-Summary-PDF-und-Content-Links.md): Das PDF listet seit
+     * diesem AP alle Aussagen aus der data-summary-JSON statt nur der im DOM
+     * sichtbar gewordenen. Die Texte dort kommen unveraendert aus
+     * wp_kses_post() und duerfen Markup enthalten (<strong>, <em>, ...); im
+     * DOM-Weg loeste das vorher .textContent auf. jsPDF wuerde solche Tags
+     * dagegen woertlich drucken.
+     *
+     * @param {string} html - Aussagetext, moeglicherweise mit Markup.
+     * @returns {string} Reiner Text ohne Tags, Whitespace normalisiert.
+     */
+    function htmlToText(html) {
+        if (!html) return '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = String(html);
+        return (tmp.textContent || '').replace(/\s+/g, ' ').trim();
     }
 
     /**
@@ -64,7 +81,13 @@
             failText = '',
             correctFeedback = '',
             incorrectFeedback = '',
-            strings = {}
+            strings = {},
+            // AP-1.3: Lehrer-Uebungs-PDF. teacherPdfCount und
+            // allStatementTexts kommen aus derselben data-summary-JSON wie
+            // alles andere; allStatementTexts ist leer, wenn render.php den
+            // Betrachter nicht als Lehrperson erkannt hat.
+            teacherPdfCount = 10,
+            allStatementTexts = []
         } = data;
 
         // State
@@ -75,6 +98,12 @@
         let wrongSelections = []; // Tracks wrong statement texts (for deferred mode)
         let allSelections = []; // All selected statement objects (for deferred mode)
         let isCompleted = false;
+        // AP-1.2: Der im Ergebnis-PDF gedruckte Prozentwert muss exakt dem auf
+        // dem Bildschirm angezeigten entsprechen. Deshalb wird der in
+        // showResults() berechnete Wert hier gemerkt statt in generatePDF()
+        // ein zweites Mal berechnet - eine zweite Rechnung koennte bei
+        // kuenftigen Aenderungen an calculateFinalScore() auseinanderlaufen.
+        let lastPercentage = null;
 
         // DOM elements
         const container = block.querySelector('.summary-container');
@@ -88,6 +117,9 @@
         const retryButton = block.querySelector('.retry-button');
         const solutionButton = block.querySelector('.solution-button');
         const pdfButton = block.querySelector('.pdf-download-button');
+        // AP-1.3: nur vorhanden, wenn render.php den Betrachter serverseitig
+        // als Lehrperson erkannt hat.
+        const teacherPdfButton = block.querySelector('.teacher-practice-pdf-button');
 
         /**
          * Update progress bar
@@ -287,92 +319,259 @@
          * Generate PDF of summary
          */
         function generatePDF() {
-            loadJsPDF(() => {
-                try {
-                    const { jsPDF } = window.jspdf || window;
-                    if (!jsPDF) {
-                        alert('PDF library not loaded. Please try again.');
-                        return;
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                // AP-1.1: Sichtbare Meldung statt stillem Abbruch. Tritt nur
+                // auf, wenn jspdf.umd.min.js nicht ausgeliefert wurde oder
+                // beim Laden ein Fehler auftrat.
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            try {
+                const doc = new jsPDF();
+
+                // Get block title
+                const titleEl = block.querySelector('.summary-title');
+                const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
+
+                // Add title
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text(title, 20, 20);
+
+                // Add summary title
+                const summaryTitleEl = block.querySelector('.summary-section-title');
+                const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
+                doc.setFontSize(14);
+                doc.text(summaryTitle, 20, 35);
+
+                // AP-1.2: Alle Aussagen aus ALLEN Gruppen, jeweils mit
+                // Richtig/Falsch-Kennzeichnung. Vorher listete das PDF nur die
+                // im DOM aufgelaufenen .summary-item-Elemente, also allein die
+                // vom Lernenden ausgewaehlten. Als Lernunterlage muss aber
+                // jede Aussage samt ihrem Wahrheitswert drinstehen.
+                // Datenquelle ist bewusst dieselbe wie fuer die
+                // Interaktionslogik: das bereits geparste data-summary-JSON
+                // (Konstante `groups`), keine zweite Quelle.
+                let yPosition = 45;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+                const lineHeight = 8;
+                const textIndent = 26; // Platz fuer die Marke "[RICHTIG] "
+                // Rechter Rand aus der echten Seitenbreite, nicht die bisher
+                // fest verdrahteten 170 - die liefen von x = margin + 10 aus
+                // bis x = 200 und damit 10 mm ueber den rechten Seitenrand.
+                const textWidth = doc.internal.pageSize.width - 2 * margin - textIndent;
+
+                // Bewusst ASCII statt "✓"/"✗": jsPDF setzt mit den
+                // eingebauten Standardschriften (Helvetica) in WinAnsi. Haken
+                // und Kreuz liegen dort NICHT im Zeichensatz und kaemen als
+                // leere oder falsche Glyphe heraus. Deutsche Umlaute sind in
+                // WinAnsi enthalten und funktionieren weiterhin.
+                const MARK_CORRECT = '[RICHTIG]';
+                const MARK_WRONG = '[FALSCH]';
+
+                /**
+                 * Seitenumbruch, wenn der naechste Block nicht mehr passt.
+                 * @param {number} needed - Benoetigte Hoehe in mm.
+                 */
+                function ensureSpace(needed) {
+                    if (yPosition + needed > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
                     }
+                }
 
-                    const doc = new jsPDF();
+                groups.forEach((group, groupIndex) => {
+                    const statements = Array.isArray(group.statements) ? group.statements : [];
+                    if (statements.length === 0) return;
 
-                    // Get block title
-                    const titleEl = block.querySelector('.summary-title');
-                    const title = titleEl ? titleEl.textContent : 'Zusammenfassung';
-
-                    // Add title
-                    doc.setFontSize(18);
+                    // Gruppenueberschrift in derselben Form wie im Frontend
+                    // ("Frage 1 von 2"), damit die PDF-Struktur der Struktur
+                    // der Uebung entspricht. Die Gruppen selbst tragen im
+                    // Datenmodell keinen eigenen Namen, nur eine `id`.
+                    const groupLabel = `${strings.group || 'Frage'} ${groupIndex + 1} ${strings.of || 'von'} ${groups.length}`;
+                    ensureSpace(lineHeight + 4);
+                    yPosition += 4;
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
                     doc.setFont(undefined, 'bold');
-                    doc.text(title, 20, 20);
-
-                    // Add summary title
-                    const summaryTitleEl = block.querySelector('.summary-section-title');
-                    const summaryTitle = summaryTitleEl ? summaryTitleEl.textContent : 'Ihre Zusammenfassung:';
-                    doc.setFontSize(14);
-                    doc.text(summaryTitle, 20, 35);
-
-                    // Add statements (only correct ones)
-                    const items = summaryStatements.querySelectorAll('.summary-item');
-                    let yPosition = 45;
-                    const pageHeight = doc.internal.pageSize.height;
-                    const margin = 20;
-                    const lineHeight = 8;
+                    doc.text(groupLabel, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
 
                     doc.setFontSize(11);
-                    doc.setFont(undefined, 'normal');
 
-                    items.forEach((item, index) => {
-                        const isCorrect = item.getAttribute('data-correct') !== 'false';
-                        if (!isCorrect && deferredFeedback) return; // Skip wrong items in deferred mode
+                    statements.forEach(stmt => {
+                        const text = htmlToText(stmt && stmt.text);
+                        const isCorrect = !!(stmt && stmt.isCorrect);
+                        const wrappedText = doc.splitTextToSize(text, textWidth);
 
-                        const text = item.querySelector('.summary-text')?.textContent || '';
+                        ensureSpace(wrappedText.length * lineHeight);
 
-                        // Check if we need a new page
-                        if (yPosition > pageHeight - margin) {
-                            doc.addPage();
-                            yPosition = margin;
-                        }
-
-                        // Add bullet and text
-                        const bulletText = `${index + 1}. `;
-                        const wrappedText = doc.splitTextToSize(text, 170);
-
-                        doc.text(bulletText, margin, yPosition);
-                        doc.text(wrappedText, margin + 10, yPosition);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(isCorrect ? MARK_CORRECT : MARK_WRONG, margin, yPosition);
+                        doc.text(wrappedText, margin + textIndent, yPosition);
 
                         yPosition += wrappedText.length * lineHeight;
                     });
+                });
 
-                    // Add custom message if set
-                    if (pdfMessage) {
-                        yPosition += 10;
-                        if (yPosition > pageHeight - margin - 20) {
-                            doc.addPage();
-                            yPosition = margin;
-                        }
-                        doc.setFontSize(11);
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFont(undefined, 'italic');
-                        const wrappedMessage = doc.splitTextToSize(pdfMessage, 170);
-                        doc.text(wrappedMessage, margin, yPosition);
-                        doc.setFont(undefined, 'normal');
+                // AP-1.2: Gesamtprozentsatz. `lastPercentage` stammt aus
+                // showResults() - derselbe Wert, der auf dem Bildschirm in
+                // .score-display steht, nicht neu berechnet.
+                if (typeof lastPercentage === 'number') {
+                    yPosition += 6;
+                    ensureSpace(lineHeight);
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Ergebnis: ${lastPercentage}% richtig`, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    yPosition += lineHeight;
+                }
+
+                // Add custom message if set
+                if (pdfMessage) {
+                    yPosition += 10;
+                    if (yPosition > pageHeight - margin - 20) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    doc.setFontSize(11);
+                    doc.setTextColor(80, 80, 80);
+                    doc.setFont(undefined, 'italic');
+                    const wrappedMessage = doc.splitTextToSize(htmlToText(pdfMessage), 170);
+                    doc.text(wrappedMessage, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                }
+
+                // Add date
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Save PDF
+                const filename = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+                doc.save(filename);
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
+        }
+
+        /**
+         * Übungsblatt-PDF für Lehrpersonen erzeugen.
+         *
+         * AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md): Zieht `N` zufällige,
+         * sich nicht wiederholende Aussagen aus dem Pool DIESES
+         * Block-Exemplars (Architekturentscheidung A4 — kein Pool über Block-
+         * oder Seitengrenzen hinweg) und setzt daraus ein leeres Aufgabenblatt.
+         *
+         * Bewusst OHNE Lösung: kein Richtig/Falsch, kein Prozentwert, keine
+         * zweite Seite mit Antworten (Nicht-Ziel, Nutzerentscheidung
+         * 2026-09-07). `allStatementTexts` enthält deshalb serverseitig gar
+         * kein `isCorrect` — die Information steht hier nicht zur Verfügung
+         * und kann auch nicht versehentlich durchrutschen.
+         */
+        function generateTeacherPracticePDF() {
+            const jsPDF = getJsPDF();
+            if (!jsPDF) {
+                console.error('jsPDF library not available (expected handle: modular-blocks-summary-jspdf).');
+                alert('Die PDF-Bibliothek konnte nicht geladen werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+                return;
+            }
+
+            const pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            if (pool.length === 0) {
+                alert('Für dieses Element stehen keine Aussagen für ein Übungsblatt zur Verfügung.');
+                return;
+            }
+
+            try {
+                // Fisher-Yates auf einer Kopie: zieht ohne Zurücklegen, also
+                // garantiert ohne Wiederholung innerhalb eines PDFs.
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const tmp = pool[i];
+                    pool[i] = pool[j];
+                    pool[j] = tmp;
+                }
+                const count = Math.min(
+                    Math.max(1, parseInt(teacherPdfCount, 10) || 1),
+                    pool.length
+                );
+                const picked = pool.slice(0, count);
+
+                const doc = new jsPDF();
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const lineHeight = 8;
+                const numberIndent = 10;
+                const textWidth = pageWidth - 2 * margin - numberIndent;
+
+                // Ankreuzfelder in ASCII, nicht als "☐" (U+2610): jsPDF setzt
+                // mit den eingebauten Standardschriften in WinAnsiEncoding,
+                // in dem dieses Zeichen nicht enthalten ist (siehe AP-1.2).
+                const CHECKBOXES = '[  ] Richtig     [  ] Falsch';
+
+                const titleEl = block.querySelector('.summary-title');
+                const blockTitle = titleEl ? titleEl.textContent.trim() : '';
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Übungsblatt', margin, 20);
+
+                let yPosition = 32;
+                if (blockTitle) {
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    const wrappedTitle = doc.splitTextToSize(blockTitle, pageWidth - 2 * margin);
+                    doc.text(wrappedTitle, margin, yPosition);
+                    yPosition += wrappedTitle.length * lineHeight;
+                }
+
+                yPosition += 6;
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont(undefined, 'normal');
+
+                picked.forEach((rawText, index) => {
+                    const text = htmlToText(rawText);
+                    const wrappedText = doc.splitTextToSize(text, textWidth);
+                    // Aussage + Ankreuffzeile + Leerzeile müssen zusammen auf
+                    // eine Seite passen, sonst steht die Frage auf der einen
+                    // und ihr Ankreuzfeld auf der nächsten.
+                    const needed = (wrappedText.length + 1) * lineHeight + 6;
+                    if (yPosition + needed > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
                     }
 
-                    // Add date
-                    const today = new Date().toLocaleDateString('de-DE');
-                    doc.setFontSize(9);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+                    doc.text(`${index + 1}.`, margin, yPosition);
+                    doc.text(wrappedText, margin + numberIndent, yPosition);
+                    yPosition += wrappedText.length * lineHeight;
 
-                    // Save PDF
-                    const filename = `${title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
-                    doc.save(filename);
-                } catch (error) {
-                    console.error('PDF generation error:', error);
-                    alert('Fehler beim Erstellen der PDF-Datei.');
-                }
-            });
+                    doc.text(CHECKBOXES, margin + numberIndent, yPosition);
+                    yPosition += lineHeight + 6;
+                });
+
+                const today = new Date().toLocaleDateString('de-DE');
+                doc.setFontSize(9);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Erstellt am ${today}`, margin, pageHeight - 15);
+
+                // Eigener Dateiname zur Unterscheidung vom Schüler-Ergebnis-PDF
+                doc.save(`uebungsblatt_${Date.now()}.pdf`);
+            } catch (error) {
+                console.error('Teacher practice PDF generation error:', error);
+                alert('Fehler beim Erstellen der PDF-Datei.');
+            }
         }
 
         /**
@@ -384,6 +583,7 @@
             // Calculate final score
             const finalScore = calculateFinalScore();
             const percentage = totalCorrect > 0 ? Math.round((finalScore / totalCorrect) * 100) : 0;
+            lastPercentage = percentage; // AP-1.2: Quelle fuer die Ergebniszeile im PDF
 
             // In deferred mode, update summary with correct/incorrect marks
             if (deferredFeedback) {
@@ -501,6 +701,7 @@
             wrongSelections = [];
             allSelections = [];
             isCompleted = false;
+            lastPercentage = null; // AP-1.2
 
             // Reset UI
             groupElements.forEach((groupEl, index) => {
@@ -666,6 +867,13 @@
 
         if (pdfButton) {
             pdfButton.addEventListener('click', generatePDF);
+        }
+
+        // AP-1.3: Der Knopf existiert nur, wenn render.php den Betrachter als
+        // Lehrperson erkannt hat - hier ist keine zweite Rechteprüfung nötig
+        // (und eine client-seitige wäre ohnehin wertlos).
+        if (teacherPdfButton) {
+            teacherPdfButton.addEventListener('click', generateTeacherPracticePDF);
         }
 
         // Initialize

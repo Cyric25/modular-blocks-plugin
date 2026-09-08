@@ -151,11 +151,19 @@ blockDirs.forEach((blockName, index) => {
     }
 
     // Add source files that are not compiled (block.json, render.php, source CSS)
+    // jspdf.umd.min.js: lokal gebuendelte Fremdbibliothek im Block-Ordner
+    // (AP-1.1, PLAN-Summary-PDF-und-Content-Links.md). Sie ist kein
+    // Webpack-Entry und landet deshalb nicht in build/blocks/<block>/ -
+    // ohne diesen Eintrag fehlte sie im summary-block-ZIP und der PDF-Export
+    // waere in einer per ZIP installierten Instanz tot (es gibt seit AP-1.1
+    // bewusst keinen CDN-Rueckfall mehr). Der existsSync()-Filter unten
+    // sorgt dafuer, dass der Eintrag alle anderen Bloecke nicht beruehrt.
     const sourceFiles = [
         'block.json',
         'render.php',
         'editor.css',
-        'style.css'
+        'style.css',
+        'jspdf.umd.min.js'
     ];
 
     sourceFiles.forEach(fileName => {
