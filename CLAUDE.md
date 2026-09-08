@@ -568,6 +568,176 @@ bevor die Vererbung von dieser Aufzählung überhaupt greifen konnte. Details
 und vollständige Farbketten:
 `Plugins/CDB-Designer/docs/diagnose-latex-listen-2026-08-24.md`.
 
+## Summary-Block: PDF-Export für Schüler und Lehrpersonen (seit 2026-09)
+
+Vorhaben „Summary-PDF und Content-Links", Phase 1
+(`PLAN-Summary-PDF-und-Content-Links.md`, Website-Root). Betrifft
+ausschließlich `blocks/summary-block/`. Der Block hatte bereits vorher einen
+PDF-Export für das Schülerergebnis; diese Phase hat ihn erweitert und dabei
+die Fremdbibliothek von einem CDN gelöst. Details, Fundstellen und
+Übergabenotizen: `reference_file_map.md`, Abschnitt „Summary-Block:
+PDF-Export im Detail".
+
+**Lokal gebündelte jsPDF statt CDN (AP-1.1).** `view.js` lud jsPDF 2.5.1
+früher zur Laufzeit per `<script src="https://cdnjs.cloudflare.com/…">` nach
+— ein Verstoß gegen die projektweite DSGVO-Konvention „keine
+CDN-Einbindungen zur Laufzeit" (siehe Root-`CLAUDE.md`, Abschnitt
+„Harte Grenzen"). Jetzt liegt `blocks/summary-block/jspdf.umd.min.js` lokal
+im Block-Ordner (nicht in `assets/js/vendor/` — die modulare
+Block-ZIP-Distribution packt pro Block nur dessen eigenen Ordner) und wird
+serverseitig unbedingt eingebunden:
+
+```php
+// render.php, kurz nach der Gruppen-Validierung
+wp_enqueue_script(
+    'modular-blocks-summary-jspdf',
+    plugins_url('jspdf.umd.min.js', __FILE__),
+    array(),
+    defined('MODULAR_BLOCKS_PLUGIN_VERSION') ? MODULAR_BLOCKS_PLUGIN_VERSION : false,
+    true
+);
+```
+
+`view.js` liest den Konstruktor seither synchron über `getJsPDF()` (Zeile
+28) aus `window.jspdf.jsPDF` — kein `<script>`-Nachladen, kein Callback mehr.
+Fehlt die Bibliothek beim Klick auf einen PDF-Knopf trotzdem (z. B. weil das
+Skript noch lädt), zeigt der Code eine sichtbare Fehlermeldung statt eines
+stillen Abbruchs. Die Datei ist in Git versioniert (anders als
+`assets/js/vendor/`, das `.gitignore` ausschließt) und wird ausschließlich
+über `npm run download-jspdf` erneuert — bewusst **nicht** Teil von
+`npm run download-libs`.
+
+**Neues Attribut `teacherPdfCount`** (`block.json`, `type: number`, Default
+`10`). Im Editor (`index.js`) als `RangeControl` „Anzahl Aussagen im
+Übungs-PDF" (1–50) neben `pdfDownloadThreshold` platziert — bewusst
+**außerhalb** des `{enablePdfDownload && …}`-Zweigs, weil der Lehrer-Knopf
+unten unabhängig vom Schüler-PDF-Download funktioniert. `render.php` klemmt
+den Wert serverseitig zusätzlich auf 1–50 (`$teacher_pdf_count`, analog zu
+`$penalty_per_wrong`).
+
+**Neue Theme-Naht: `function_exists('simple_clean_ist_lehrperson')`
+(AP-1.3).** Erste Stelle, an der dieses Plugin aktiv eine Theme-Funktion
+aufruft (bislang war die Kopplungsrichtung immer umgekehrt oder es gab gar
+keine). `render.php` ermittelt:
+
+```php
+$ist_lehrperson = function_exists('simple_clean_ist_lehrperson') && simple_clean_ist_lehrperson();
+```
+
+Das folgt exakt dem in Root-`CLAUDE.md`, Abschnitt „Direkte
+Theme-Funktionsaufrufe des Plugins", für den CDB-Designer dokumentierten
+Muster: Aufruf hinter `function_exists()`, Kurzschluss-`&&`, Rückfall
+`false`. Fehlt das Theme oder ist `simple_clean_ist_lehrperson` nicht
+definiert, gilt niemand als Lehrperson — der Übungs-PDF-Knopf erscheint dann
+für niemanden, es gibt **keinen** Fatal Error (live geprüft, indem die
+Funktion auf der Testinstallation umbenannt wurde). `simple_clean_ist_lehrperson()`
+(`Theme/includes/sichtbarkeit.php`) ist die projektweit **einzige**
+Definition von „Lehrperson"; sie bedeutet aktuell nur `is_user_logged_in()`
+gefiltert über `apply_filters('simple_clean_ist_lehrperson', …)`, also
+schlicht „angemeldet" — jede angemeldete Person sieht den Knopf. Das ist
+bewusst übernommenes, bereits vorher dokumentiertes Verhalten der
+wiederverwendeten Funktion, keine neue Schwachstelle dieses Plugins; eine
+Verschärfung gehört ins Theme.
+
+**Die Prüfung läuft serverseitig, nicht nur versteckt per CSS.** Ist
+`$ist_lehrperson` falsch, gibt `render.php` weder den Knopf
+(`.teacher-practice-pdf-button`) noch den Aussagen-Pool
+(`allStatementTexts` in der `data-summary`-JSON) überhaupt aus — anonym per
+`curl` geprüft: kein `<button …teacher-practice-pdf-button…>` im
+ausgelieferten HTML. Ein bloßes `display:none` wäre per DevTools aufzuheben
+gewesen.
+
+**Schüler-Ergebnis-PDF (AP-1.2).** `generatePDF()` (`view.js`) listet jetzt
+für jede Aussage jeder Gruppe eine Zeile mit `[RICHTIG]`/`[FALSCH]` nach
+`statement.isCorrect` — unabhängig davon, was der Lernende tatsächlich
+angeklickt hat (das PDF ist ein Lösungsblatt mit Punktestand, kein Protokoll
+der eigenen Antworten). Am Ende steht `Ergebnis: N % richtig`, exakt der in
+`showResults()` bereits berechnete, nicht neu berechnete Prozentwert.
+`pdfMessage`, Titel und Datum blieben unverändert.
+
+**Lehrer-Übungs-PDF (AP-1.3).** `generateTeacherPracticePDF()` (`view.js`,
+Zeile 480) zieht per Fisher-Yates-Shuffle `min(teacherPdfCount, Poolgröße)`
+zufällige, nicht wiederholte Aussagetexte aus `allStatementTexts` — **nur**
+aus dem Aussagen-Pool dieses einen Block-Exemplars, nie aus anderen
+summary-blocks (Architekturentscheidung A4 des Plans). Jede Zeile bekommt
+ein leeres Ankreuzfeld `[  ] Richtig     [  ] Falsch`, **ohne**
+Richtig/Falsch-Kennzeichnung und **ohne** Prozentwert (kein Lösungsblatt,
+Nutzerentscheidung). Der Knopf sitzt bewusst im Blockkopf
+(`.summary-teacher-tools`), nicht in `.summary-controls` (das bis
+`showResults()` auf `display:none` steht) — er muss unabhängig vom
+Spielzustand sichtbar sein.
+
+**Zwei Fallen bei reiner jsPDF-Textausgabe (belegt, betreffen beide
+Export-Wege):**
+1. jsPDF setzt mit den eingebauten Standardschriften (Helvetica) in
+   **WinAnsiEncoding**. Unicode-Symbole wie „✓"/„✗"/„☐" liegen dort nicht im
+   Zeichensatz und kämen als leere oder falsche Glyphe heraus — deshalb
+   ASCII-Marken (`[RICHTIG]`/`[FALSCH]`, `[  ]`). Deutsche Umlaute sind in
+   WinAnsi enthalten und funktionieren normal.
+2. Aussagetexte dürfen Markup enthalten (`wp_kses_post()` in `render.php`).
+   Die Hilfsfunktion `htmlToText()` (`view.js`, Zeile 52, Modulebene) räumt
+   das vor der PDF-Ausgabe weg; ohne sie druckt jsPDF die Tags wörtlich.
+
+Kein html2canvas, kein Screenshot, keine Kopplung an die
+PDF-Infrastruktur des CDB-Designers (Architekturentscheidung A7 des Plans)
+— beide Export-Wege bleiben reine jsPDF-Textausgabe wie der Bestandscode.
+
+### Bekannte Einschränkungen (Review AP-1.rev, 2026-09-08)
+
+Das unabhängige Review der Phase fand keinen kritischen und einen Befund
+mittlerer Schwere; kein Korrektur-AP war nötig, die Phase ist merge-fähig.
+Vollständige Befundliste inkl. Belegen: `PLAN-Summary-PDF-und-Content-Links.md`,
+Übergabenotiz AP-1.rev.
+
+- **jsPDF lädt unbedingt auf jeder Seite mit summary-block** (mittel,
+  `render.php`, der `wp_enqueue_script()`-Aufruf oben) — auch wenn
+  `enablePdfDownload: false` gesetzt ist oder der Betrachter keine
+  Lehrperson ist. Gemessen: ~115 KB gzip pro Erstbesuch (im Footer geladen,
+  blockiert das Rendern nicht; `?ver=`-Parameter erlaubt Browser-Caching).
+  Bewusst so entschieden, weil der Lehrer-Knopf die Bibliothek unabhängig
+  von `enablePdfDownload` braucht — die Kosten wurden dabei nicht beziffert
+  und kein Akzeptanzkriterium der Phase adressiert sie. **Kandidat für ein
+  Folgevorhaben:** entweder den Enqueue an eine Bedingung knüpfen
+  (`$enable_pdf_download || $ist_lehrperson`, hilft nur bei abgeschaltetem
+  Schüler-Download) oder die lokale Datei erst beim ersten Klick per
+  `wp_enqueue_script`/dynamischem Nachladen der **lokalen** URL laden (wahrt
+  die DSGVO-Vorgabe vollständig, kostet aber die heutige Synchronität von
+  `getJsPDF()` zurück).
+- Das Ergebnis-PDF trägt weiterhin die Überschrift „Ihre Zusammenfassung:",
+  enthält aber seit AP-1.2 nicht mehr die vom Lernenden tatsächlich
+  gewählten Aussagen, sondern **alle** Aussagen mit `[RICHTIG]`/`[FALSCH]`
+  nach `isCorrect` — zwei Lernende mit unterschiedlichem Ergebnis erhalten
+  bis auf die Prozentzeile identische Dokumente. Entspricht dem Planwortlaut
+  (Lösungsblatt mit Punktestand), ist aber ein Informationsverlust
+  gegenüber dem alten Verhalten (Protokoll der eigenen Antworten).
+- Die neuen PDF-Texte in `view.js` (`Ergebnis: … % richtig`,
+  `[RICHTIG]`/`[FALSCH]`, `Übungsblatt`, `[  ] Richtig     [  ] Falsch`, beide
+  `alert()`-Fehlermeldungen) sind deutsch fest verdrahtet, obwohl der Block
+  über `strings` (`data-summary`-JSON) eine i18n-Brücke hat; nur die
+  Gruppenüberschrift nutzt sie korrekt. Nur relevant bei künftiger
+  Mehrsprachigkeit.
+- `block.json` `version` blieb bei dieser Phase auf `2.2.2`, obwohl fünf
+  Dateien geändert wurden. Für die Editor-/Frontend-JS unkritisch
+  (WordPress hasht `view.js`/`index.js` über `*.asset.php`); das
+  Blockstylesheet fiele theoretisch auf dieses Feld zurück, auf dem
+  Testserver aber ohne Wirkung, weil `style-index.css` inline eingebettet
+  wird.
+- Die Datei-Map behauptete an einer Stelle, alle Aussagetexte kämen über
+  `wp_kses_post()` an — für den in AP-1.2 neu eingeführten JSON-Lesepfad
+  (`htmlToText()` auf ungefiltertem `$groups_data['statements']`) stimmt
+  das nicht; der `<span>`-Ausgabepfad und `allStatementTexts` laufen
+  weiterhin durch `wp_kses_post()`. Kein neues Risiko (derselbe Sink
+  existierte schon vorher über `.textContent`), Aussagetexte stammen von
+  Redakteuren mit Editorrecht.
+- `pdfMessage` im Ergebnis-PDF behielt den alten Seitenumbruch-Test und die
+  feste Breite 170 (statt der in AP-1.2 für die Aussagenschleife
+  eingeführten `ensureSpace()`/dynamischen Seitenbreite) — unkritisch, weil
+  die Breite hier innerhalb der A4-Seite bleibt, aber eine sehr lange
+  `pdfMessage` kann weiterhin unten aus der Seite laufen.
+- Bei `shuffleStatements: true` weicht die Reihenfolge im Ergebnis-PDF von
+  der Bildschirmreihenfolge ab, weil `render.php` nur die Anzeigekopie
+  mischt, nicht `$groups_data` (die JSON-Quelle des PDFs). Rein kosmetisch.
+
 ## Security Considerations
 
 - All admin functions check `current_user_can('manage_options')`
