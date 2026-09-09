@@ -1038,7 +1038,14 @@
                 // Reset statements
                 const statements = groupEl.querySelectorAll('.statement-option');
                 statements.forEach(stmtEl => {
-                    stmtEl.classList.remove('correct', 'incorrect', 'solution-correct', 'solution-incorrect');
+                    // AP-1.fix1: Neben der `disabled`-Property muss auch die
+                    // gleichnamige CSS-Klasse entfernt werden (style.css:262-267,
+                    // pointer-events: none) - sonst bleiben nach "Wiederholen" alle
+                    // zuvor deaktivierten Aussagen unklickbar und nur die zuvor
+                    // richtige Aussage je Gruppe ist im zweiten Durchlauf wählbar.
+                    // 'selected' (deferredFeedback-Modus, style.css:270-274) ebenfalls
+                    // entfernt, aus demselben Grund (auch dort pointer-events: none).
+                    stmtEl.classList.remove('correct', 'incorrect', 'solution-correct', 'solution-incorrect', 'disabled', 'selected');
                     stmtEl.disabled = false;
                 });
 

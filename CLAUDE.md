@@ -1059,6 +1059,17 @@ bedienten Werten gesehen.
 
 ### Bekannte Einschränkungen — dritte Runde Phase 1 (Review AP-1.rev, `PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md`, 2026-09-09)
 
+**M2 — behoben durch AP-1.fix1 (2026-09-09, nach dem Merge von Phase 1
+nachgezogenes Korrektur-AP).** `resetQuiz()` entfernt seither in derselben
+bestehenden Schleife zusätzlich `classList.remove('disabled', 'selected')`
+je Aussage — exakt der unten im ursprünglichen Befund vorgeschlagene Fix.
+Live per `getComputedStyle()` verifiziert: nach „Wiederholen" tragen alle
+`.statement-option`-Elemente wieder `pointer-events: 'auto'`, in beiden
+`progressiveReveal`-Modi; ein zweiter Durchlauf mit echten (auch falschen)
+Mausklicks auf die vorher „steckenbleibenden" Aussagen liefert seither ein
+korrekt abweichendes Ergebnis statt pauschal 100 %. Ursprünglicher Befund
+(Historie, unverändert stehen gelassen):
+
 **M2 — „Wiederholen" macht den zweiten Durchlauf trivial (vorbestehend,
 NICHT durch diese Phase verursacht, aber hier erstmals durch AP-1.3
 beobachtbar).** `resetQuiz()` (`view.js`, um Zeile 1040-1043) entfernt beim
