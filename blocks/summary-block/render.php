@@ -261,7 +261,13 @@ $summary_data = [
         'continue' => __('Weiter', 'modular-blocks-plugin'),
         'correct' => __('Richtig!', 'modular-blocks-plugin'),
         'incorrect' => __('Falsch!', 'modular-blocks-plugin'),
-        'score' => __('Punkte', 'modular-blocks-plugin'),
+        // AP-1.2 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+        // Text an das neue gruppenbasierte Punktemodell angepasst
+        // ("Aussagensätzen richtig" statt "Punkte") - Schluesselname
+        // bewusst unveraendert (view.js liest weiterhin strings.score),
+        // nur der Inhalt passt jetzt zur neuen Formulierung
+        // "${finalScore} von ${groups.length} ${strings.score} (…%)".
+        'score' => __('Aussagensätzen richtig', 'modular-blocks-plugin'),
         'completed' => __('Abgeschlossen', 'modular-blocks-plugin'),
         'selectCorrect' => __('Wählen Sie die richtige(n) Aussage(n):', 'modular-blocks-plugin'),
         'downloadPdf' => __('Als PDF herunterladen', 'modular-blocks-plugin')

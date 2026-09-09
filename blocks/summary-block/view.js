@@ -364,31 +364,35 @@
 
         /**
          * Calculate final score
+         *
+         * AP-1.2 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * Jede Gruppe (Aussagen-Trio) ist genau EINEN Punkt wert, verloren
+         * beim ERSTEN Fehlklick in dieser Gruppe - unabhaengig davon, wie
+         * viele Fehlklicks danach noch in derselben Gruppe folgen (zwei
+         * Fehlklicks zaehlen genauso wie einer). Nutzt die bereits
+         * vorhandene `wrongAttemptsByGroup`-Struktur (Deklaration oben,
+         * gefuellt ueber countWrongAttempt() an beiden Fehlklick-Stellen -
+         * REGELMODUS UND deferredFeedback gleichermassen, siehe dortige
+         * Aufrufe). Frueher unterschied diese Funktion zwischen Regel- und
+         * Verzoegert-Modus (aussagenbasierte Zaehlung via `score` bzw. ein
+         * Alles-oder-nichts-Vergleich gegen `allSelections`); beide Wege
+         * sind jetzt durch dieselbe gruppenbasierte Zaehlung ersetzt, damit
+         * beide Modi konsistent rechnen (Plan-Vorgehen AP-1.2, Schritt 3).
+         *
+         * Iteriert bewusst ueber `groups` (Laenge = Gruppenanzahl), NICHT
+         * ueber Object.keys(wrongAttemptsByGroup) - fehlerfreie Gruppen
+         * legen dort gar keinen Schluessel an.
+         *
+         * @returns {number} Anzahl der fehlerfrei abgeschlossenen Gruppen.
          */
         function calculateFinalScore() {
-            if (deferredFeedback) {
-                // In deferred mode: check if ALL correct statements selected and NO wrong statements
-                let allCorrectSelected = true;
-                let noWrongSelected = true;
-
-                groups.forEach(group => {
-                    group.statements.forEach(stmt => {
-                        const selected = allSelections.find(s => s.id === stmt.id);
-                        if (stmt.isCorrect && !selected) {
-                            allCorrectSelected = false;
-                        }
-                        if (!stmt.isCorrect && selected) {
-                            noWrongSelected = false;
-                        }
-                    });
-                });
-
-                // 100% only if all correct and no wrong
-                return (allCorrectSelected && noWrongSelected) ? totalCorrect : 0;
-            } else {
-                // Regular mode: use accumulated score
-                return Math.max(0, score);
-            }
+            let correctGroups = 0;
+            groups.forEach((group, index) => {
+                if (!wrongAttemptsByGroup[index]) {
+                    correctGroups++;
+                }
+            });
+            return correctGroups;
         }
 
         /**
@@ -862,7 +866,12 @@
 
             // Calculate final score
             const finalScore = calculateFinalScore();
-            const percentage = totalCorrect > 0 ? Math.round((finalScore / totalCorrect) * 100) : 0;
+            // AP-1.2: Bezugsgroesse fuer die Prozentrechnung ist jetzt die
+            // Gruppenanzahl (Aussagen-Trios), nicht mehr `totalCorrect`
+            // (Gesamtzahl aller als isCorrect markierten Einzelaussagen -
+            // im Regelfall zwar identisch mit groups.length, aber nicht bei
+            // Gruppen mit correctCount !== 1, siehe AP-1.1-Uebergabenotiz).
+            const percentage = groups.length > 0 ? Math.round((finalScore / groups.length) * 100) : 0;
             lastPercentage = percentage; // AP-1.2: Quelle fuer die Ergebniszeile im PDF
 
             // In deferred mode, update summary with correct/incorrect marks
@@ -899,7 +908,12 @@
                 }
 
                 if (scoreEl) {
-                    scoreEl.textContent = `${finalScore}/${totalCorrect} ${strings.score || 'Punkte'} (${percentage}%)`;
+                    // AP-1.2: Anzeige jetzt gruppenbasiert ("X von Y
+                    // Aussagensaetzen richtig"), nicht mehr aussagenbasiert.
+                    // `strings.of` wird bereits fuer das Gruppenlabel
+                    // ("Frage 1 von 3") verwendet und hier bewusst
+                    // wiederverwendet statt eines eigenen Schluessels.
+                    scoreEl.textContent = `${finalScore} ${strings.of || 'von'} ${groups.length} ${strings.score || 'Aussagensätzen richtig'} (${percentage}%)`;
                 }
 
                 if (messageEl) {
