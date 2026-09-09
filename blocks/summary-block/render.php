@@ -292,21 +292,14 @@ $button_style = 'display: inline-flex; align-items: center; justify-content: cen
                 'color: var(--color-text-on-accent, #ffffff); cursor: pointer; font-size: 14px; font-weight: 500; ' .
                 'transition: background 0.2s ease;';
 
-// AP-1.4, Architekturentscheidung C4: "background: transparent" entfernt -
-// die drei Sekundaer-Buttons (Wiederholen, Uebungsblatt/Loesungsblatt
-// erzeugen) bekommen ihre helle Flaechenfarbe jetzt ausschliesslich ueber
-// die !important-Regeln in style.css (.retry-button/.teacher-practice-pdf-
-// button/.teacher-solution-sheet-button). Ein hier weiterhin gesetztes
-// "background: transparent" wuerde von style.css's !important zwar ohnehin
-// ueberschrieben (Inline-Styles verlieren gegen !important-Regeln aus
-// externen Stylesheets), bliebe aber irrefuehrender toter Code - deshalb
-// ganz entfernt statt nur wirkungslos stehen gelassen. border-radius wie
-// oben von 4px auf 6px.
-$button_secondary_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
-                          'padding: 10px 20px; border-width: 2px; border-style: solid; ' .
-                          'border-radius: 6px; ' .
-                          'cursor: pointer; ' .
-                          'font-size: 14px; font-weight: 500; transition: all 0.2s ease;';
+// Nachtrag 2026-09-09: Frueher ein eigener "Umriss"-Stil (transparenter
+// Hintergrund, 2px farbiger Rand), dann kurz "helle Flaeche + Rand"
+// (AP-1.4). Beides wich vom projektweiten Muster fuer Aktions-Buttons ab
+// (siehe style.css-Kommentar bei der zugehoerigen CSS-Regel). Jetzt
+// identisch zu $button_style - "sekundaer" bedeutet in diesem Block keine
+// eigene Optik mehr, nur noch eine eigene Variable fuer die Stellen, die
+// sie referenzieren.
+$button_secondary_style = $button_style;
 ?>
 
 <div id="<?php echo esc_attr($block_id); ?>"

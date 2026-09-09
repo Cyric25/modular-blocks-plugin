@@ -531,13 +531,47 @@
  * AP-3.0-Spike (live getestet: kein Override-Problem) und AP-3.1
  * (iframe-whitelist), wo dasselbe Muster bereits ausgerollt wurde.
  */
+/*
+ * Nachtrag (2026-09-09, nach Live-Rueckmeldung): AP-1.4 hatte die drei
+ * Sekundaer-Buttons (Wiederholen, Uebungsblatt erzeugen, Loesungsblatt
+ * erzeugen) auf "helle Flaeche + farbiger Rand" gestellt (Vorbild
+ * statement-summary). Auf einer weissen Seite ist der Kontrast zwischen
+ * "transparent" und der hellen Flaechenfarbe (#f8f9fa) so gering, dass der
+ * Unterschied zur alten Umriss-Optik kaum wahrnehmbar war - der Betreiber
+ * hat das nach Live-Test zurueckgemeldet.
+ *
+ * Konkrete Vorgabe des Betreibers: Buttons sollen aussehen wie der
+ * PDF-Export-Button des CDB-Designer-Plugins. Recherche dazu (siehe
+ * Root-CLAUDE.md, Abschnitt "Color Scheme", Usage Guidelines, sowie
+ * Plugins/CDB-Designer/assets/css/fragenwand.css:424-441/609-626 und
+ * Theme/style.css:1251-1267 als weitere Beispiele desselben Musters):
+ * Der CDB-PDF-Button folgt GRUNDFARBLICH dem projektweiten Standard fuer
+ * Aktions-Buttons - voll eingefaerbte Flaeche (--color-ui-surface), Text
+ * --color-text-on-accent, Hover --color-ui-surface-dark. Der zusaetzliche
+ * Verlauf/Glanz/Schlagschatten ("Plastischer Look") ist laut
+ * Theme/CLAUDE.md, Abschnitt "Plastischer Look", AUSDRUECKLICH auf den
+ * Navigations-Streifen der Seitenleiste sowie den CDB-PDF-Button/die
+ * PDF-Werkzeugleiste beschraenkt ("Nicht erneut auf den Header ausweiten,
+ * auch nicht der Konsistenz wegen") - wird hier bewusst NICHT mit
+ * uebernommen, nur die flache Grundfarbgebung.
+ *
+ * Alle sechs Aktions-Buttons des Blocks (drei bisherige "primaere" +
+ * die drei bisherigen "sekundaeren") tragen deshalb jetzt dieselbe
+ * volle Farbflaeche - keine Zweiteilung mehr. Farben bleiben ueber die
+ * lokalen --sb-primary/--sb-primary-hover-Tokens an die Customizer-Farbe
+ * gekoppelt (render.php, aus get_theme_mod('color_ui_surface'/
+ * 'color_ui_surface_dark')).
+ */
 .wp-block-modular-blocks-summary-block .continue-button,
 .wp-block-modular-blocks-summary-block .pdf-download-button,
-.wp-block-modular-blocks-summary-block .solution-button {
+.wp-block-modular-blocks-summary-block .solution-button,
+.wp-block-modular-blocks-summary-block .retry-button,
+.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button,
+.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button {
     background: var(--sb-primary, #e24614) !important;
     background-color: var(--sb-primary, #e24614) !important;
+    border-color: var(--sb-primary, #e24614) !important;
     /*
-     * AP-1.4 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
      * War hartkodiertes "color: #fff" - kein Theme-Wert, aber die Website
      * hat fuer genau diesen Zweck (Text auf einer Akzentflaeche wie
      * --sb-primary) eine eigene Variable, die im Hell- und Dunkelmodus
@@ -550,58 +584,14 @@
 
 .wp-block-modular-blocks-summary-block .continue-button:hover,
 .wp-block-modular-blocks-summary-block .pdf-download-button:hover,
-.wp-block-modular-blocks-summary-block .solution-button:hover {
-    background: var(--sb-primary-hover, #c93d12) !important;
-    background-color: var(--sb-primary-hover, #c93d12) !important;
-}
-
-/*
- * AP-1.4 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md,
- * Architekturentscheidung C4): Die drei Sekundaer-Buttons (Wiederholen,
- * Uebungsblatt erzeugen, Loesungsblatt erzeugen) wechseln von der bisherigen
- * transparenten Umriss-Optik (fuer die es im Plugin kein Vorbild gab) auf
- * das bereits etablierte Sekundaer-Button-Muster aus
- * statement-summary/style.css:184-193 ("helle Flaeche + farbiger Rand"):
- * background auf eine helle Flaechenfarbe, Rand/Text bleiben ueber die
- * lokalen --sb-primary/--sb-primary-hover-Tokens an die Customizer-Farbe
- * gekoppelt (unveraendert gegenueber vorher - nur background ist neu).
- *
- * Hintergrundfarben bewusst NICHT ueber --sb-primary/-hover, sondern ueber
- * dieselben globalen --color-background-light/--color-ui-surface-light wie
- * im Vorbild: beide sind bereits dark-mode-gekoppelt (Theme/style.css,
- * #f8f9fa/#f5ede9 hell, #1e1e1e/#3a2620 dunkel) - eine dunkle Flaeche mit
- * weiterhin farbigem Rand/Text ist im Dark-Mode ausreichend kontrastreich
- * (Vorgehen Schritt 7, visuell im Testserver-Chrome-Toggle geprueft, siehe
- * Uebergabenotiz).
- *
- * Hinweis zur Kollision mit render.php: $button_secondary_style setzte dort
- * bisher zusaetzlich "background: transparent" inline. Eine !important-Regel
- * aus einem externen Stylesheet gewinnt zwar CSS-kaskadenbedingt auch gegen
- * eine normale (nicht per !important markierte) Inline-Deklaration - diese
- * Regel waere also selbst ohne weitere Aenderung wirksam gewesen. Trotzdem
- * wurde "background: transparent" in render.php ENTFERNT (nicht nur
- * ueberschrieben stehen gelassen), um keinen irrefuehrenden toten
- * Gegen-Wert im Quelltext zu behalten - siehe render.php-Kommentar an
- * $button_secondary_style. Im Browser-Test (Vorgehen Schritt/AK1, siehe
- * Uebergabenotiz) wurde der TATSAECHLICH BERECHNETE Stil geprueft, nicht nur
- * angenommen.
- */
-.wp-block-modular-blocks-summary-block .retry-button,
-.wp-block-modular-blocks-summary-block .teacher-practice-pdf-button,
-.wp-block-modular-blocks-summary-block .teacher-solution-sheet-button {
-    background: var(--color-background-light, #f8f9fa) !important;
-    background-color: var(--color-background-light, #f8f9fa) !important;
-    border-color: var(--sb-primary, #e24614) !important;
-    color: var(--sb-primary, #e24614) !important;
-}
-
+.wp-block-modular-blocks-summary-block .solution-button:hover,
 .wp-block-modular-blocks-summary-block .retry-button:hover,
 .wp-block-modular-blocks-summary-block .teacher-practice-pdf-button:hover,
 .wp-block-modular-blocks-summary-block .teacher-solution-sheet-button:hover {
-    background: var(--color-ui-surface-light, #f5ede9) !important;
-    background-color: var(--color-ui-surface-light, #f5ede9) !important;
+    background: var(--sb-primary-hover, #c93d12) !important;
+    background-color: var(--sb-primary-hover, #c93d12) !important;
     border-color: var(--sb-primary-hover, #c93d12) !important;
-    color: var(--sb-primary-hover, #c93d12) !important;
+    color: var(--color-text-on-accent, #ffffff) !important;
 }
 
 /*

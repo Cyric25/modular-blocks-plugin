@@ -1057,6 +1057,47 @@ mit weiteren Blockstylesheets auf derselben Seite ist das nicht garantiert
 aus AP-1.4 möglicherweise weiterhin mit den alten, aus dem Browser-Cache
 bedienten Werten gesehen.
 
+### Nachtrag zu AP-1.4: Aktions-Buttons vollfarbig statt zweigeteilt (2026-09-09, außerhalb des Plans direkt korrigiert)
+
+Live-Rückmeldung des Betreibers nach dem Rollout von AP-1.4: Die drei
+Sekundär-Buttons (Wiederholen, Übungsblatt erzeugen, Lösungsblatt erzeugen)
+sahen auf einer weißen Seite weiterhin praktisch wie die alte
+Umriss-Optik aus — der Kontrast zwischen `transparent` (vorher) und der
+hellen Flächenfarbe `#f8f9fa` (AP-1.4) ist auf Weiß kaum wahrnehmbar; Rand-
+und Textfarbe hatten sich zwischen beiden Fassungen gar nicht geändert.
+
+**Konkrete Vorgabe des Betreibers:** Buttons sollen wie der PDF-Export-
+Button des CDB-Designer-Plugins aussehen, und zwar **für alle sechs
+Aktions-Buttons** des Blocks, nicht nur die drei vormals sekundären.
+Recherche dazu: Der CDB-PDF-Button (`Plugins/CDB-Designer/assets/js/floating-pdf-button.js`)
+folgt **grundfarblich** exakt dem projektweiten Standard für Aktions-Buttons
+(Root-`CLAUDE.md`, Abschnitt „Color Scheme", Usage Guidelines) — volle
+Farbfläche `var(--color-ui-surface)`, Text `var(--color-text-on-accent)`,
+Hover `var(--color-ui-surface-dark)`. Weitere Belege desselben flachen
+Musters: `Plugins/CDB-Designer/assets/css/fragenwand.css:424-441` und
+`:609-626`, `Theme/style.css:1251-1267` (`.sc-lehrerhinweis__anmelden`).
+Der zusätzliche Verlauf/Glanz/Schlagschatten des PDF-Buttons („Plastischer
+Look") ist laut `Theme/CLAUDE.md`, Abschnitt „Plastischer Look", **ausdrücklich**
+auf den Navigations-Streifen der Seitenleiste sowie den CDB-PDF-Button/die
+PDF-Werkzeugleiste beschränkt, mit der wörtlichen Warnung „Nicht erneut
+auf den Header ausweiten, auch nicht der Konsistenz wegen" — dieser Teil
+wurde hier bewusst **nicht** übernommen.
+
+**Umsetzung:** In `style.css` sind die beiden zuvor getrennten Regelblöcke
+(„primär" für `.continue-button`/`.pdf-download-button`/`.solution-button`,
+„sekundär" für `.retry-button`/`.teacher-practice-pdf-button`/
+`.teacher-solution-sheet-button`) zu einem einzigen Selektor mit sechs
+Klassen zusammengeführt — alle tragen jetzt `background: var(--sb-primary)`,
+`color: var(--color-text-on-accent)`, Hover `var(--sb-primary-hover)`. Die
+Zweiteilung primär/sekundär entfällt damit vollständig; „sekundär" bedeutet
+im Block seither nur noch eine eigene PHP-Variable
+(`$button_secondary_style` in `render.php`, jetzt identisch zu
+`$button_style` gesetzt statt eigener Rahmen-Eigenschaften), keine eigene
+Optik mehr. `block.json`-`version` auf `2.2.4` erhöht (weitere sichtbare
+Stylesheet-Änderung, siehe Cache-Buster-Begründung im Absatz oben).
+Live per `getComputedStyle()` auf dem Testserver geprüft: alle sechs
+Klassen liefern identisches `rgb(226, 70, 20)`/`rgb(255, 255, 255)`/`6px`.
+
 ### Bekannte Einschränkungen — dritte Runde Phase 1 (Review AP-1.rev, `PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md`, 2026-09-09)
 
 **M2 — behoben durch AP-1.fix1 (2026-09-09, nach dem Merge von Phase 1
