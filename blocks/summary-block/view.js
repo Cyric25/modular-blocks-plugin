@@ -324,6 +324,29 @@
         }
 
         /**
+         * Pruefen, ob ALLE Gruppen abgeschlossen sind.
+         *
+         * AP-1.3 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * Bei `progressiveReveal: false` sind laut resetQuiz() (Zeile
+         * "groupEl.style.display = progressiveReveal && index > 0 ? 'none' :
+         * 'block';") von Anfang an ALLE Gruppen gleichzeitig sichtbar und in
+         * beliebiger Reihenfolge bearbeitbar. `currentGroupIndex` bleibt in
+         * diesem Modus dauerhaft bei 0, weil goToNextGroup() - der einzige
+         * Ort, der ihn erhoeht - hier nie aufgerufen wird (weder ueber den
+         * Auto-Advance-Pfad im Regelmodus noch ueber den Weiter-Knopf, der
+         * nur bei progressiveReveal:true via showContinueButton() erscheint).
+         * "Letzte Gruppe nach Index" ist deshalb kein taugliches
+         * Abschlusskriterium fuer progressiveReveal:false - stattdessen wird
+         * hier JEDE Gruppe einzeln mit der bereits vorhandenen
+         * isGroupCompleted() geprueft.
+         *
+         * @returns {boolean} true, wenn jede .summary-group abgeschlossen ist.
+         */
+        function allGroupsCompleted() {
+            return Array.prototype.every.call(groupElements, isGroupCompleted);
+        }
+
+        /**
          * Show continue button for group
          * @param {HTMLElement} groupEl - The group element
          */
@@ -364,31 +387,35 @@
 
         /**
          * Calculate final score
+         *
+         * AP-1.2 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * Jede Gruppe (Aussagen-Trio) ist genau EINEN Punkt wert, verloren
+         * beim ERSTEN Fehlklick in dieser Gruppe - unabhaengig davon, wie
+         * viele Fehlklicks danach noch in derselben Gruppe folgen (zwei
+         * Fehlklicks zaehlen genauso wie einer). Nutzt die bereits
+         * vorhandene `wrongAttemptsByGroup`-Struktur (Deklaration oben,
+         * gefuellt ueber countWrongAttempt() an beiden Fehlklick-Stellen -
+         * REGELMODUS UND deferredFeedback gleichermassen, siehe dortige
+         * Aufrufe). Frueher unterschied diese Funktion zwischen Regel- und
+         * Verzoegert-Modus (aussagenbasierte Zaehlung via `score` bzw. ein
+         * Alles-oder-nichts-Vergleich gegen `allSelections`); beide Wege
+         * sind jetzt durch dieselbe gruppenbasierte Zaehlung ersetzt, damit
+         * beide Modi konsistent rechnen (Plan-Vorgehen AP-1.2, Schritt 3).
+         *
+         * Iteriert bewusst ueber `groups` (Laenge = Gruppenanzahl), NICHT
+         * ueber Object.keys(wrongAttemptsByGroup) - fehlerfreie Gruppen
+         * legen dort gar keinen Schluessel an.
+         *
+         * @returns {number} Anzahl der fehlerfrei abgeschlossenen Gruppen.
          */
         function calculateFinalScore() {
-            if (deferredFeedback) {
-                // In deferred mode: check if ALL correct statements selected and NO wrong statements
-                let allCorrectSelected = true;
-                let noWrongSelected = true;
-
-                groups.forEach(group => {
-                    group.statements.forEach(stmt => {
-                        const selected = allSelections.find(s => s.id === stmt.id);
-                        if (stmt.isCorrect && !selected) {
-                            allCorrectSelected = false;
-                        }
-                        if (!stmt.isCorrect && selected) {
-                            noWrongSelected = false;
-                        }
-                    });
-                });
-
-                // 100% only if all correct and no wrong
-                return (allCorrectSelected && noWrongSelected) ? totalCorrect : 0;
-            } else {
-                // Regular mode: use accumulated score
-                return Math.max(0, score);
-            }
+            let correctGroups = 0;
+            groups.forEach((group, index) => {
+                if (!wrongAttemptsByGroup[index]) {
+                    correctGroups++;
+                }
+            });
+            return correctGroups;
         }
 
         /**
@@ -602,6 +629,15 @@
          * 2026-09-07). `allStatementTexts` enthält deshalb serverseitig gar
          * kein `isCorrect` — die Information steht hier nicht zur Verfügung
          * und kann auch nicht versehentlich durchrutschen.
+         *
+         * AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * `allStatementTexts` enthält seit diesem AP nur noch EINEN Eintrag
+         * je Gruppe (die als `isCorrect` markierte Aussage, serverseitig in
+         * `render.php` ausgewählt) statt aller drei Formulierungen des
+         * jeweiligen Sachverhalts. Das verhindert, dass dasselbe Faktum in
+         * mehreren Formulierungen gleichzeitig im selben Übungsblatt landet.
+         * `N` bezieht sich damit jetzt auf die Gruppenzahl, nicht mehr auf
+         * die Gesamtzahl aller Einzelaussagen.
          */
         function generateTeacherPracticePDF() {
             const jsPDF = getJsPDF();
@@ -611,7 +647,14 @@
                 return;
             }
 
-            const pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            let pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            // AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+            // Zusaetzliche Absicherung, nicht weil aktuell noetig - render.php
+            // liefert seit diesem AP bereits nur noch eine (die richtige)
+            // Aussage je Gruppe -, sondern als Schutz gegen kuenftige
+            // Datenfehler, falls zwei Gruppen zufaellig wortgleiche Texte
+            // tragen sollten.
+            pool = Array.from(new Set(pool));
             if (pool.length === 0) {
                 alert('Für dieses Element stehen keine Aussagen für ein Übungsblatt zur Verfügung.');
                 return;
@@ -846,7 +889,12 @@
 
             // Calculate final score
             const finalScore = calculateFinalScore();
-            const percentage = totalCorrect > 0 ? Math.round((finalScore / totalCorrect) * 100) : 0;
+            // AP-1.2: Bezugsgroesse fuer die Prozentrechnung ist jetzt die
+            // Gruppenanzahl (Aussagen-Trios), nicht mehr `totalCorrect`
+            // (Gesamtzahl aller als isCorrect markierten Einzelaussagen -
+            // im Regelfall zwar identisch mit groups.length, aber nicht bei
+            // Gruppen mit correctCount !== 1, siehe AP-1.1-Uebergabenotiz).
+            const percentage = groups.length > 0 ? Math.round((finalScore / groups.length) * 100) : 0;
             lastPercentage = percentage; // AP-1.2: Quelle fuer die Ergebniszeile im PDF
 
             // In deferred mode, update summary with correct/incorrect marks
@@ -883,7 +931,12 @@
                 }
 
                 if (scoreEl) {
-                    scoreEl.textContent = `${finalScore}/${totalCorrect} ${strings.score || 'Punkte'} (${percentage}%)`;
+                    // AP-1.2: Anzeige jetzt gruppenbasiert ("X von Y
+                    // Aussagensaetzen richtig"), nicht mehr aussagenbasiert.
+                    // `strings.of` wird bereits fuer das Gruppenlabel
+                    // ("Frage 1 von 3") verwendet und hier bewusst
+                    // wiederverwendet statt eines eigenen Schluessels.
+                    scoreEl.textContent = `${finalScore} ${strings.of || 'von'} ${groups.length} ${strings.score || 'Aussagensätzen richtig'} (${percentage}%)`;
                 }
 
                 if (messageEl) {
@@ -1106,6 +1159,18 @@
                                     showResults();
                                 }
                             }, 800);
+                        } else if (allGroupsCompleted()) {
+                            // AP-1.3: Bei progressiveReveal:false liegen laut
+                            // resetQuiz() von Anfang an ALLE Gruppen offen,
+                            // "letzte Gruppe nach Index" (wie im Zweig oben)
+                            // ist hier kein sinnvolles Kriterium - vorher
+                            // wurde dieser gesamte Abschluss-Pfad schlicht
+                            // uebersprungen, showResults() also nie erreicht.
+                            // Die Bedingung steuert damit nur noch WANN das
+                            // Ergebnis erscheint (mit vs. ohne 800ms-
+                            // Verzoegerung je Gruppe), nicht mehr OB es
+                            // ueberhaupt erreicht wird.
+                            setTimeout(showResults, 800);
                         }
                     }
                 } else {

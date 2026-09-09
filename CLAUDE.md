@@ -912,6 +912,195 @@ Vollständige Befundliste inkl. Belegen: `PLAN-Summary-PDF-und-Content-Links.md`
   der Bildschirmreihenfolge ab, weil `render.php` nur die Anzeigekopie
   mischt, nicht `$groups_data` (die JSON-Quelle des PDFs). Rein kosmetisch.
 
+### Nachtrag: Punktesystem pro Aussagensatz, Übungsblatt-Pool, `progressiveReveal`-Fix, Button-Styling (Phase 1, dritte Runde, `PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md`, 2026-09-09)
+
+Dritte Nachbesserungsrunde am `summary-block`, ausgelöst durch eine
+Diagnose vom 2026-09-08/09 zu vier gemeldeten Punkten. Vier
+Implementierungs-APs, unabhängig review-geprüft (AP-1.rev): kein
+kritischer Befund, zwei mittlere (**M1** — `block.json`-`version`, siehe
+unten; **M2** — vorbestehend, siehe „Bekannte Einschränkungen" weiter
+unten), elf geringe. Kein `AP-1.fix1` nötig, Phase merge-fähig. Details,
+Fundstellen und Testnachweise: `PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md`
+(Website-Root), Übergabenotizen AP-1.1–AP-1.4 und AP-1.rev; Datei-Referenzen:
+`reference_file_map.md`.
+
+1. **Übungsblatt-Pool: eine Aussage je Gruppe statt aller drei Formulierungen
+   (AP-1.1, `render.php`, `view.js`).** Jede 3er-Gruppe enthält im
+   Datenmodell drei Formulierungen **desselben Sachverhalts** (nur eine
+   `isCorrect`). Der Übungsblatt-Pool (`$all_statement_texts` in
+   `render.php`, gelesen von `generateTeacherPracticePDF()` in `view.js`)
+   nahm bisher alle drei auf — eine Zufallsauswahl konnte dadurch mehrere
+   Formulierungen desselben Fakts im selben Übungsblatt landen lassen.
+   `render.php` baut den Pool jetzt pro Gruppe mit genau der (ersten)
+   `isCorrect`-Aussage; fehlt einer Gruppe eine solche (Datenfehler im
+   Editor), wird sie ohne Fehler übersprungen. Der JSON-Schlüssel heißt
+   weiterhin `allStatementTexts`, enthält aber nur noch einen Eintrag je
+   Gruppe. Die Eingabeobergrenze des Zahlenfelds (`max`) kommt seither aus
+   der neuen Variable `$gesamt_gruppen = count($groups_data)`
+   (Gruppenzahl) statt der früheren Gesamtzahl aller Einzelaussagen; das
+   `value`-Attribut ist zusätzlich auf `min($teacher_pdf_count,
+   $gesamt_gruppen)` geklemmt — behebt den bekannten Bug, dass das Feld mit
+   einem ungültigen `value > max` öffnen konnte (z. B. `value="10"
+   max="6"`). `view.js` dedupliziert den Pool zusätzlich defensiv
+   (`Array.from(new Set(pool))`) gegen künftige, wortgleiche Duplikate.
+   Das Lösungsblatt-PDF (`generateSolutionSheetPDF()`) ist davon
+   unberührt und listet weiterhin alle Aussagen aller Gruppen.
+
+2. **Punktesystem auf Aussagen-Trio umgestellt (AP-1.2, `view.js`,
+   `index.js`).** Bisher zählte `calculateFinalScore()` „Anzahl richtiger
+   Einzelaussagen minus `penaltyPerWrongAnswer` je Fehlklick". Jetzt ist
+   jede 3er-Gruppe genau **einen** Punkt wert, verloren beim **ersten**
+   Fehlklick in dieser Gruppe — weitere Fehlklicks in derselben Gruppe
+   ändern am Ergebnis nichts mehr. Die dafür genutzte Datenstruktur
+   `wrongAttemptsByGroup` (Gruppenindex → Anzahl Fehlklicks) existierte
+   bereits aus dem vorherigen Nachtrag und wurde direkt wiederverwendet,
+   keine neue Zählstruktur. `percentage` bezieht sich seither auf
+   `groups.length` statt `totalCorrect`; `.score-display` zeigt „X von Y
+   Aussagensätzen richtig (Z%)" (`strings.score` in `render.php` von
+   `'Punkte'` auf `'Aussagensätzen richtig'` geändert, Schlüsselname
+   unverändert). Alle fünf laut Diagnose abhängigen Stellen
+   (`percentage`, `lastPercentage`, `pdfDownloadThreshold`-Vergleich,
+   Text-/Icon-Schwellen `successText`/`partialSuccessText`/`failText`, die
+   PDF-Zeile „Ergebnis: N% richtig") lesen denselben `percentage`-Wert und
+   brauchten keine eigene Codeänderung — vom Review einzeln
+   nachgeprüft. Die frühere Fallunterscheidung Regelmodus/`deferredFeedback`
+   ist dabei vollständig entfallen: **beide Modi laufen jetzt über exakt
+   denselben Code**, nicht über zwei synchron gehaltene Zweige (stärkste
+   Form der geforderten Konsistenz — siehe aber G6/G7 unten zur
+   `deferredFeedback`-Beobachtbarkeit). `penaltyPerWrongAnswer` ist unter
+   diesem Modell **funktionslos**, bleibt aber bewusst im Datenmodell:
+   in `block.json` unverändert als Attribut vorhanden (Kompatibilität mit
+   gespeicherten Blockinstanzen), das zugehörige `RangeControl`
+   „Punktabzug pro Fehler" wurde jedoch aus den `InspectorControls` in
+   `index.js` entfernt (nur noch als Erklärkommentar). Die alte
+   `score`/`wrongAttempts`/`penaltyPerWrong`-Buchführung in `view.js` läuft
+   technisch weiter mit, ihr Ergebnis wird aber nirgends mehr gelesen
+   (toter Code, bewusst nicht aufgeräumt, außerhalb des AP-Scopes).
+
+3. **`progressiveReveal: false` erreicht jetzt die Ergebnisanzeige (AP-1.3,
+   `view.js`).** Bei dieser Blockeinstellung wurde `showResults()` bisher
+   nie erreicht — der Aufruf lag ausschließlich innerhalb eines
+   `if (progressiveReveal) { … }`-Blocks in `handleStatementClick()`.
+   **Abweichung vom ursprünglichen Plantext:** Statt eines Index-Vergleichs
+   (`currentGroupIndex === groups.length - 1`, wie zunächst vorgeschlagen)
+   verwendet die Umsetzung eine neue Hilfsfunktion `allGroupsCompleted()`
+   (`Array.prototype.every.call(groupElements, isGroupCompleted)`) — ein
+   Index-Vergleich hätte hier nie ausgelöst, weil bei
+   `progressiveReveal: false` laut `resetQuiz()` von Anfang an ALLE
+   Gruppen gleichzeitig sichtbar/bearbeitbar sind und `currentGroupIndex`
+   dauerhaft bei `0` bleibt (`goToNextGroup()`, die einzige Stelle, die ihn
+   erhöht, wird in diesem Modus nie aufgerufen). `allGroupsCompleted()`
+   prüft stattdessen jede Gruppe einzeln, unabhängig von der
+   Bearbeitungsreihenfolge — belegt per Test: Gruppe 2 vor Gruppe 0
+   beantwortet erreicht `showResults()` genauso wie die aufsteigende
+   Reihenfolge. Der bestehende `progressiveReveal: true`-Pfad blieb dabei
+   unangetastet (nur ein neuer `else if`-Zweig ergänzt), keine Vermischung
+   der beiden Modi. Der bereits vorbestehende `deferredFeedback`-Mangel
+   (siehe „Bekannte Einschränkungen — Nachtrag Phase 1" oben) ist von
+   dieser Änderung nicht betroffen: `allGroupsCompleted()` liefert dort
+   weiterhin `false`, weil `isGroupCompleted()` in diesem Zweig auf
+   `.correct`/`.incorrect` prüft, die dort nie gesetzt werden.
+
+4. **Button-Styling vereinheitlicht (AP-1.4, `style.css`, `render.php`,
+   Architekturentscheidung C4).** Eckenradius aller summary-block-Buttons
+   von 4 px auf die im Plugin sonst übliche 6 px korrigiert (in BEIDEN
+   Inline-Style-Strings `$button_style`/`$button_secondary_style` aus
+   `render.php` **und** in `style.css` — die Inline-Styles überschreiben
+   die externe Regel ohne `!important`, eine Änderung nur an einer Stelle
+   wäre wirkungslos geblieben); primäre Buttons (`.continue-button`,
+   `.pdf-download-button`, `.solution-button`) von hartkodiertem
+   `color: #fff` auf `var(--color-text-on-accent, #ffffff)`; toter
+   Google-Blau-Fallback `#1a73e8` durch `#e24614` ersetzt (Fokusring
+   entsprechend auf `rgba(226, 70, 20, 0.1)`). **Die drei Sekundär-Buttons**
+   (`.retry-button`, `.teacher-practice-pdf-button`,
+   `.teacher-solution-sheet-button`) wechseln von der bisherigen
+   Umriss-Optik (transparenter Hintergrund) auf das im Plugin bereits
+   etablierte Muster für sekundäre Buttons — helle Fläche
+   (`var(--color-background-light, #f8f9fa)`) + farbiger Rand, Vorbild
+   `statement-summary/style.css:184-193`; Rand/Text bleiben bewusst an die
+   bereits Customizer-gekoppelten lokalen Tokens `--sb-primary`/
+   `--sb-primary-hover` gebunden statt auf die globalen
+   `--color-ui-surface`-Variablen des Vorbilds umgestellt, um die Kopplung
+   nicht doppelt zu führen. `render.php`s `$button_secondary_style` verliert
+   dafür das bisherige `background: transparent;`.
+   **Build-/Deploy-Falle (wichtig für künftige CSS-Änderungen an diesem
+   Block):** `block.json` deklariert `"style": "file:./style-index.css"` —
+   eine kompilierte, minifizierte Datei, **nicht** die von diesem AP
+   bearbeitete Quelldatei `style.css` direkt. `includes/class-block-manager.php`
+   bevorzugt beim Registrieren `build/blocks/<name>/`, wenn dieser Ordner
+   existiert, sonst fällt es auf `blocks/<name>/style-index.css` direkt
+   zurück. Der im Repo liegende `blocks/summary-block/style-index.css` ist
+   ein bewusst **gitignorierter**, oft veralteter Kompilatrest — er wird
+   von diesem Repo nie gelesen, solange `build/` existiert, und auch nicht
+   von `create-block-zips.js` (zieht aus `build/blocks/<name>/`). **Die
+   tatsächlich wirksame Datei ist also `build/blocks/summary-block/style-index.css`**
+   (bzw. auf einem Server ohne `build/`-Ordner — wie dem Testserver — die
+   frisch dorthin kopierte `blocks/summary-block/style-index.css`): Ohne
+   `npm run build` + gezielten Kopiervorgang aus `build/blocks/summary-block/`
+   wären CSS-Änderungen an `style.css` unsichtbar geblieben, obwohl der
+   Quelltext korrekt geändert war. Alle Akzeptanzkriterien dieses APs wurden
+   deshalb über **berechnete** Stile (`getComputedStyle()`) gegen die
+   tatsächlich deployte kompilierte Datei geprüft, nicht nur gegen den
+   Quelltext.
+
+**`block.json`-`version` auf `2.2.3` erhöht (AP-1.doc, behebt Review-Befund
+M1).** Die Version stand über zwei vorangegangene Phasen mit sichtbaren
+Stylesheet-Änderungen unverändert bei `2.2.2`. WordPress nutzt dieses Feld
+über `register_block_style_handle()` als `?ver=`-Cache-Buster, sobald das
+Blockstylesheet als eigene Datei (nicht inline) ausgeliefert wird —
+`wp_maybe_inline_styles()` bettet nur innerhalb eines gemeinsamen Budgets
+von standardmäßig 20 000 Byte ein, und `style-index.css` allein wiegt
+bereits über 14 000 Byte. Auf dem Testserver war das nicht reproduzierbar
+(dort wird tatsächlich inline eingebettet), auf einer Produktivinstallation
+mit weiteren Blockstylesheets auf derselben Seite ist das nicht garantiert
+— ohne die Erhöhung hätten wiederkehrende Besucher das neue Button-Styling
+aus AP-1.4 möglicherweise weiterhin mit den alten, aus dem Browser-Cache
+bedienten Werten gesehen.
+
+### Bekannte Einschränkungen — dritte Runde Phase 1 (Review AP-1.rev, `PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md`, 2026-09-09)
+
+**M2 — „Wiederholen" macht den zweiten Durchlauf trivial (vorbestehend,
+NICHT durch diese Phase verursacht, aber hier erstmals durch AP-1.3
+beobachtbar).** `resetQuiz()` (`view.js`, um Zeile 1040-1043) entfernt beim
+Klick auf „Wiederholen" die Klassen `correct`/`incorrect`/
+`solution-correct`/`solution-incorrect` und setzt die `disabled`-**Property**
+zurück, **nicht** aber die gleichnamige CSS-**Klasse** `disabled`, die
+`handleStatementClick()` bei Gruppenabschluss auf die übrigen Aussagen
+dieser Gruppe setzt. Da `.statement-option.disabled` in `style.css` (Zeile
+262-267) `pointer-events: none; opacity: 0.5` trägt, bleiben nach einem
+Klick auf „Wiederholen" die meisten Aussagen-Buttons unklickbar — je Gruppe
+bleibt nur die zuvor als richtig markierte Aussage anklickbar. Ein zweiter
+Durchlauf zeigt dadurch praktisch immer 100 %. **Live gemessen: 48 von 75
+Aussagen behielten nach „Wiederholen" `pointer-events:'none'`,
+`opacity:'0.5'`.** Der Mangel existiert nachweislich bereits auf `main`
+(identischer Code, identische CSS-Regel dort) und verletzt kein
+Akzeptanzkriterium dieses Plans — er wird hier nur deshalb erstmals
+beobachtbar, weil AP-1.3 den „Wiederholen"-Knopf erstmals auch im Modus
+`progressiveReveal: false` erreichbar macht, wo eine zweite Ergebnisanzeige
+vorher unerreichbar war. **Das ist ein potenziell wichtiger Fund für den
+Betreiber und ein klarer Kandidat für einen eigenen Folgeplan** (Fix: in
+`resetQuiz()` zusätzlich `classList.remove('disabled', 'selected')` je
+Aussage ergänzen).
+
+**G6/G7 — latente Semantik der neuen `calculateFinalScore()` im
+`deferredFeedback`-Modus (gering, `view.js`).** Die Umstellung auf das
+gruppenbasierte Punktemodell (Punkt 2 oben) gilt seit AP-1.2 formal auch im
+`deferredFeedback`-Modus (ein einziger Codepfad für beide Modi). Sie ist
+dort aber aktuell **nicht beobachtbar**, weil `showResults()` in diesem
+Modus weiterhin unerreichbar bleibt — der vorbestehende, von diesem Plan
+bewusst nicht behobene Mangel, dass `isGroupCompleted()` im
+`deferredFeedback`-Zweig auf `.correct`/`.incorrect` prüft, die dort nie
+gesetzt werden (siehe „Bekannte Einschränkungen — Nachtrag Phase 1" oben,
+letzter Absatz). Bisher galt in diesem Modus Alles-oder-nichts pro BLOCK,
+künftig (sobald der `deferredFeedback`-Mangel einmal behoben wird) griffe
+ohne weiteres Zutun die Gruppenzählung. Zusätzlich (G7): Eine nie
+angeklickte Gruppe zählt in der neuen Formel (`!wrongAttemptsByGroup[index]`)
+als richtig — heute folgenlos, weil `showResults()` ausschließlich nach
+Abschluss aller Gruppen erreichbar ist und das alte Modell genauso rechnete
+(keine Regression), aber die Funktion ist damit nicht selbstsichernd
+gegenüber einem künftigen „Jetzt auswerten"-Knopf für unvollständige
+Durchläufe.
+
 ## Security Considerations
 
 - All admin functions check `current_user_can('manage_options')`

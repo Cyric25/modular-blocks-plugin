@@ -117,7 +117,6 @@ registerBlockType('modular-blocks/summary-block', {
             enablePdfDownload,
             pdfDownloadThreshold,
             pdfMessage,
-            penaltyPerWrongAnswer,
             teacherPdfCount,
             successText,
             partialSuccessText,
@@ -414,13 +413,20 @@ registerBlockType('modular-blocks/summary-block', {
                                 rows={3}
                             />
                         )}
-                        <RangeControl
-                            label={__('Punktabzug pro Fehler', 'modular-blocks-plugin')}
-                            value={penaltyPerWrongAnswer}
-                            onChange={(value) => setAttributes({ penaltyPerWrongAnswer: value })}
-                            min={0}
-                            max={5}
-                        />
+                        {/*
+                          * AP-1.2 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+                          * Der Regler "Punktabzug pro Fehler" (Attribut
+                          * penaltyPerWrongAnswer) wurde hier entfernt - das
+                          * Punktesystem zaehlt seit diesem AP gruppenbasiert
+                          * (ein Punkt je Aussagen-Trio, verloren beim ersten
+                          * Fehlklick), ein Punktabzug PRO Fehlklick passt
+                          * nicht mehr zum Modell. Das Attribut selbst bleibt
+                          * bewusst in block.json/attributes erhalten (siehe
+                          * Nicht-Ziele/Architekturentscheidung C3 des Plans) -
+                          * bereits gespeicherte Blockinstanzen mit eigenem
+                          * Wert bleiben dadurch kompatibel, nur ohne
+                          * Bedienelement und ohne Wirkung auf das Ergebnis.
+                          */}
                         {/*
                           * AP-1.3 (PLAN-Summary-PDF-und-Content-Links.md):
                           * Anzahl der Aussagen im Uebungs-PDF, das nur
