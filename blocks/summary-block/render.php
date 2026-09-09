@@ -277,16 +277,34 @@ $summary_data = [
 // Button styles - Farbwerte kommen seit AP-3.2 nicht mehr von hier, sondern
 // per CSS-Custom-Property vom Wrapper (siehe oben) plus var(--sb-x, #fallback)
 // in style.css; hier nur noch die farbunabhaengigen Layout-Eigenschaften.
-// "color: #fff" ist keine get_theme_mod()-Fundstelle (kein Theme-Wert) und
-// bleibt deshalb wie zuvor als literaler Wert stehen.
+//
+// AP-1.4 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+// border-radius von 4px auf 6px (Projektstandard, siehe statement-summary) -
+// MUSS hier (nicht nur in style.css) geaendert werden, da dieser Inline-Style
+// die style.css-Regel ueberschreibt (Grund, warum die dortige 8px-Regel bis
+// jetzt wirkungslos war). "color: #fff" ist durch die themegekoppelte
+// Variable var(--color-text-on-accent, #ffffff) ersetzt - inhaltlich
+// weiterhin #fff in beiden Hell-/Dunkelmodi, aber jetzt keine "kein
+// Theme-Wert"-Ausnahme mehr, sondern konsistent mit dem Rest des Projekts
+// (Root-CLAUDE.md, Abschnitt "Color Scheme").
 $button_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
-                'padding: 10px 20px; border: none; border-radius: 4px; ' .
-                'color: #fff; cursor: pointer; font-size: 14px; font-weight: 500; ' .
+                'padding: 10px 20px; border: none; border-radius: 6px; ' .
+                'color: var(--color-text-on-accent, #ffffff); cursor: pointer; font-size: 14px; font-weight: 500; ' .
                 'transition: background 0.2s ease;';
 
+// AP-1.4, Architekturentscheidung C4: "background: transparent" entfernt -
+// die drei Sekundaer-Buttons (Wiederholen, Uebungsblatt/Loesungsblatt
+// erzeugen) bekommen ihre helle Flaechenfarbe jetzt ausschliesslich ueber
+// die !important-Regeln in style.css (.retry-button/.teacher-practice-pdf-
+// button/.teacher-solution-sheet-button). Ein hier weiterhin gesetztes
+// "background: transparent" wuerde von style.css's !important zwar ohnehin
+// ueberschrieben (Inline-Styles verlieren gegen !important-Regeln aus
+// externen Stylesheets), bliebe aber irrefuehrender toter Code - deshalb
+// ganz entfernt statt nur wirkungslos stehen gelassen. border-radius wie
+// oben von 4px auf 6px.
 $button_secondary_style = 'display: inline-flex; align-items: center; justify-content: center; ' .
                           'padding: 10px 20px; border-width: 2px; border-style: solid; ' .
-                          'border-radius: 4px; background: transparent; ' .
+                          'border-radius: 6px; ' .
                           'cursor: pointer; ' .
                           'font-size: 14px; font-weight: 500; transition: all 0.2s ease;';
 ?>
