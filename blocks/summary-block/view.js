@@ -324,6 +324,29 @@
         }
 
         /**
+         * Pruefen, ob ALLE Gruppen abgeschlossen sind.
+         *
+         * AP-1.3 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * Bei `progressiveReveal: false` sind laut resetQuiz() (Zeile
+         * "groupEl.style.display = progressiveReveal && index > 0 ? 'none' :
+         * 'block';") von Anfang an ALLE Gruppen gleichzeitig sichtbar und in
+         * beliebiger Reihenfolge bearbeitbar. `currentGroupIndex` bleibt in
+         * diesem Modus dauerhaft bei 0, weil goToNextGroup() - der einzige
+         * Ort, der ihn erhoeht - hier nie aufgerufen wird (weder ueber den
+         * Auto-Advance-Pfad im Regelmodus noch ueber den Weiter-Knopf, der
+         * nur bei progressiveReveal:true via showContinueButton() erscheint).
+         * "Letzte Gruppe nach Index" ist deshalb kein taugliches
+         * Abschlusskriterium fuer progressiveReveal:false - stattdessen wird
+         * hier JEDE Gruppe einzeln mit der bereits vorhandenen
+         * isGroupCompleted() geprueft.
+         *
+         * @returns {boolean} true, wenn jede .summary-group abgeschlossen ist.
+         */
+        function allGroupsCompleted() {
+            return Array.prototype.every.call(groupElements, isGroupCompleted);
+        }
+
+        /**
          * Show continue button for group
          * @param {HTMLElement} groupEl - The group element
          */
@@ -1136,6 +1159,18 @@
                                     showResults();
                                 }
                             }, 800);
+                        } else if (allGroupsCompleted()) {
+                            // AP-1.3: Bei progressiveReveal:false liegen laut
+                            // resetQuiz() von Anfang an ALLE Gruppen offen,
+                            // "letzte Gruppe nach Index" (wie im Zweig oben)
+                            // ist hier kein sinnvolles Kriterium - vorher
+                            // wurde dieser gesamte Abschluss-Pfad schlicht
+                            // uebersprungen, showResults() also nie erreicht.
+                            // Die Bedingung steuert damit nur noch WANN das
+                            // Ergebnis erscheint (mit vs. ohne 800ms-
+                            // Verzoegerung je Gruppe), nicht mehr OB es
+                            // ueberhaupt erreicht wird.
+                            setTimeout(showResults, 800);
                         }
                     }
                 } else {
