@@ -602,6 +602,15 @@
          * 2026-09-07). `allStatementTexts` enthält deshalb serverseitig gar
          * kein `isCorrect` — die Information steht hier nicht zur Verfügung
          * und kann auch nicht versehentlich durchrutschen.
+         *
+         * AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+         * `allStatementTexts` enthält seit diesem AP nur noch EINEN Eintrag
+         * je Gruppe (die als `isCorrect` markierte Aussage, serverseitig in
+         * `render.php` ausgewählt) statt aller drei Formulierungen des
+         * jeweiligen Sachverhalts. Das verhindert, dass dasselbe Faktum in
+         * mehreren Formulierungen gleichzeitig im selben Übungsblatt landet.
+         * `N` bezieht sich damit jetzt auf die Gruppenzahl, nicht mehr auf
+         * die Gesamtzahl aller Einzelaussagen.
          */
         function generateTeacherPracticePDF() {
             const jsPDF = getJsPDF();
@@ -611,7 +620,14 @@
                 return;
             }
 
-            const pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            let pool = Array.isArray(allStatementTexts) ? allStatementTexts.slice() : [];
+            // AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+            // Zusaetzliche Absicherung, nicht weil aktuell noetig - render.php
+            // liefert seit diesem AP bereits nur noch eine (die richtige)
+            // Aussage je Gruppe -, sondern als Schutz gegen kuenftige
+            // Datenfehler, falls zwei Gruppen zufaellig wortgleiche Texte
+            // tragen sollten.
+            pool = Array.from(new Set(pool));
             if (pool.length === 0) {
                 alert('Für dieses Element stehen keine Aussagen für ein Übungsblatt zur Verfügung.');
                 return;

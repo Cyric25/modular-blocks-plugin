@@ -116,17 +116,32 @@ if ($shuffle_groups) {
 // aufzuheben.
 $ist_lehrperson = function_exists('simple_clean_ist_lehrperson') && simple_clean_ist_lehrperson();
 
-// Flache Liste aller Aussagetexte ueber alle Gruppen hinweg - ohne
-// isCorrect, weil das Uebungsblatt keine Loesung enthaelt (Nicht-Ziel).
-// Pool ist ausschliesslich dieses Block-Exemplar (Architekturentscheidung A4).
+// AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+// Genau EINE (die als isCorrect markierte) Aussage je Gruppe - nicht mehr
+// alle Formulierungen. Jede 3er-Gruppe enthaelt im Datenmodell drei
+// Formulierungen DESSELBEN Sachverhalts (nur eine davon isCorrect); ein Pool
+// aus allen dreien liess im Uebungsblatt leicht mehrere Varianten desselben
+// Fakts gleichzeitig auftauchen. Ohne isCorrect-Kennzeichnung im JSON, weil
+// das Uebungsblatt weiterhin keine Loesung enthaelt (Nicht-Ziel) - nur der
+// Text der bereits als richtig identifizierten Aussage wird uebernommen.
+// Pool bleibt ausschliesslich dieses Block-Exemplars (Architekturentscheidung
+// A4 des Vorgaengerplans, hier unveraendert als C1 uebernommen).
+//
+// Enthaelt eine Gruppe aus irgendeinem Grund keine als richtig markierte
+// Aussage (Datenfehler im Editor), wird sie einfach uebersprungen - kein
+// Pool-Eintrag fuer diese Gruppe, kein Fataler Fehler.
 $all_statement_texts = [];
 if ($ist_lehrperson) {
     foreach ($groups_data as $group) {
         foreach ($group['statements'] as $statement) {
+            if (empty($statement['isCorrect'])) {
+                continue;
+            }
             $text = $statement['text'] ?? '';
             if ($text !== '') {
                 $all_statement_texts[] = wp_kses_post($text);
             }
+            break; // genau eine Aussage je Gruppe - erste als richtig markierte gewinnt
         }
     }
 }
@@ -218,6 +233,11 @@ $summary_data = [
     // Lehrperson ist - so steht der Aussagen-Pool nicht ohnehin schon im
     // Quelltext der Seite (die Aussagetexte selbst stehen zwar sichtbar in
     // den Knoepfen, ihre Vollstaendigkeit als fertige Liste aber nicht).
+    // AP-1.1 (Punktesystem-Buttons-Kapitellink-Feinschliff): Schluesselname
+    // bewusst unveraendert gelassen (Plan erlaubt das ausdruecklich), der
+    // Inhalt ist seither aber ein Eintrag JE GRUPPE (nur die als richtig
+    // markierte Aussage), nicht mehr je Einzelaussage - siehe Aufbau von
+    // $all_statement_texts oben.
     'isTeacher' => $ist_lehrperson,
     'teacherPdfCount' => $teacher_pdf_count,
     'allStatementTexts' => $all_statement_texts,
@@ -312,14 +332,24 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                 // im HTML - dieselbe serverseitige Bedingung, kein zweiter,
                 // schwaecherer Sichtbarkeitsweg per CSS.
                 //
-                // max = tatsaechliche Poolgroesse. Der Plan nannte hier die
-                // Summe der statements-Arrays; genommen wird stattdessen
-                // count($all_statement_texts) - das ist genau der Pool, aus
-                // dem view.js zieht (Aussagen mit leerem Text fallen oben
-                // heraus). Sonst verspraeche das Feld eine Anzahl, die das
-                // PDF gar nicht liefern kann.
-                $anzahl_feld_id  = $block_id . '-teacher-pdf-count';
-                $gesamt_aussagen = count($all_statement_texts);
+                // AP-1.1 (PLAN-Summary-Punktesystem-Buttons-und-Kapitellink-Feinschliff.md):
+                // max = Anzahl GRUPPEN, nicht mehr Anzahl Einzelaussagen. Der
+                // Uebungsblatt-Pool ($all_statement_texts oben) enthaelt seit
+                // diesem AP ohnehin nur noch einen Eintrag je Gruppe, die
+                // Obergrenze des Zahlenfelds folgt dem direkt:
+                // count($groups_data) statt der frueheren Gesamtzahl aller
+                // Einzelaussagen. Sonst verspraeche das Feld eine Anzahl, die
+                // das PDF gar nicht liefern kann.
+                //
+                // value wird zusaetzlich auf max geklemmt (bekannter Bug G3,
+                // Nachtragsplan: ein gespeichertes teacherPdfCount groesser
+                // als die tatsaechliche Gruppenzahl - z. B. Attribut-Default
+                // 10 bei nur 3 Gruppen - liess das Feld zuvor HTML-technisch
+                // ungueltig mit value > max oeffnen). Der PDF-Export selbst
+                // war davon nie betroffen (view.js deckelte schon vorher auf
+                // die Poolgroesse), nur die Anzeige im Feld war falsch.
+                $anzahl_feld_id = $block_id . '-teacher-pdf-count';
+                $gesamt_gruppen = count($groups_data);
                 ?>
                 <div class="summary-teacher-tools">
                     <label class="teacher-pdf-count-label" for="<?php echo esc_attr($anzahl_feld_id); ?>">
@@ -329,10 +359,10 @@ $button_secondary_style = 'display: inline-flex; align-items: center; justify-co
                            id="<?php echo esc_attr($anzahl_feld_id); ?>"
                            class="teacher-pdf-count-input"
                            min="1"
-                           max="<?php echo esc_attr($gesamt_aussagen); ?>"
+                           max="<?php echo esc_attr($gesamt_gruppen); ?>"
                            step="1"
                            inputmode="numeric"
-                           value="<?php echo esc_attr($teacher_pdf_count); ?>">
+                           value="<?php echo esc_attr(min($teacher_pdf_count, $gesamt_gruppen)); ?>">
                     <button type="button"
                             class="summary-button teacher-practice-pdf-button"
                             style="<?php echo esc_attr($button_secondary_style); ?>">
